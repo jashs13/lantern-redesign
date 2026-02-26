@@ -30,3 +30,4 @@ certs/
 .RData
 .Ruserdata
 shiny_logs/
+/resources/
