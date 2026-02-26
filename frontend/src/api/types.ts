@@ -30,6 +30,7 @@ export interface EndpointTotals {
   indexed_endpoints: number;
   non_indexed_endpoints: number;
   last_updated: string;
+  avg_response_time?: number;
 }
 
 export interface ResponseTally {
