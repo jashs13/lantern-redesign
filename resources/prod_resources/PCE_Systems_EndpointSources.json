@@ -1,0 +1,10 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://w3.pcesecure.com/cgi-bin/WebObjects/HIEAdmin.woa",
+			"OrganizationName": "",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		}
+	]
+}

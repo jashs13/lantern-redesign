@@ -1,0 +1,10 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://dssjuno-dev-web.dssinc.com/fhir/dss/01ho/r4",
+			"OrganizationName": "",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		}
+	]
+}

@@ -1,0 +1,16 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://sphsma.patient.trinity-health.org/api/fhir",
+			"OrganizationName": "Mercy Medical Center in Massachusetts - Trinity Health",
+			"NPIID": "",
+			"OrganizationZipCode": "01102"
+		},
+		{
+			"URL": "https://sfnj.patient.trinity-health.org/api/fhir",
+			"OrganizationName": "St. Francis in New Jersey - Trinity Health",
+			"NPIID": "",
+			"OrganizationZipCode": "08629"
+		}
+	]
+}

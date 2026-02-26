@@ -1,0 +1,20 @@
+[
+    {
+        "FormatType": "Lantern",
+        "EndpointName":"Lantern",
+        "FileName":"LanternEndpointSources.json",
+        "URL": ""
+    },
+    {
+        "FormatType": "Lantern",
+        "EndpointName":"CareEvolution",
+        "FileName":"CareEvolutionEndpointSources.json",
+        "URL": "https://fhir.docs.careevolution.com/overview/public_endpoints.html"
+    },
+    {
+        "FormatType": "Lantern",
+        "EndpointName": "1Up",
+        "FileName": "1UpEndpointSources.json",
+        "URL": "https://1up.health/fhir-endpoint-directory"
+    }
+]

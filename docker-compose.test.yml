@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  postgres:
+    command: ["postgres"]
+  capability_querier:
+    environment:
+      - LANTERN_DBHOST=postgres
+
+  capability_receiver:
+    environment:
+      - LANTERN_DBHOST=postgres
+      - LANTERN_QHOST=lantern-mq
+
+  endpoint_manager:
+    environment:
+      - LANTERN_DBHOST=postgres
+      - LANTERN_QHOST=lantern-mq
+      - LANTERN_TEST_QUSER=${LANTERN_TEST_QUSER}
+      - LANTERN_TEST_QPASSWORD=${LANTERN_TEST_QPASSWORD}
+
+  lantern-e2e:
+    container_name: lantern-e2e
+    environment:
+      - LANTERN_DBHOST=postgres
+      - LANTERN_QHOST=lantern-mq
+      - LANTERN_CHPLAPIKEY=${LANTERN_CHPLAPIKEY}
+    build:
+      args:
+        cert_dir: ./certs
+      context: ./e2e
+    volumes:
+      - ./scripts/wait-for-it.sh:/etc/lantern/wait-for-it.sh
+    command: /etc/lantern/wait-for-it.sh postgres:5432 -- /etc/lantern/wait-for-it.sh lantern-mq:15672 -- /etc/lantern/wait-for-it.sh lantern-mq:5672 -- go test -v -tags=e2e -timeout 15m ./...

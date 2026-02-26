@@ -1,0 +1,215 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Google Fonts are loaded via <link> tags in index.html for reliable loading */
+
+/* ========================================================================== */
+/* CSS Custom Properties (Design Tokens)                                       */
+/* ========================================================================== */
+:root {
+  /* Primary Colors — Government Navy */
+  --color-primary-darkest: #0a1628;
+  --color-primary-dark: #112e51;
+  --color-primary: #205493;
+  --color-primary-light: #4773aa;
+  --color-primary-lighter: #8ba6ca;
+
+  /* Secondary Colors */
+  --color-secondary: #02bfe7;
+  --color-secondary-dark: #0095c8;
+
+  /* Accent Colors */
+  --color-accent-green: #2e8540;
+  --color-accent-green-light: #4aa564;
+  --color-accent-gold: #fdb81e;
+  --color-accent-red: #e31c3d;
+
+  /* Neutral Colors */
+  --color-white: #ffffff;
+  --color-gray-lightest: #f1f1f1;
+  --color-gray-lighter: #d6d7d9;
+  --color-gray-light: #aeb0b5;
+  --color-gray: #5b616b;
+  --color-gray-dark: #323a45;
+  --color-black: #212121;
+
+  /* Status Colors */
+  --color-status-available: #2e8540;
+  --color-status-degraded: #fdb81e;
+  --color-status-down: #e31c3d;
+  --color-status-info: #02bfe7;
+
+  /* HTTP Status Colors */
+  --color-http-2xx: #2e8540;
+  --color-http-2xx-bg: #e7f4e9;
+  --color-http-3xx: #205493;
+  --color-http-3xx-bg: #e8f0f8;
+  --color-http-4xx: #b56a00;
+  --color-http-4xx-bg: #fff3e0;
+  --color-http-5xx: #b51b35;
+  --color-http-5xx-bg: #fbe9ec;
+  --color-http-timeout: #5b616b;
+  --color-http-timeout-bg: #f1f1f1;
+
+  /* Typography */
+  --font-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Merriweather', Georgia, serif;
+  --font-mono: 'Source Code Pro', 'Courier New', monospace;
+
+  /* Spacing Scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* Layout */
+  --max-width: 1200px;
+  --max-width-narrow: 1200px;
+  --border-radius: 4px;
+  --border-radius-lg: 8px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+}
+
+/* ========================================================================== */
+/* Base Styles                                                                 */
+/* ========================================================================== */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans text-neutral-800 antialiased;
+    background-color: var(--color-white);
+    margin: 0;
+    min-height: 100vh;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  /* Default link styling */
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  /* Focus styles for accessibility */
+  :focus-visible {
+    outline: 3px solid var(--color-secondary);
+    outline-offset: 2px;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full;
+    background-color: var(--color-gray-lighter);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-gray-light);
+  }
+}
+
+/* ========================================================================== */
+/* Component Utility Classes                                                   */
+/* ========================================================================== */
+
+@layer components {
+  /* Page container — max-width centered with padding */
+  .container-page {
+    max-width: var(--max-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  /* Narrow container for landing page sections */
+  .container-narrow {
+    max-width: var(--max-width-narrow);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  /* Card wrapper */
+  .card {
+    @apply rounded-md bg-white;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-gray-lighter);
+    padding: 1rem;
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Page section heading — serif */
+  .section-heading {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    color: var(--color-primary-dark);
+  }
+
+  /* KPI card with coloured left border */
+  .kpi-card {
+    @apply rounded-md bg-white;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-gray-lighter);
+    border-left-width: 4px;
+    padding: 1.25rem 1.5rem;
+    transition: box-shadow var(--transition-fast);
+  }
+
+  .kpi-card:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Status dot */
+  .status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .status-dot--available {
+    background-color: var(--color-status-available);
+  }
+
+  .status-dot--degraded {
+    background-color: var(--color-status-degraded);
+  }
+
+  .status-dot--down {
+    background-color: var(--color-status-down);
+  }
+}

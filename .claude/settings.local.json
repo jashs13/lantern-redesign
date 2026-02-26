@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(go build:*)",
+      "Bash(export PATH=$PATH:/usr/local/go/bin)",
+      "Bash(go mod tidy:*)",
+      "Bash(go vet:*)",
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(npm ls:*)",
+      "Bash(npx vite build:*)",
+      "Bash(ls:*)"
+    ]
+  }
+}

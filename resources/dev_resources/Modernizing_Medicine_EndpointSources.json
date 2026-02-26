@@ -1,0 +1,64 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://pbd.mmi.prod.fhir.ema-api.com/fhir/r4/",
+			"OrganizationName": "Palm Beach Dermatology",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://pbdtest.mmi.prod.fhir.ema-api.com/fhir/r4/",
+			"OrganizationName": "Pbdtest3 Dermatology",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://blueridge.mmi.prod.fhir.ema-api.com/fhir/r4/",
+			"OrganizationName": "Blue Ridge Dermatology",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://brderm.mmi.prod.fhir.ema-api.com/fhir/r4/",
+			"OrganizationName": "Boca Raton Dermatology",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://clearly.mmi.prod.fhir.ema-api.com/fhir/r4/",
+			"OrganizationName": "Clearly Derm Center for Dermatology",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://awstest.mmi.prod.fhir.ema-api.com/fhir/r4/",
+			"OrganizationName": "awstest",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://goldman.mmi.prod.fhir.ema-api.com/fhir/r4/",
+			"OrganizationName": "David A. Goldman MD LLC",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://eatest.mmi.prod.fhir.ema-api.com/fhir/r4/",
+			"OrganizationName": "Ea Test",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://drdrew.mmi.prod.fhir.ema-api.com/fhir/r4/",
+			"OrganizationName": "JBS Med PA",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://gi.ef.prod.fhir.ema-api.com/fhir/r4/",
+			"OrganizationName": "Demo GI",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		}
+	]
+}

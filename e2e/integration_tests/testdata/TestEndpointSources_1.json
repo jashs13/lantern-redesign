@@ -1,0 +1,112 @@
+{
+  "Entries": [
+    {
+      "OrganizationName": "EndpointThatSupportsVersions",
+      "FHIRPatientFacingURI": "https://dev-eagle.azurehealthcareapis.com/"
+    },
+    {
+      "OrganizationName": "Englewood Hospital and Medical Center",
+      "FHIRPatientFacingURI": "https://epicproxy.et1073.epichosted.com/FHIRProxy/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "Peninsula Regional Medical Center",
+      "FHIRPatientFacingURI": "https://eweb.peninsula.org/FHIRProxy/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "The Brooklyn Hospital Center",
+      "FHIRPatientFacingURI": "https://epicproxy.et1043.epichosted.com/FHIRProxy/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "United Regional Health Care System",
+      "FHIRPatientFacingURI": "https://epicproxy.et1096.epichosted.com/FHIRProxy/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "University of Colorado Health",
+      "FHIRPatientFacingURI": "https://ss.uch.edu/FHIRProxy/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "Mount Auburn Hospital",
+      "FHIRPatientFacingURI": "https://fhir.mah.org/prd-fhir/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "Salem Health",
+      "FHIRPatientFacingURI": "https://prd.salemhealth.org/fhir/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "Riverview Health",
+      "FHIRPatientFacingURI": "https://eprescribe.mercy.net/PRDFHIRSTL/rvh/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "Mercy Medical Center",
+      "FHIRPatientFacingURI": "https://pdsoap.mercycare.org/FHIR/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "Connecticut Children's Medical Center",
+      "FHIRPatientFacingURI": "https://epicproxy.connecticutchildrens.org/FHIR/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "Fairview Health Services",
+      "FHIRPatientFacingURI": "https://sfd.fairview.org/FHIR/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "Doylestown Hospital",
+      "FHIRPatientFacingURI": "https://fhir.healow.com/FHIRServer/fhir/IGCGAD"
+    },
+    {
+      "OrganizationName": "Valley Medical Center",
+      "FHIRPatientFacingURI": "https://FHIR.valleymed.org/FHIR-PRD/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "University of Arkansas for Medical Sciences",
+      "FHIRPatientFacingURI": "https://ucsoap.uams.edu/FHIRProxy/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "King's Daughters Medical Center",
+      "FHIRPatientFacingURI": "https://epicsoap.kdmc.net/PRD-FHIR/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "Hospital for Special Surgery",
+      "FHIRPatientFacingURI": "https://epicproxy.et0927.epichosted.com/FHIRProxy/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "Trinity Health Of New England Medical Group Springfield",
+      "FHIRPatientFacingURI": "https://rmgpxy.riverbendmedical.com/fhir_proxy/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "PeaceHealth",
+      "FHIRPatientFacingURI": "https://soapproxy.peacehealth.org/FHIRProxy/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "University of Maryland Medical System",
+      "FHIRPatientFacingURI": "https://fhir.umm.edu/fhir/api/FHIR/DSTU2/"
+    },
+    {
+      "OrganizationName": "Virginia Hospital Center",
+      "FHIRPatientFacingURI": "https://common.virginiahospitalcenter.com/FHIRPRD/api/FHIR/DSTU2/"
+    },
+    {
+        "OrganizationName": "Loyola Medicine",
+        "FHIRPatientFacingURI": "https://rxhub.luhs.org/fhir/api/FHIR/DSTU2/"
+    },
+    {
+        "OrganizationName": "LCMC Health",
+        "FHIRPatientFacingURI": "https://interconnect.lcmchealth.org/FHIR/api/FHIR/DSTU2/"
+    },
+    {
+        "OrganizationName": "MaineHealth",
+        "FHIRPatientFacingURI": "https://fhir.mainehealth.org/FHIRPRD/api/FHIR/DSTU2"
+    },
+    {
+        "OrganizationName": "Mayo Clinic",
+        "FHIRPatientFacingURI": "https://pep.api.mayo.edu/epicfhirdstu2mu/v1/api/FHIR/DSTU2/"
+    },
+    {
+        "OrganizationName": "Michigan Medicine",
+        "FHIRPatientFacingURI": "https://mcproxyprd.med.umich.edu/FHIR-PRD/api/FHIR/DSTU2/"
+    },
+    {
+        "OrganizationName": "Oregon Health – Science University",
+        "FHIRPatientFacingURI": "https://epicmobile.ohsu.edu/FHIR-DSTU2/api/FHIR/DSTU2/"
+    }
+  ]
+}

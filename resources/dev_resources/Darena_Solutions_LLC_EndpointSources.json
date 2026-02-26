@@ -1,0 +1,64 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://app.meldrx.com/api/fhir/7b595cb8-51f7-452d-a114-032667f38989",
+			"OrganizationName": "Unit Tests: Athena Sandbox",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://app.meldrx.com/api/fhir/a62a678b-b318-4585-bde2-067e81338072",
+			"OrganizationName": "Unit Tests: Cerner Sandbox",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://app.meldrx.com/api/fhir/hmc-001",
+			"OrganizationName": "Harbor - UCLA Medical Center",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://app.meldrx.com/api/fhir/bridgeview_medical_systems",
+			"OrganizationName": "Professional Imaging, LLC",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://app.meldrx.com/api/fhir/asheville",
+			"OrganizationName": "Asheville Eye Associates",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://app.meldrx.com/api/fhir/readeyecenter",
+			"OrganizationName": "Read Eye",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://app.meldrx.com/api/fhir/eyeandface",
+			"OrganizationName": "EyeAndFace",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://app.meldrx.com/api/fhir/fhs",
+			"OrganizationName": "Fagadau, Hawk \u0026 Swanson",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://app.meldrx.com/api/fhir/gcny",
+			"OrganizationName": "Glaucoma Consultants Of New York",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://app.meldrx.com/api/fhir/moran",
+			"OrganizationName": "Moran",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		}
+	]
+}

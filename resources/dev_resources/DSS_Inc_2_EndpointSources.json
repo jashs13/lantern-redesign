@@ -1,0 +1,10 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://dssjess-dev-web.dssinc.com/fhir/jess/basepractice/r4",
+			"OrganizationName": "",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		}
+	]
+}

@@ -1,0 +1,10 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://demo.kodjin.com/fhir",
+			"OrganizationName": "",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		}
+	]
+}

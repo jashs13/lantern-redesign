@@ -1,0 +1,21 @@
+import { apiClient } from './client';
+import type { PaginatedResponse, Resource, ResourceQueryParams } from './types';
+
+export async function fetchResources(
+  params?: ResourceQueryParams,
+): Promise<PaginatedResponse<Resource>> {
+  return apiClient<PaginatedResponse<Resource>>('/api/v1/resources', {
+    fhir_versions: params?.fhir_versions,
+    resources: params?.resources,
+    operations: params?.operations,
+    search: params?.search,
+  });
+}
+
+export async function fetchResourcesChart(params?: {
+  fhir_versions?: string[];
+}): Promise<Resource[]> {
+  return apiClient<Resource[]>('/api/v1/resources/chart', {
+    fhir_versions: params?.fhir_versions,
+  });
+}

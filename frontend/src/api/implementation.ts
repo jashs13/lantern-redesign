@@ -1,0 +1,26 @@
+import { apiClient } from './client';
+import type {
+  CapStatSize,
+  CapStatSizeQueryParams,
+  ImplementationGuide,
+  ImplementationGuideQueryParams,
+  PaginatedResponse,
+} from './types';
+
+export async function fetchImplementationGuides(
+  params?: ImplementationGuideQueryParams,
+): Promise<PaginatedResponse<ImplementationGuide>> {
+  return apiClient<PaginatedResponse<ImplementationGuide>>('/api/v1/implementation-guides', {
+    fhir_versions: params?.fhir_versions,
+    page: params?.page,
+    page_size: params?.page_size,
+  });
+}
+
+export async function fetchCapStatSizes(
+  params?: CapStatSizeQueryParams,
+): Promise<CapStatSize[]> {
+  return apiClient<CapStatSize[]>('/api/v1/capstat-sizes', {
+    fhir_versions: params?.fhir_versions,
+  });
+}

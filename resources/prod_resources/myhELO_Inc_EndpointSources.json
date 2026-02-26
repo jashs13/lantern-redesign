@@ -1,0 +1,10 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://provider.myhelo.com/fhir",
+			"OrganizationName": "",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		}
+	]
+}

@@ -1,0 +1,36 @@
+name: Static Analysis
+
+on:
+  push:
+    branches:
+      - main  
+
+jobs:
+  Golintr:
+      name: Go Lintr
+      runs-on: ubuntu-22.04
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions/setup-go@v2
+          with:
+            go-version: '^1.17'
+        - name: Install golangci-lint
+          run: |
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /tmp/golangci-lint v1.64.8
+            mkdir -p $(go env GOPATH)/bin
+            sudo mv /tmp/golangci-lint/golangci-lint $(go env GOPATH)/bin/
+            echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+        - name: Run Go Lintr
+          run: make lint_go
+
+  Rlintr:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.1.3'
+          
+      - name: Lint R Files
+        run: cd ./scripts && ./lintr.sh

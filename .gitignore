@@ -1,0 +1,32 @@
+# Logging file
+endpointQuerierLog.json
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Binaries
+endpoints/endpoints
+endpointmanager/endpointmanager
+
+# Environment File
+.env
+
+# Certs Directory
+certs/
+
+# R Studio files for Shiny Dashboard
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+shiny_logs/

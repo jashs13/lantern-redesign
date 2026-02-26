@@ -1,0 +1,10 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://orovillehospital.api.dev.bridgepatientportal.com/fhir/r4",
+			"OrganizationName": "",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		}
+	]
+}

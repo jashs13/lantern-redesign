@@ -1,0 +1,64 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://mtrestapis-live01-asem.dellhc.com:443/v2/argonaut/v1",
+			"OrganizationName": "(ASEM) Administracion de Servicios Medicos - C/S",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://nspmv-mtrestapis-live01.nshinc.com:443/v2/argonaut/v1",
+			"OrganizationName": "\u003cNSP\u003e Surgery Partners, (Corporate)-C/S",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://nspmv-mtrestapis-live02.nshinc.com:443/v2/argonaut/v1",
+			"OrganizationName": "\u003cNSP\u003e Surgery Partners, (Corporate)-C/S",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://nspmv-mtrestapis-live03.nshinc.com:443/v2/argonaut/v1",
+			"OrganizationName": "\u003cNSP\u003e Surgery Partners, (Corporate)-C/S",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://nspmv-mtrestapis-live04.nshinc.com:443/v2/argonaut/v1",
+			"OrganizationName": "\u003cNSP\u003e Surgery Partners, (Corporate)-C/S",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://nspmv-mtrestapis-live05.nshinc.com:443/v2/argonaut/v1",
+			"OrganizationName": "\u003cNSP\u003e Surgery Partners, (Corporate)-C/S",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://nspmv-mtrestapis-live06.nshinc.com:443/v2/argonaut/v1",
+			"OrganizationName": "\u003cNSP\u003e Surgery Partners, (Corporate)-C/S",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://mtrestapis-live01.amccares.org:443/v2/argonaut/v1",
+			"OrganizationName": "Adirondack Medical Center",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://alhambrnetapi.meditech.cloud:443/v2/argonaut/v1",
+			"OrganizationName": "Alhambra Hospital Med Ctr MaaS Pod 010 05",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://achospitalapi.meditech.cloud:443/v2/argonaut/v1",
+			"OrganizationName": "Allendale County Hospital MaaS Pod 006 07",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		}
+	]
+}

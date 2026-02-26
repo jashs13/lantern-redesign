@@ -1,0 +1,10 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://hapi.omnimd.com/fhir",
+			"OrganizationName": "",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		}
+	]
+}

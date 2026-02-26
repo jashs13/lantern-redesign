@@ -1,0 +1,54 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://achospitalapi.meditech.cloud:443/v2/argonaut/v1",
+			"OrganizationName": "Allendale County Hospital MaaS Pod 006 07",
+			"NPIID": ""
+		},
+		{
+			"URL": "https://mtrestapis.achosp.org:443/v2/argonaut/v1",
+			"OrganizationName": "Alliance Community Hosp 6.1 (hosted by Cerecore)",
+			"NPIID": ""
+		},
+		{
+			"URL": "https://mtrestapis-live01.atchhosp.org:443/v2/argonaut/v1",
+			"OrganizationName": "Amberwell Health- Expanse",
+			"NPIID": ""
+		},
+		{
+			"URL": "https://mtrestapis-live02.andersonhealthcare.org:443/v2/argonaut/v1",
+			"OrganizationName": "Anderson Hosp Expanse",
+			"NPIID": ""
+		},
+		{
+			"URL": "https://mtrest-live.andersonregional.org:443/v2/argonaut/v1",
+			"OrganizationName": "Anderson Reg Med Ctr - Expanse",
+			"NPIID": ""
+		},
+		{
+			"URL": "https://mtrestapis-live01.arh.org:443/v2/argonaut/v1",
+			"OrganizationName": "Appalachian Reg HC Expanse READY LEV 4",
+			"NPIID": ""
+		},
+		{
+			"URL": "https://meadehospitalapi.meditech.global:443/v2/argonaut/v1",
+			"OrganizationName": "Artesian Valley MaaS Pod 003 04",
+			"NPIID": ""
+		},
+		{
+			"URL": "https://avemapi.meditech.cloud:443/v2/argonaut/v1",
+			"OrganizationName": "Avem Health Group MaaS 006 02",
+			"NPIID": ""
+		},
+		{
+			"URL": "https://mtrestapis-live01.bchsi.org:443/v2/argonaut/v1",
+			"OrganizationName": "Bacon County Hospital Expanse (Hosted by Cloud Wave)",
+			"NPIID": ""
+		},
+		{
+			"URL": "https://mtrestapi-live01.bartletthospital.org:443/v2/argonaut/v1",
+			"OrganizationName": "Bartlett Reg Hosp Expanse",
+			"NPIID": ""
+		}
+	]
+}

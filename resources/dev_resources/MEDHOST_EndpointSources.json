@@ -1,0 +1,64 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://fhir.yourcareuniverse.net/tenant/ed6a665c-b100-4cee-b23d-6197c0e9c9ee",
+			"OrganizationName": "AHS Vista Health System - East",
+			"NPIID": "1992856819",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://fhir.yourcareuniverse.net/tenant/0ddc7794-d4a3-4d17-a674-9187af28aea6",
+			"OrganizationName": "ANTELOPE MEMORIAL HOSPITAL",
+			"NPIID": "1083790893",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://fhir.yourcareuniverse.net/tenant/d3fa4a41-8fe5-4a32-ab4d-8161e92df9f4",
+			"OrganizationName": "Acadian Medical Center",
+			"NPIID": "1396394961",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://fhir.yourcareuniverse.net/tenant/8504120b-a789-4394-b258-2f1d0cf4cda4",
+			"OrganizationName": "Adams County Regional Medical Center",
+			"NPIID": "1851946909",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://fhir.yourcareuniverse.net/tenant/8e208ec0-3c40-457e-92b1-d5bc8bed18c3",
+			"OrganizationName": "Alta Vista Regional Hospital",
+			"NPIID": "1396716643",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://fhir.yourcareuniverse.net/tenant/dfc490e3-ba4d-46f6-a3af-71c1dcca8d5c",
+			"OrganizationName": "Andalusia Regional Hospital",
+			"NPIID": "1821078494",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://fhir.yourcareuniverse.net/tenant/ff47aa4f-88e4-4fe6-8463-5329cd594e98",
+			"OrganizationName": "Arkansas Surgical Hospital",
+			"NPIID": "1942260609",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://fhir.yourcareuniverse.net/tenant/a76cac61-fad7-4028-ba7c-a63254e58a99",
+			"OrganizationName": "Ashley Regional Medical Center",
+			"NPIID": "1447296249",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://fhir.yourcareuniverse.net/tenant/ffc763ae-adcb-4396-a262-27985ff6b20e",
+			"OrganizationName": "Avoyelles Hospital",
+			"NPIID": "1053358176",
+			"OrganizationZipCode": ""
+		},
+		{
+			"URL": "https://fhir.yourcareuniverse.net/tenant/4cfc13db-9a08-4e73-844d-13158a3fff7b",
+			"OrganizationName": "Baptist Beaumont Hospital",
+			"NPIID": "1093744187",
+			"OrganizationZipCode": ""
+		}
+	]
+}

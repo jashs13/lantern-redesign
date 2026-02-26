@@ -1,0 +1,185 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:11.10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/sql/dbsetup.sql:/docker-entrypoint-initdb.d/dbsetup.sql
+      - ./db/sql/dbusersetup.sql:/docker-entrypoint-initdb.d/dbusersetup.sql
+    environment:
+      - POSTGRES_PASSWORD=${LANTERN_DBPASSWORD}
+      - POSTGRES_USER=${LANTERN_DBUSER}
+      - POSTGRES_DB=${LANTERN_DBNAME}
+    command:
+      -csynchronous_commit=off
+  
+  lantern-mq:
+    image: rabbitmq:3-management
+    volumes:
+      - ./lanternmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./lanternmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+      - rabbitmqdata:/var/lib/rabbitmq
+
+  endpoint_manager:
+    build: 
+      args:
+        cert_dir: ./certs
+      context: ./endpointmanager
+    depends_on:
+      - lantern-mq
+      - postgres
+    restart: on-failure
+    environment:
+      - LANTERN_CHPLAPIKEY=${LANTERN_CHPLAPIKEY}
+      - LANTERN_DBHOST=${LANTERN_DBHOST}
+      - LANTERN_DBPORT=${LANTERN_DBPORT}
+      - LANTERN_DBUSER=${LANTERN_DBUSER}
+      - LANTERN_DBPASSWORD=${LANTERN_DBPASSWORD}
+      - LANTERN_DBSSLMODE=${LANTERN_DBSSLMODE}
+      - LANTERN_DBNAME=${LANTERN_DBNAME}
+      - LANTERN_QUSER=${LANTERN_QUSER}
+      - LANTERN_QPASSWORD=${LANTERN_QPASSWORD}
+      - LANTERN_QHOST=${LANTERN_QHOST}
+      - LANTERN_QPORT=${LANTERN_QPORT}
+      - LANTERN_QUERY_NUMWORKERS=${LANTERN_QUERY_NUMWORKERS}
+      - LANTERN_CAPQUERY_QRYINTVL=${LANTERN_CAPQUERY_QRYINTVL}
+      - LANTERN_EXPORT_NUMWORKERS=${LANTERN_EXPORT_NUMWORKERS}
+      - LANTERN_EXPORT_DURATION=${LANTERN_EXPORT_DURATION}
+      - LANTERN_PRUNING_THRESHOLD=${LANTERN_PRUNING_THRESHOLD}
+    volumes:
+      - ./scripts/wait-for-it.sh:/etc/lantern/wait-for-it.sh
+      - ./scripts/populatedb.sh:/etc/lantern/populatedb.sh
+      - ./scripts/populatedb_prod.sh:/etc/lantern/populatedb_prod.sh
+      - ./scripts/populateEndpoints.sh:/etc/lantern/populateEndpoints.sh
+      - ./resources/prod_resources/:/etc/lantern/resources
+      - "./VERSION:/etc/lantern/VERSION:ro"
+    command: /etc/lantern/wait-for-it.sh lantern-mq:5672 -- /etc/lantern/wait-for-it.sh postgres:5432 -- ./main
+  
+  capability_querier:
+    build: 
+      args:
+        cert_dir: ./certs
+      context: ./capabilityquerier
+    depends_on:
+      - lantern-mq
+      - postgres
+    restart: on-failure
+    environment:
+      - LANTERN_QUSER=${LANTERN_QUSER}
+      - LANTERN_QPASSWORD=${LANTERN_QPASSWORD}
+      - LANTERN_QHOST=${LANTERN_QHOST}
+      - LANTERN_QPORT=${LANTERN_QPORT}
+      - LANTERN_QUERY_NUMWORKERS=${LANTERN_QUERY_NUMWORKERS}
+      - LANTERN_DBHOST=${LANTERN_DBHOST}
+      - LANTERN_DBPORT=${LANTERN_DBPORT}
+      - LANTERN_DBUSER=${LANTERN_DBUSER}
+      - LANTERN_DBPASSWORD=${LANTERN_DBPASSWORD}
+      - LANTERN_DBSSLMODE=${LANTERN_DBSSLMODE}
+      - LANTERN_DBNAME=${LANTERN_DBNAME}
+      - LANTERN_PRUNING_THRESHOLD=${LANTERN_PRUNING_THRESHOLD}
+    volumes:
+      - ./scripts/wait-for-it.sh:/etc/lantern/wait-for-it.sh
+      - "./VERSION:/etc/lantern/VERSION:ro"
+    command: /etc/lantern/wait-for-it.sh lantern-mq:5672 -- /etc/lantern/wait-for-it.sh postgres:5432 -- ./main
+
+  capability_receiver:
+    build: 
+      args:
+        cert_dir: ./certs
+      context: ./capabilityreceiver
+    depends_on:
+      - lantern-mq
+      - postgres
+    restart: on-failure
+    environment:
+      - LANTERN_DBHOST=${LANTERN_DBHOST}
+      - LANTERN_DBPORT=${LANTERN_DBPORT}
+      - LANTERN_DBUSER=${LANTERN_DBUSER}
+      - LANTERN_DBPASSWORD=${LANTERN_DBPASSWORD}
+      - LANTERN_DBSSLMODE=${LANTERN_DBSSLMODE}
+      - LANTERN_DBNAME=${LANTERN_DBNAME}
+      - LANTERN_QUSER=${LANTERN_QUSER}
+      - LANTERN_QPASSWORD=${LANTERN_QPASSWORD}
+      - LANTERN_QHOST=${LANTERN_QHOST}
+      - LANTERN_QPORT=${LANTERN_QPORT}
+    volumes:
+      - ./resources/prod_resources/CHPLProductMapping.json:/etc/lantern/resources/CHPLProductMapping.json
+      - ./resources/prod_resources/CHPLProductsInfo.json:/etc/lantern/resources/CHPLProductsInfo.json
+      - ./scripts/wait-for-it.sh:/etc/lantern/wait-for-it.sh
+    command: /etc/lantern/wait-for-it.sh lantern-mq:5672 -- /etc/lantern/wait-for-it.sh postgres:5432 -- ./main
+
+  shinydashboard:
+    build:
+      context: ./shinydashboard
+      args:
+        cert_dir: ./certs
+        LANTERN_DBNAME: ${LANTERN_DBNAME}
+        LANTERN_DBUSER: ${LANTERN_DBUSER}
+        LANTERN_DBPASSWORD: ${LANTERN_DBPASSWORD}
+        LANTERN_DBHOST: ${LANTERN_DBHOST}
+        LANTERN_DBPORT: ${LANTERN_DBPORT}
+        LANTERN_DBSSLMODE: ${LANTERN_DBSSLMODE}
+        LANTERN_CAPQUERY_QRYINTVL: "${LANTERN_CAPQUERY_QRYINTVL}"
+        LANTERN_BANNER_TEXT: ""     
+    image: lantern_shinydashboard:current
+    depends_on:
+      - postgres
+    volumes:
+      - ./shinydashboard/lantern/:/srv/shiny-server
+      - ./shinydashboard/shiny_logs:/var/log/shiny-server
+      - "./VERSION:/srv/shiny-server/VERSION:ro"
+    ports:
+      - "8090:3838"
+  plumber:
+    image: lantern-back-end_api:current
+    container_name: lantern-back-end_api
+    restart: on-failure
+    build: 
+      context: ./api
+      args:
+        cert_dir: ./certs
+        LANTERN_DBNAME: ${LANTERN_DBNAME}
+        LANTERN_DBUSER: ${LANTERN_DBUSER}
+        LANTERN_DBPASSWORD: ${LANTERN_DBPASSWORD}
+        LANTERN_DBHOST: ${LANTERN_DBHOST}
+        LANTERN_DBPORT: ${LANTERN_DBPORT}
+        LANTERN_DBSSLMODE: ${LANTERN_DBSSLMODE}
+    depends_on:
+      - postgres    
+    volumes:
+      - ./api/:/srv/lantern-api      
+    ports:
+      - "8989:8989"
+    command: /home/plumber/plumber.R
+
+  lantern-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.goapi
+    ports:
+      - "8080:8080"
+    environment:
+      - LANTERN_DBHOST=${LANTERN_DBHOST}
+      - LANTERN_DBPORT=${LANTERN_DBPORT}
+      - LANTERN_DBUSER=${LANTERN_DBUSER_READONLY}
+      - LANTERN_DBPASSWORD=${LANTERN_DBPASSWORD_READONLY}
+      - LANTERN_DBNAME=${LANTERN_DBNAME}
+      - LANTERN_DBSSLMODE=${LANTERN_DBSSLMODE}
+      - LANTERN_API_CORS_ORIGINS=http://localhost:3000,http://localhost:8080
+    depends_on:
+      - postgres
+    restart: on-failure:5
+
+  lantern-frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "8091:80"
+    depends_on:
+      - lantern-api
+    restart: on-failure:5
+
+volumes:
+  pgdata:
+  rabbitmqdata:

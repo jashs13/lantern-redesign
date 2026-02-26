@@ -1,0 +1,10 @@
+{
+	"Endpoints": [
+		{
+			"URL": "https://api.qualifacts.org/api/fhir/r4",
+			"OrganizationName": "",
+			"NPIID": "",
+			"OrganizationZipCode": ""
+		}
+	]
+}
