@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -11,34 +12,49 @@ import (
 	"github.com/onc-healthit/lantern-back-end/api/internal/models"
 )
 
-// ListEndpoints returns a paginated, filterable list of endpoints from fhir_endpoint_comb_mv.
-func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	page, pageSize := models.ParsePagination(r)
-	q := r.URL.Query()
+// buildEndpointFilters parses the request query string and returns a WHERE clause,
+// args slice, and next arg index. Shared by ListEndpoints and CountEndpoints.
+func buildEndpointFilters(q map[string][]string) (whereClause string, args []any, hasConditions bool) {
+	get := func(key string) string {
+		if vals, ok := q[key]; ok && len(vals) > 0 {
+			return vals[0]
+		}
+		return ""
+	}
 
-	// Build dynamic WHERE clause
 	var conditions []string
-	var args []any
 	argIdx := 1
 
-	// FHIR version filter (comma-separated, supports group names like "R4")
-	if fv := q.Get("fhir_versions"); fv != "" {
-		versions := models.ExpandVersionGroups(strings.Split(fv, ","))
-		conditions = append(conditions, fmt.Sprintf("fhir_version = ANY($%d)", argIdx))
-		args = append(args, pqStringArray(versions))
-		argIdx++
+	// FHIR version filter (comma-separated group names and/or literals like "No Cap Stat")
+	if fv := get("fhir_versions"); fv != "" {
+		raw := strings.Split(fv, ",")
+		var versions []string
+		for _, v := range raw {
+			v = strings.TrimSpace(v)
+			if v == "No Cap Stat" || v == "Unknown" {
+				versions = append(versions, v)
+			} else if group, ok := models.VersionGroupMap[v]; ok {
+				versions = append(versions, group...)
+			} else {
+				versions = append(versions, v)
+			}
+		}
+		if len(versions) > 0 {
+			conditions = append(conditions, fmt.Sprintf("fhir_version = ANY($%d)", argIdx))
+			args = append(args, pqStringArray(versions))
+			argIdx++
+		}
 	}
 
 	// Vendor filter
-	if vendor := q.Get("vendor"); vendor != "" {
+	if vendor := get("vendor"); vendor != "" {
 		conditions = append(conditions, fmt.Sprintf("vendor_name = $%d", argIdx))
 		args = append(args, vendor)
 		argIdx++
 	}
 
-	// Availability filter (values represent percentage thresholds mapped to 0.0-1.0)
-	if avail := q.Get("availability"); avail != "" {
+	// Availability filter
+	if avail := get("availability"); avail != "" {
 		low, high := parseAvailabilityRange(avail)
 		conditions = append(conditions, fmt.Sprintf("availability >= $%d AND availability <= $%d", argIdx, argIdx+1))
 		args = append(args, low, high)
@@ -46,7 +62,7 @@ func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Source filter (CHPL)
-	if source := q.Get("source"); source != "" {
+	if source := get("source"); source != "" {
 		switch strings.ToLower(source) {
 		case "chpl":
 			conditions = append(conditions, fmt.Sprintf("is_chpl = $%d", argIdx))
@@ -59,8 +75,8 @@ func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Text search (ILIKE on multiple columns for simple search)
-	if search := q.Get("search"); search != "" {
+	// Text search
+	if search := get("search"); search != "" {
 		pattern := "%" + search + "%"
 		searchCols := []string{"url", "vendor_name", "endpoint_names", "fhir_version", "status"}
 		var searchParts []string
@@ -72,8 +88,8 @@ func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request) {
 		argIdx++
 	}
 
-	// Full-text search (using tsvector if migration 000073 is applied)
-	if tsq := q.Get("q"); tsq != "" {
+	// Full-text search
+	if tsq := get("q"); tsq != "" {
 		tsQuery := buildTsQuery(tsq)
 		if tsQuery != "" {
 			conditions = append(conditions, fmt.Sprintf("search_vector @@ to_tsquery('simple', $%d)", argIdx))
@@ -82,29 +98,80 @@ func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	whereClause := ""
+	_ = argIdx // consumed above
+
 	if len(conditions) > 0 {
 		whereClause = "WHERE " + strings.Join(conditions, " AND ")
+		hasConditions = true
+	}
+	return whereClause, args, hasConditions
+}
+
+// CountEndpoints returns only the total row count for a given filter set.
+// The frontend caches this independently of the page number, so pagination
+// page changes don't re-run the count query.
+func (h *Handler) CountEndpoints(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := map[string][]string(r.URL.Query())
+	whereClause, args, hasConditions := buildEndpointFilters(q)
+
+	tx, err := h.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		log.WithError(err).Error("beginning transaction for count")
+		models.WriteError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	if hasConditions {
+		if _, err := tx.ExecContext(ctx, "SET LOCAL enable_seqscan=off"); err != nil {
+			log.WithError(err).Warn("could not set enable_seqscan=off")
+		}
 	}
 
-	// Sort
-	sortCol := sanitizeSortColumn(q.Get("sort_by"))
-	sortDir := "ASC"
-	if strings.EqualFold(q.Get("sort_dir"), "desc") {
-		sortDir = "DESC"
-	}
-	orderClause := fmt.Sprintf("ORDER BY %s %s", sortCol, sortDir)
-
-	// Count query
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM fhir_endpoint_comb_mv %s", whereClause)
 	var totalCount int
-	if err := h.db.QueryRowContext(ctx, countQuery, args...).Scan(&totalCount); err != nil {
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM fhir_endpoint_comb_mv %s", whereClause)
+	if err := tx.QueryRowContext(ctx, countQuery, args...).Scan(&totalCount); err != nil {
 		log.WithError(err).Error("counting endpoints")
 		models.WriteError(w, http.StatusInternalServerError, "failed to count endpoints")
 		return
 	}
 
-	// Data query
+	models.WriteJSON(w, http.StatusOK, map[string]int{"total_count": totalCount})
+}
+
+// ListEndpoints returns a page of endpoints. It does NOT compute the total count —
+// the client fetches that separately via CountEndpoints and caches it across page changes.
+func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	page, pageSize := models.ParsePagination(r)
+	q := map[string][]string(r.URL.Query())
+	whereClause, args, hasConditions := buildEndpointFilters(q)
+
+	// Sort
+	qv := r.URL.Query()
+	sortCol := sanitizeSortColumn(qv.Get("sort_by"))
+	sortDir := "ASC"
+	if strings.EqualFold(qv.Get("sort_dir"), "desc") {
+		sortDir = "DESC"
+	}
+	orderClause := fmt.Sprintf("ORDER BY %s %s", sortCol, sortDir)
+
+	tx, err := h.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		log.WithError(err).Error("beginning transaction")
+		models.WriteError(w, http.StatusInternalServerError, "failed to begin transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	if hasConditions {
+		if _, err := tx.ExecContext(ctx, "SET LOCAL enable_seqscan=off"); err != nil {
+			log.WithError(err).Warn("could not set enable_seqscan=off")
+		}
+	}
+
+	argIdx := len(args) + 1
 	dataQuery := fmt.Sprintf(`SELECT url, endpoint_names, info_created, info_updated, list_source,
 		vendor_name, capability_fhir_version, fhir_version, format,
 		http_response, response_time_seconds, smart_http_response, errors,
@@ -113,7 +180,7 @@ func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request) {
 		whereClause, orderClause, argIdx, argIdx+1)
 	args = append(args, pageSize, models.Offset(page, pageSize))
 
-	rows, err := h.db.QueryContext(ctx, dataQuery, args...)
+	rows, err := tx.QueryContext(ctx, dataQuery, args...)
 	if err != nil {
 		log.WithError(err).Error("querying endpoints")
 		models.WriteError(w, http.StatusInternalServerError, "failed to fetch endpoints")
@@ -141,15 +208,10 @@ func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request) {
 		endpoints = []models.Endpoint{}
 	}
 
-	resp := models.PaginatedResponse[models.Endpoint]{
-		Data:       endpoints,
-		Pagination: models.NewPagination(page, pageSize, totalCount),
-	}
-	models.WriteJSON(w, http.StatusOK, resp)
+	models.WriteJSON(w, http.StatusOK, endpoints)
 }
 
 // parseAvailabilityRange converts availability filter string to 0.0-1.0 range.
-// The Shiny app uses percentage-based thresholds.
 func parseAvailabilityRange(avail string) (float64, float64) {
 	switch avail {
 	case "0":
@@ -167,7 +229,6 @@ func parseAvailabilityRange(avail string) (float64, float64) {
 	case "100":
 		return 1.0, 1.0
 	default:
-		// Try to parse as a number (percentage)
 		if v, err := strconv.ParseFloat(avail, 64); err == nil {
 			return v / 100.0, 1.0
 		}
@@ -205,7 +266,6 @@ func pqStringArray(ss []string) string {
 }
 
 // buildTsQuery converts user search input to a PostgreSQL tsquery string.
-// "mayo clinic" becomes "mayo:* & clinic:*"
 func buildTsQuery(input string) string {
 	input = sanitizeSearchInput(input)
 	words := strings.Fields(input)
@@ -223,7 +283,6 @@ func buildTsQuery(input string) string {
 
 // sanitizeSearchInput removes characters that could break tsquery parsing.
 func sanitizeSearchInput(input string) string {
-	// Remove tsquery operators and special characters
 	replacer := strings.NewReplacer(
 		"&", "", "|", "", "!", "", "(", "", ")", "",
 		"'", "", ":", "", "*", "", "<", "", ">", "",
