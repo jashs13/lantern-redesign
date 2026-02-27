@@ -23,14 +23,13 @@ export function KpiCard({ label, value, borderColor = '#205493', change, icon }:
     >
       <div className="min-w-0 flex-1">
         <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">{label}</p>
-        <p className="mt-1 text-2xl font-bold text-neutral-800">
+        <p className="mt-1 font-sans text-2xl font-bold text-neutral-800">
           {typeof value === 'number' ? value.toLocaleString() : value}
         </p>
         {change && (
           <p
-            className={`mt-1 flex items-center gap-1 text-xs font-semibold ${
-              change.direction === 'up' ? 'text-status-green' : 'text-status-red'
-            }`}
+            className={`mt-1 flex items-center gap-1 text-xs font-semibold ${change.direction === 'up' ? 'text-status-green' : 'text-status-red'
+              }`}
           >
             {change.direction === 'up' ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
             {change.value}
