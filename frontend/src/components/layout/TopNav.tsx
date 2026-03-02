@@ -39,12 +39,12 @@ export function TopNav() {
               <NavLink
                 key={item.path}
                 to={item.path}
+                end={item.path === '/'}
                 style={{ fontSize: '0.9375rem' }}
                 className={({ isActive }) =>
-                  `rounded px-4 py-2 font-semibold transition-colors no-underline ${
-                    isActive
-                      ? 'bg-white/15 text-white'
-                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  `rounded px-4 py-2 font-semibold transition-colors no-underline ${isActive
+                    ? 'bg-white/15 text-white'
+                    : 'text-white/80 hover:bg-white/10 hover:text-white'
                   }`
                 }
               >
@@ -71,10 +71,9 @@ export function TopNav() {
                       <NavLink
                         to={item.path}
                         className={({ isActive }) =>
-                          `block px-4 py-2 text-sm outline-none no-underline ${
-                            isActive
-                              ? 'bg-navy-700/10 font-semibold text-navy-700'
-                              : 'text-neutral-600 hover:bg-neutral-100'
+                          `block px-4 py-2 text-sm outline-none no-underline ${isActive
+                            ? 'bg-navy-700/10 font-semibold text-navy-700'
+                            : 'text-neutral-600 hover:bg-neutral-100'
                           }`
                         }
                       >
@@ -87,10 +86,9 @@ export function TopNav() {
                     <NavLink
                       to="/about"
                       className={({ isActive }) =>
-                        `block px-4 py-2 text-sm outline-none no-underline ${
-                          isActive
-                            ? 'bg-navy-700/10 font-semibold text-navy-700'
-                            : 'text-neutral-600 hover:bg-neutral-100'
+                        `block px-4 py-2 text-sm outline-none no-underline ${isActive
+                          ? 'bg-navy-700/10 font-semibold text-navy-700'
+                          : 'text-neutral-600 hover:bg-neutral-100'
                         }`
                       }
                     >
@@ -130,10 +128,9 @@ export function TopNav() {
                   to={item.path}
                   onClick={() => setMobileOpen(false)}
                   className={({ isActive }) =>
-                    `block rounded px-3 py-2.5 text-sm font-semibold no-underline ${
-                      isActive
-                        ? 'bg-white/15 text-white'
-                        : 'text-white/70 hover:bg-white/10 hover:text-white'
+                    `block rounded px-3 py-2.5 text-sm font-semibold no-underline ${isActive
+                      ? 'bg-white/15 text-white'
+                      : 'text-white/70 hover:bg-white/10 hover:text-white'
                     }`
                   }
                 >
