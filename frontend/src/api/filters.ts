@@ -24,3 +24,7 @@ export async function fetchFilterProfiles(): Promise<FilterOption[]> {
 export async function fetchValidationGroups(): Promise<FilterOption[]> {
   return apiClient<FilterOption[]>('/api/v1/filters/validation-groups');
 }
+
+export async function fetchStates(): Promise<FilterOption[]> {
+  return apiClient<FilterOption[]>('/api/v1/filters/states');
+}

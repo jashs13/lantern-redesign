@@ -10,5 +10,6 @@ export async function fetchOrganizations(
     fhir_versions: params?.fhir_versions,
     vendor: params?.vendor,
     search: params?.search,
+    state: params?.state,
   });
 }

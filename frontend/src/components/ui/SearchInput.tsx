@@ -15,18 +15,50 @@ export function SearchInput({
 }: SearchInputProps) {
   return (
     <div className={`relative ${className}`}>
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={16} />
+      <Search
+        className="absolute top-1/2 -translate-y-1/2"
+        size={20}
+        style={{ left: '1rem', color: 'var(--color-gray)', pointerEvents: 'none' }}
+        aria-hidden="true"
+      />
       <input
-        type="text"
+        type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-md border border-neutral-200 bg-white py-2.5 pl-10 pr-9 text-sm placeholder:text-neutral-400 focus:border-navy-700 focus:outline-none focus:ring-1 focus:ring-navy-700"
+        className="w-full bg-white font-sans transition-all"
+        style={{
+          padding: '0.75rem 1rem 0.75rem 3rem',
+          fontSize: '1rem',
+          border: '2px solid var(--color-gray-lighter)',
+          borderRadius: 'var(--border-radius)',
+          color: 'var(--color-gray-dark)',
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = 'var(--color-primary)';
+          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(32, 84, 147, 0.15)';
+          e.currentTarget.style.outline = 'none';
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = 'var(--color-gray-lighter)';
+          e.currentTarget.style.boxShadow = '';
+        }}
+        onMouseEnter={(e) => {
+          if (document.activeElement !== e.currentTarget) {
+            e.currentTarget.style.borderColor = 'var(--color-gray-light)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (document.activeElement !== e.currentTarget) {
+            e.currentTarget.style.borderColor = 'var(--color-gray-lighter)';
+          }
+        }}
       />
       {value && (
         <button
           onClick={() => onChange('')}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+          className="absolute top-1/2 -translate-y-1/2"
+          style={{ right: '0.75rem', color: 'var(--color-gray)' }}
           aria-label="Clear search"
         >
           <X size={16} />

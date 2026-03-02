@@ -97,6 +97,7 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 		r.Get("/filters/auth-types", h.FilterAuthTypes)
 		r.Get("/filters/profiles", h.FilterProfiles)
 		r.Get("/filters/validation-groups", h.FilterValidationGroups)
+		r.Get("/filters/states", h.FilterStates)
 
 		// Downloads
 		r.Get("/downloads/endpoints.csv", h.DownloadEndpointsCSV)

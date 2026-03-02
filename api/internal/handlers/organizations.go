@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"unicode/utf8"
 
 	log "github.com/sirupsen/logrus"
 
@@ -39,6 +40,13 @@ func (h *Handler) ListOrganizations(w http.ResponseWriter, r *http.Request) {
 		argIdx++
 	}
 
+	// State filter — match ", ST " or ", ST<br/>" patterns in addresses_html
+	if state := strings.ToUpper(q.Get("state")); state != "" && utf8.RuneCountInString(state) == 2 {
+		baseConditions = append(baseConditions, fmt.Sprintf("addresses_html ILIKE $%d", argIdx))
+		args = append(args, "%, "+state+"%")
+		argIdx++
+	}
+
 	// Text search
 	if search := q.Get("search"); search != "" {
 		pattern := "%" + search + "%"
@@ -60,25 +68,11 @@ func (h *Handler) ListOrganizations(w http.ResponseWriter, r *http.Request) {
 		baseWhere = "WHERE TRUE AND " + strings.Join(baseConditions, " AND ")
 	}
 
-	// Count query
+	// Count query — count rows directly from base_data (one row per org in the view)
+	// to avoid the expensive CROSS JOIN LATERAL unnest cartesian product.
 	countQuery := fmt.Sprintf(`
-		WITH base_data AS (
-			SELECT organization_name, identifier_types_html AS identifier_type,
-				identifier_values_html AS identifier_value, addresses_html AS address,
-				org_urls_html AS org_url, endpoint_urls_html AS url,
-				fhir_versions_array, vendor_names_array
-			FROM mv_organizations_final
-			%s
-		)
-		SELECT COUNT(*) FROM (
-			SELECT organization_name, identifier_type, identifier_value, address, org_url, url,
-				string_agg(DISTINCT fhir_version, '<br/>') AS fhir_version,
-				string_agg(DISTINCT vendor_name, '<br/>') AS vendor_name
-			FROM base_data bd
-			CROSS JOIN LATERAL unnest(bd.fhir_versions_array) AS fhir_version
-			CROSS JOIN LATERAL unnest(bd.vendor_names_array) AS vendor_name
-			GROUP BY organization_name, identifier_type, identifier_value, address, org_url, url
-		) counted_results`, baseWhere)
+		SELECT COUNT(*) FROM mv_organizations_final
+		%s`, baseWhere)
 
 	var totalCount int
 	if err := h.db.QueryRowContext(ctx, countQuery, args...).Scan(&totalCount); err != nil {
@@ -87,24 +81,17 @@ func (h *Handler) ListOrganizations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Data query
+	// Data query — use pre-computed fhir_versions_html and vendor_names_html directly
+	// to avoid the expensive CROSS JOIN LATERAL unnest cartesian product + GROUP BY.
 	dataQuery := fmt.Sprintf(`
-		WITH base_data AS (
-			SELECT organization_name, identifier_types_html AS identifier_type,
-				identifier_values_html AS identifier_value, addresses_html AS address,
-				org_urls_html AS org_url, endpoint_urls_html AS url,
-				fhir_versions_array, vendor_names_array
-			FROM mv_organizations_final
-			%s
-		)
-		SELECT organization_name, identifier_type, identifier_value, address, org_url, url,
-			string_agg(DISTINCT fhir_version, '<br/>') AS fhir_version,
-			string_agg(DISTINCT vendor_name, '<br/>') AS vendor_name
-		FROM base_data bd
-		CROSS JOIN LATERAL unnest(bd.fhir_versions_array) AS fhir_version
-		CROSS JOIN LATERAL unnest(bd.vendor_names_array) AS vendor_name
-		GROUP BY organization_name, identifier_type, identifier_value, address, org_url, url
-		ORDER BY (organization_name ~ '[A-Za-z]') DESC, organization_name ASC
+		SELECT organization_name, identifier_types_html AS identifier_type,
+			identifier_values_html AS identifier_value, addresses_html AS address,
+			org_urls_html AS org_url, endpoint_urls_html AS url,
+			fhir_versions_html AS fhir_version,
+			vendor_names_html AS vendor_name
+		FROM mv_organizations_final
+		%s
+		ORDER BY organization_name ASC
 		LIMIT $%d OFFSET $%d`, baseWhere, argIdx, argIdx+1)
 
 	args = append(args, pageSize, models.Offset(page, pageSize))
