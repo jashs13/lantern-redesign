@@ -692,7 +692,7 @@ function PopularSearchesSection({
             marginBottom: '0.5rem',
           }}
         >
-          Popular Searches
+          Top Organizations & Developers
         </h2>
         <p
           className="mx-auto"
@@ -702,7 +702,7 @@ function PopularSearchesSection({
             maxWidth: '600px',
           }}
         >
-          Quick access to frequently searched organizations and developers.
+          Browse the most active healthcare organizations and EHR developers in the network.
         </p>
       </div>
 

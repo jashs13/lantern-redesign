@@ -75,14 +75,10 @@ export default function DashboardPage() {
         breadcrumbs={[{ label: 'Dashboard' }]}
       />
 
-      {/* Live Data Banner */}
+      {/* Last Updated Banner */}
       <div className="flex flex-wrap items-center justify-center gap-4 rounded-md bg-navy-700 px-4 py-3 text-sm text-white">
-        <span className="flex items-center gap-2">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-status-green-light" />
-          <strong>Live Data</strong>
-        </span>
         <span className="text-white/70">
-          Last updated: {data.totals.last_updated || 'Today'}
+          Last updated: {data.totals.last_updated ? data.totals.last_updated.slice(0, 19) : 'Today'}
         </span>
         <span className="text-white/70">
           Monitoring {formatNumber(totalEndpoints)} endpoints
@@ -116,7 +112,7 @@ export default function DashboardPage() {
           icon={<Clock size={20} />}
         />
         <KpiCard
-          label="Vendors"
+          label="EHR Developers"
           value={uniqueVendors}
           borderColor="#02bfe7"
           icon={<Building2 size={20} />}
