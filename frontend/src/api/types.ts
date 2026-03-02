@@ -23,12 +23,14 @@ export interface DashboardSummary {
   response_tally: ResponseTally;
   vendor_counts: VendorFHIRCount[];
   http_codes: HTTPCodeCount[];
+  top_organizations?: string[];
 }
 
 export interface EndpointTotals {
   all_endpoints: number;
   indexed_endpoints: number;
   non_indexed_endpoints: number;
+  organizations: number;
   last_updated: string;
   avg_response_time?: number;
 }
@@ -144,10 +146,21 @@ export interface Organization {
 // Search
 // =============================================================================
 
+export interface SearchQueryParams {
+  q: string;
+  limit?: number;
+  endpoint_page?: number;
+  organization_page?: number;
+  vendor_page?: number;
+}
+
 export interface SearchResponse {
   endpoints: SearchResult[];
+  endpoints_total: number;
   organizations: SearchResult[];
+  organizations_total: number;
   vendors: SearchResult[];
+  vendors_total: number;
   total_count: number;
 }
 

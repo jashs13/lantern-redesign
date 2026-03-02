@@ -3,6 +3,7 @@ import { Search, X } from 'lucide-react';
 interface SearchInputProps {
   value: string;
   onChange: (value: string) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   placeholder?: string;
   className?: string;
 }
@@ -10,6 +11,7 @@ interface SearchInputProps {
 export function SearchInput({
   value,
   onChange,
+  onKeyDown,
   placeholder = 'Search...',
   className = '',
 }: SearchInputProps) {
@@ -25,6 +27,7 @@ export function SearchInput({
         type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
         className="w-full bg-white font-sans transition-all"
         style={{

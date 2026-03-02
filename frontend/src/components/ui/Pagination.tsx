@@ -1,4 +1,6 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatNumber } from '@/lib/formatters';
+import { clsx } from 'clsx';
 
 interface PaginationProps {
   page: number;
@@ -35,101 +37,40 @@ export function Pagination({
     return pages;
   };
 
-  const btnBase: React.CSSProperties = {
-    padding: '0.5rem 1rem',
-    border: '2px solid var(--color-gray-lighter)',
-    background: 'var(--color-white)',
-    borderRadius: 'var(--border-radius)',
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontFamily: 'var(--font-sans)',
-    fontSize: '0.875rem',
-    color: 'var(--color-gray-dark)',
-    transition: 'all var(--transition-fast)',
-  };
-
-  const btnActiveStyle: React.CSSProperties = {
-    ...btnBase,
-    background: 'var(--color-primary)',
-    color: 'var(--color-white)',
-    borderColor: 'var(--color-primary)',
-  };
-
-  const btnDisabledStyle: React.CSSProperties = {
-    ...btnBase,
-    opacity: 0.5,
-    cursor: 'not-allowed',
-  };
-
   return (
-    <div
-      className="flex flex-col items-center gap-3"
-      style={{
-        background: 'var(--color-white)',
-        borderRadius: 'var(--border-radius-lg)',
-        padding: '1.5rem',
-        boxShadow: 'var(--shadow-sm)',
-      }}
-    >
-      <p className="font-sans text-sm" style={{ color: 'var(--color-gray)' }}>
-        Showing{' '}
-        <strong style={{ color: 'var(--color-primary-dark)', fontWeight: 700 }}>{formatNumber(start)}</strong>
-        {' – '}
-        <strong style={{ color: 'var(--color-primary-dark)', fontWeight: 700 }}>{formatNumber(end)}</strong>
-        {' of '}
-        <strong style={{ color: 'var(--color-primary-dark)', fontWeight: 700 }}>{formatNumber(totalCount)}</strong>
-        {' results'}
+    <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+      <p className="text-sm text-neutral-500">
+        Showing <span className="font-semibold text-neutral-700">{formatNumber(start)}</span>
+        {' \u2013 '}
+        <span className="font-semibold text-neutral-700">{formatNumber(end)}</span> of{' '}
+        <span className="font-semibold text-neutral-700">{formatNumber(totalCount)}</span> results
       </p>
 
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex items-center gap-1">
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          style={page <= 1 ? btnDisabledStyle : btnBase}
+          className="inline-flex items-center rounded px-2 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
           aria-label="Previous page"
-          onMouseEnter={(e) => {
-            if (page > 1) {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-primary)';
-              (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-primary)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (page > 1) {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-gray-lighter)';
-              (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-gray-dark)';
-            }
-          }}
         >
-          ← Previous
+          <ChevronLeft size={16} />
         </button>
 
         {getPageNumbers().map((p, idx) =>
           p === '...' ? (
-            <span
-              key={`ellipsis-${idx}`}
-              className="px-2"
-              style={{ color: 'var(--color-gray)' }}
-            >
-              …
+            <span key={`ellipsis-${idx}`} className="px-1.5 text-neutral-400">
+              ...
             </span>
           ) : (
             <button
               key={p}
               onClick={() => onPageChange(p)}
-              style={p === page ? btnActiveStyle : btnBase}
-              aria-current={p === page ? 'page' : undefined}
-              onMouseEnter={(e) => {
-                if (p !== page) {
-                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-primary)';
-                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-primary)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (p !== page) {
-                  (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-gray-lighter)';
-                  (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-gray-dark)';
-                }
-              }}
+              className={clsx(
+                'min-w-[32px] rounded px-2 py-1.5 text-sm font-medium',
+                p === page
+                  ? 'bg-navy-700 text-white'
+                  : 'text-neutral-600 hover:bg-neutral-100',
+              )}
             >
               {p}
             </button>
@@ -139,22 +80,10 @@ export function Pagination({
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          style={page >= totalPages ? btnDisabledStyle : btnBase}
+          className="inline-flex items-center rounded px-2 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
           aria-label="Next page"
-          onMouseEnter={(e) => {
-            if (page < totalPages) {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-primary)';
-              (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-primary)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (page < totalPages) {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-gray-lighter)';
-              (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-gray-dark)';
-            }
-          }}
         >
-          Next →
+          <ChevronRight size={16} />
         </button>
       </div>
     </div>
