@@ -12,9 +12,27 @@ export function DownloadButton({ url, label = 'Download CSV' }: DownloadButtonPr
   return (
     <button
       onClick={() => download(url)}
-      className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+      className="inline-flex items-center gap-2 font-sans font-bold transition-all"
+      style={{
+        padding: '0.75rem 1.5rem',
+        fontSize: '1rem',
+        background: 'var(--color-accent-green)',
+        color: 'var(--color-white)',
+        border: '2px solid var(--color-accent-green)',
+        borderRadius: 'var(--border-radius)',
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.background = '#236b34';
+        (e.currentTarget as HTMLButtonElement).style.borderColor = '#236b34';
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-accent-green)';
+        (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-accent-green)';
+      }}
     >
-      <Download size={16} />
+      <Download size={16} aria-hidden="true" />
       {label}
     </button>
   );

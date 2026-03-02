@@ -11,15 +11,27 @@ interface FilterTagProps {
  */
 export function FilterTag({ label, value, onRemove }: FilterTagProps) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-navy-700/10 px-2.5 py-1 text-xs font-medium text-navy-900">
-      <span className="text-neutral-500">{label}:</span>
+    <span
+      className="inline-flex items-center gap-2 font-sans font-semibold"
+      style={{
+        padding: '0.5rem 0.75rem',
+        background: 'rgba(32, 84, 147, 0.1)',
+        color: 'var(--color-primary-dark)',
+        borderRadius: '50px',
+        fontSize: '0.8125rem',
+      }}
+    >
+      <span style={{ color: 'var(--color-gray)' }}>{label}:</span>
       <span>{value}</span>
       <button
         onClick={onRemove}
-        className="ml-0.5 rounded-full p-0.5 text-neutral-400 transition-colors hover:bg-navy-700/10 hover:text-navy-900"
+        className="flex items-center justify-center p-0 leading-none"
+        style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontSize: '1rem', lineHeight: 1 }}
         aria-label={`Remove ${label} filter`}
+        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-primary-dark)')}
+        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-primary)')}
       >
-        <X size={10} />
+        <X size={14} />
       </button>
     </span>
   );

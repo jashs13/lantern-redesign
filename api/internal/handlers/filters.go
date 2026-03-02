@@ -141,6 +141,34 @@ func (h *Handler) FilterProfiles(w http.ResponseWriter, r *http.Request) {
 	models.WriteJSON(w, http.StatusOK, options)
 }
 
+// FilterStates returns distinct 2-letter US state codes extracted from organization addresses.
+func (h *Handler) FilterStates(w http.ResponseWriter, r *http.Request) {
+	rows, err := h.db.QueryContext(r.Context(), `
+		SELECT DISTINCT (regexp_matches(addresses_html, '(?:,\s*)([A-Z]{2})(?:\s+\d{5})', 'g'))[1] AS state
+		FROM mv_organizations_final
+		ORDER BY state`)
+	if err != nil {
+		log.WithError(err).Error("querying states filter")
+		models.WriteError(w, http.StatusInternalServerError, "failed to fetch states")
+		return
+	}
+	defer rows.Close()
+
+	var options []models.FilterOption
+	for rows.Next() {
+		var state string
+		if err := rows.Scan(&state); err != nil {
+			log.WithError(err).Error("scanning state row")
+			continue
+		}
+		options = append(options, models.FilterOption{Value: state})
+	}
+	if options == nil {
+		options = []models.FilterOption{}
+	}
+	models.WriteJSON(w, http.StatusOK, options)
+}
+
 // FilterValidationGroups returns static validation group names.
 func (h *Handler) FilterValidationGroups(w http.ResponseWriter, r *http.Request) {
 	// Validation groups are static configuration, not from the database.
