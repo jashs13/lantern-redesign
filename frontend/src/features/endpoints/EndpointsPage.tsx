@@ -3,8 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
-import { fetchEndpoints } from '@/api/endpoints';
+import { fetchEndpoints, fetchEndpointsCount } from '@/api/endpoints';
 import { fetchDashboardSummary } from '@/api/dashboard';
+import { fetchFHIRVersionGroups } from '@/api/filters';
 import { DataTable } from '@/components/ui/DataTable';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -16,13 +17,11 @@ import { ViewToggle } from '@/components/ui/ViewToggle';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DownloadButton } from '@/components/ui/DownloadButton';
 import { getEndpointsCsvUrl } from '@/api/downloads';
-import { QUICK_FILTER_PRESETS } from '@/lib/constants';
 import type { Endpoint } from '@/api/types';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
 import { formatPercent, formatDuration, formatHttpStatus } from '@/lib/formatters';
 import {
   CheckCircle,
-  AlertTriangle,
   XCircle,
   Clock,
   Activity,
@@ -55,59 +54,79 @@ const columns: ColumnDef<Endpoint, unknown>[] = [
   {
     accessorKey: 'url',
     header: 'Endpoint',
-    size: 300,
+    size: 30,
     cell: ({ row }) => (
-      <div className="max-w-[300px]">
-        <p className="truncate font-semibold text-navy-700">
+      <div className="min-w-0">
+        <p className="truncate font-semibold text-navy-700 text-xs">
           {row.original.endpoint_names || row.original.url}
         </p>
         <p className="truncate text-xs text-neutral-400">{row.original.url}</p>
       </div>
     ),
   },
-  { accessorKey: 'vendor_name', header: 'Developer', cell: ({ getValue }) => getValue() || '—' },
+  {
+    accessorKey: 'vendor_name',
+    header: 'Developer',
+    size: 20,
+    cell: ({ getValue }) => (
+      <span className="truncate block text-xs">{(getValue() as string | null) || '—'}</span>
+    ),
+  },
   {
     accessorKey: 'http_response',
     header: 'Status',
+    size: 14,
     cell: ({ getValue }) => {
       const code = getValue() as number | null;
-      return <StatusBadge status={getStatusVariant(code)} label={formatHttpStatus(code)} />;
+      return (
+        <StatusBadge
+          status={getStatusVariant(code)}
+          label={formatHttpStatus(code)}
+          className="px-1.5 py-0.5 whitespace-nowrap"
+        />
+      );
     },
   },
   {
     accessorKey: 'response_time_seconds',
-    header: 'Response Time',
+    header: 'Resp. Time',
+    size: 12,
     cell: ({ getValue }) => (
-      <span className="font-mono text-sm">{formatDuration(getValue() as number | null)}</span>
+      <span className="font-mono text-xs">{formatDuration(getValue() as number | null)}</span>
     ),
   },
   {
     accessorKey: 'availability',
     header: 'Availability',
+    size: 14,
     cell: ({ getValue }) => {
       const val = getValue() as number | null;
       return (
-        <div className="flex items-center gap-2">
-          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-neutral-200">
+        <div className="flex items-center gap-1.5">
+          <div className="h-1.5 w-10 overflow-hidden rounded-full bg-neutral-200">
             <div
               className="h-full rounded-full bg-status-green"
               style={{ width: `${(val ?? 0) * 100}%` }}
             />
           </div>
-          <span className="text-sm">{formatPercent(val)}</span>
+          <span className="text-xs whitespace-nowrap">{formatPercent(val)}</span>
         </div>
       );
     },
   },
   {
     accessorKey: 'fhir_version',
-    header: 'FHIR Version',
+    header: 'FHIR Ver.',
+    size: 10,
     cell: ({ getValue }) => {
       const ver = getValue() as string | null;
       return <Badge variant={getFhirBadgeVariant(ver)}>{getFhirLabel(ver)}</Badge>;
     },
   },
 ];
+
+// Display order for FHIR version group filters
+const FHIR_GROUP_ORDER = ['DSTU2', 'STU3', 'R4', 'R4B', 'R5', 'No Cap Stat', 'Unknown'] as const;
 
 export default function EndpointsPage() {
   const { filters } = useFilters();
@@ -116,7 +135,10 @@ export default function EndpointsPage() {
   const debouncedSearch = useDebounce(search);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
-  const [activeQuickFilters, setActiveQuickFilters] = useState<Set<string>>(new Set());
+  // Active FHIR version group filters (multi-select, any combination)
+  const [activeFhirVersions, setActiveFhirVersions] = useState<Set<string>>(new Set());
+  // High-uptime filter: availability >= 99%
+  const [highUptimeOnly, setHighUptimeOnly] = useState(false);
 
   const { data: summary } = useQuery({
     queryKey: ['dashboard', 'summary-for-endpoints'],
@@ -124,15 +146,40 @@ export default function EndpointsPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['endpoints', page, pageSize, filters, debouncedSearch, sorting],
+  // Fetch which FHIR version groups actually have data so we only show populated filters
+  const { data: availableGroups } = useQuery({
+    queryKey: ['filters', 'fhir-version-groups'],
+    queryFn: fetchFHIRVersionGroups,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  // Ordered list of group keys to display as filter chips (only those with data)
+  const fhirFilterGroups = FHIR_GROUP_ORDER.filter((g) => availableGroups?.includes(g));
+
+  // Shared filter params (no page/sort — used for the count key so count is cached across page changes)
+  const filterParams = {
+    fhir_versions: activeFhirVersions.size > 0 ? Array.from(activeFhirVersions) : filters.fhirVersions,
+    vendor: filters.vendor ?? undefined,
+    availability: highUptimeOnly ? '99-100' : undefined,
+    search: debouncedSearch || undefined,
+  };
+  const filterKey = [filters, debouncedSearch, Array.from(activeFhirVersions).sort(), highUptimeOnly];
+
+  // Count query: keyed by filters only — does NOT include page, so pagination doesn't retrigger it
+  const { data: totalCount = 0 } = useQuery({
+    queryKey: ['endpoints-count', ...filterKey],
+    queryFn: () => fetchEndpointsCount(filterParams),
+    staleTime: 30 * 1000,
+  });
+
+  // Data query: keyed by filters + page + sort — fast (<1ms) because no COUNT(*) OVER()
+  const { data = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['endpoints-data', page, pageSize, sorting, ...filterKey],
     queryFn: () =>
       fetchEndpoints({
+        ...filterParams,
         page,
         page_size: pageSize,
-        fhir_versions: filters.fhirVersions,
-        vendor: filters.vendor ?? undefined,
-        search: debouncedSearch || undefined,
         sort_by: sorting[0]?.id,
         sort_dir: sorting[0]?.desc ? 'desc' : 'asc',
       }),
@@ -144,13 +191,23 @@ export default function EndpointsPage() {
   const availableCount = summary?.response_tally?.http_200 ?? 0;
   const unavailableCount = totalEndpoints - availableCount;
 
-  const toggleQuickFilter = (key: string) => {
-    setActiveQuickFilters((prev) => {
+  const toggleFhirVersion = (key: string) => {
+    setActiveFhirVersions((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       return next;
     });
+    setPage(1);
+  };
+
+  const hasActiveFilters = activeFhirVersions.size > 0 || highUptimeOnly || !!search;
+
+  const clearAllFilters = () => {
+    setActiveFhirVersions(new Set());
+    setHighUptimeOnly(false);
+    setSearch('');
+    setPage(1);
   };
 
   return (
@@ -162,9 +219,8 @@ export default function EndpointsPage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <KpiCard label="Available" value={availableCount} borderColor="#2e8540" icon={<CheckCircle size={18} />} />
-        <KpiCard label="Degraded" value={0} borderColor="#fdb81e" icon={<AlertTriangle size={18} />} />
         <KpiCard label="Down" value={unavailableCount} borderColor="#e31c3d" icon={<XCircle size={18} />} />
         <KpiCard label="Avg Response" value="342ms" borderColor="#205493" icon={<Clock size={18} />} />
         <KpiCard label="Network Uptime" value="97.4%" borderColor="#02bfe7" icon={<Activity size={18} />} />
@@ -179,10 +235,16 @@ export default function EndpointsPage() {
           className="sm:max-w-md"
         />
         <div className="flex items-center gap-3">
-          <DownloadButton url={getEndpointsCsvUrl()} label="Export CSV" />
-          {search && (
+          <DownloadButton
+            url={getEndpointsCsvUrl({
+              fhir_versions: activeFhirVersions.size > 0 ? Array.from(activeFhirVersions) : undefined,
+              availability: highUptimeOnly ? '99-100' : undefined,
+            })}
+            label="Export CSV"
+          />
+          {hasActiveFilters && (
             <button
-              onClick={() => setSearch('')}
+              onClick={clearAllFilters}
               className="text-sm text-neutral-500 hover:text-navy-700"
             >
               Clear Filters
@@ -192,15 +254,22 @@ export default function EndpointsPage() {
       </div>
 
       {/* Quick Filters */}
-      <div className="flex flex-wrap gap-2">
-        {QUICK_FILTER_PRESETS.map((preset) => (
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">FHIR:</span>
+        {fhirFilterGroups.map((group) => (
           <QuickFilter
-            key={preset.key}
-            label={preset.label}
-            active={activeQuickFilters.has(preset.key)}
-            onClick={() => toggleQuickFilter(preset.key)}
+            key={group}
+            label={group}
+            active={activeFhirVersions.has(group)}
+            onClick={() => toggleFhirVersion(group)}
           />
         ))}
+        <span className="mx-1 text-neutral-300">|</span>
+        <QuickFilter
+          label="≥99% Uptime"
+          active={highUptimeOnly}
+          onClick={() => { setHighUptimeOnly((v) => !v); setPage(1); }}
+        />
       </div>
 
       {/* Results bar */}
@@ -208,7 +277,7 @@ export default function EndpointsPage() {
         <p className="text-sm text-neutral-500">
           Showing{' '}
           <span className="font-semibold text-neutral-700">
-            {(data?.pagination.total_count ?? 0).toLocaleString()}
+            {totalCount.toLocaleString()}
           </span>{' '}
           results
         </p>
@@ -218,9 +287,9 @@ export default function EndpointsPage() {
       {/* Table or Grid */}
       {viewMode === 'table' ? (
         <DataTable
-          data={data?.data ?? []}
+          data={data}
           columns={columns}
-          totalCount={data?.pagination.total_count ?? 0}
+          totalCount={totalCount}
           page={page}
           pageSize={pageSize}
           onPageChange={setPage}
@@ -233,7 +302,7 @@ export default function EndpointsPage() {
           {isLoading ? (
             <div className="col-span-full py-12 text-center text-neutral-400">Loading...</div>
           ) : (
-            (data?.data ?? []).map((ep) => (
+            data.map((ep) => (
               <div
                 key={ep.url}
                 className="rounded-md border border-neutral-200 bg-white p-4 shadow-card"

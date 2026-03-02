@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -12,10 +13,39 @@ import (
 )
 
 // DownloadEndpointsCSV streams endpoint data as a CSV file.
+// Accepts optional query params: fhir_versions (comma-separated group names), availability (range string).
 func (h *Handler) DownloadEndpointsCSV(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	q := r.URL.Query()
 
-	rows, err := h.db.QueryContext(ctx, `SELECT * FROM endpoint_export`)
+	var conditions []string
+	var args []any
+	argIdx := 1
+
+	// FHIR version filter (comma-separated group names, same as ListEndpoints)
+	if fv := q.Get("fhir_versions"); fv != "" {
+		versions := models.ExpandVersionGroups(strings.Split(fv, ","))
+		conditions = append(conditions, fmt.Sprintf("fhir_version = ANY($%d)", argIdx))
+		args = append(args, pqStringArray(versions))
+		argIdx++
+	}
+
+	// Availability filter
+	if avail := q.Get("availability"); avail != "" {
+		low, high := parseAvailabilityRange(avail)
+		conditions = append(conditions, fmt.Sprintf("availability >= $%d AND availability <= $%d", argIdx, argIdx+1))
+		args = append(args, low, high)
+		argIdx++
+		argIdx++
+	}
+
+	whereClause := ""
+	if len(conditions) > 0 {
+		whereClause = "WHERE " + strings.Join(conditions, " AND ")
+	}
+
+	query := fmt.Sprintf("SELECT * FROM endpoint_export_mv %s", whereClause)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		log.WithError(err).Error("querying endpoint export")
 		models.WriteError(w, http.StatusInternalServerError, "failed to export endpoints")
