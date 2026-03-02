@@ -25,7 +25,7 @@ export function HttpStatusCard({ code, label, count, total, color, bgColor }: Ht
         <span className="text-xs text-neutral-400">{label}</span>
       </div>
 
-      <p className="mt-2 text-2xl font-bold text-neutral-800">{count.toLocaleString()}</p>
+      <p className="mt-2 font-sans text-2xl font-bold text-neutral-800">{count.toLocaleString()}</p>
 
       {/* Mini bar */}
       <div className="mt-3 h-1.5 rounded-full" style={{ backgroundColor: bgColor }}>

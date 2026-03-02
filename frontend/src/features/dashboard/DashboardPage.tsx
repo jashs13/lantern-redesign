@@ -111,12 +111,12 @@ export default function DashboardPage() {
         />
         <KpiCard
           label="Avg Response Time"
-          value="342ms"
+          value={data.totals.avg_response_time ? `${Math.round(data.totals.avg_response_time * 1000)}ms` : 'N/A'}
           borderColor="#fdb81e"
           icon={<Clock size={20} />}
         />
         <KpiCard
-          label="Organizations"
+          label="Vendors"
           value={uniqueVendors}
           borderColor="#02bfe7"
           icon={<Building2 size={20} />}
@@ -140,7 +140,7 @@ export default function DashboardPage() {
             return (
               <HttpStatusCard
                 key={code}
-                code={code.toUpperCase()}
+                code={code === 'timeout' ? 'N/A' : code.toUpperCase()}
                 label={meta.label}
                 count={codeGroups[code]}
                 total={totalHttpCount}
@@ -172,28 +172,39 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100">
-                {httpCodes.slice(0, 12).map((c, idx) => (
-                  <tr
-                    key={c.http_code}
-                    className={idx % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}
-                  >
-                    <td className="px-4 py-2 font-mono font-semibold text-neutral-700">
-                      {c.http_code}
-                    </td>
-                    <td className="px-4 py-2 text-neutral-500">
-                      {c.code_label || `HTTP ${c.http_code}`}
-                    </td>
-                    <td className="px-4 py-2 text-right font-semibold text-neutral-700">
-                      {formatNumber(c.count_endpoints)}
-                    </td>
-                    <td className="px-4 py-2 text-right text-neutral-500">
-                      {totalHttpCount > 0
-                        ? ((c.count_endpoints / totalHttpCount) * 100).toFixed(1)
-                        : '0'}
-                      %
-                    </td>
-                  </tr>
-                ))}
+                {httpCodes.slice(0, 12).map((c, idx) => {
+                  let groupKey: keyof typeof HTTP_STATUS_COLORS = 'timeout';
+                  if (c.http_code >= 200 && c.http_code < 300) groupKey = '2xx';
+                  else if (c.http_code >= 300 && c.http_code < 400) groupKey = '3xx';
+                  else if (c.http_code >= 400 && c.http_code < 500) groupKey = '4xx';
+                  else if (c.http_code >= 500 && c.http_code < 600) groupKey = '5xx';
+
+                  const color = HTTP_STATUS_COLORS[groupKey].color;
+                  const displayCode = c.http_code === 0 ? 'N/A' : c.http_code;
+
+                  return (
+                    <tr
+                      key={c.http_code}
+                      className={idx % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}
+                    >
+                      <td className="px-4 py-2 font-mono font-semibold" style={{ color }}>
+                        {displayCode}
+                      </td>
+                      <td className="px-4 py-2 text-neutral-500">
+                        {c.code_label || (c.http_code === 0 ? 'Timeout / Unreachable' : `HTTP ${c.http_code}`)}
+                      </td>
+                      <td className="px-4 py-2 text-right font-semibold text-neutral-700">
+                        {formatNumber(c.count_endpoints)}
+                      </td>
+                      <td className="px-4 py-2 text-right text-neutral-500">
+                        {totalHttpCount > 0
+                          ? ((c.count_endpoints / totalHttpCount) * 100).toFixed(1)
+                          : '0'}
+                        %
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

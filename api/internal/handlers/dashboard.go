@@ -31,6 +31,15 @@ func (h *Handler) DashboardSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 1b. Average response time for successful requests
+	err = h.db.QueryRowContext(ctx,
+		`SELECT COALESCE(AVG(response_time_seconds), 0)
+		 FROM fhir_endpoints_metadata 
+		 WHERE http_response = 200 AND response_time_seconds > 0`).Scan(&summary.Totals.AvgResponseTime)
+	if err != nil {
+		log.WithError(err).Warn("querying average response time")
+	}
+
 	// 2. Response tally
 	err = h.db.QueryRowContext(ctx,
 		`SELECT COALESCE(http_200, 0), COALESCE(http_404, 0), COALESCE(http_503, 0)
