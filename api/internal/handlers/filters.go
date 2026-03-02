@@ -62,6 +62,61 @@ func (h *Handler) FilterFHIRVersions(w http.ResponseWriter, r *http.Request) {
 	models.WriteJSON(w, http.StatusOK, options)
 }
 
+// FilterFHIRVersionGroups returns which FHIR version group names (DSTU2, STU3, R4, R4B, R5,
+// No Cap Stat, Unknown) have at least one endpoint in fhir_endpoint_comb_mv.
+func (h *Handler) FilterFHIRVersionGroups(w http.ResponseWriter, r *http.Request) {
+	rows, err := h.db.QueryContext(r.Context(),
+		`SELECT DISTINCT fhir_version FROM fhir_endpoint_comb_mv WHERE fhir_version IS NOT NULL`)
+	if err != nil {
+		log.WithError(err).Error("querying FHIR version groups filter")
+		models.WriteError(w, http.StatusInternalServerError, "failed to fetch FHIR version groups")
+		return
+	}
+	defer rows.Close()
+
+	// Collect all distinct raw fhir_version values present in the DB
+	rawVersions := make(map[string]bool)
+	for rows.Next() {
+		var v string
+		if err := rows.Scan(&v); err != nil {
+			continue
+		}
+		rawVersions[v] = true
+	}
+
+	// Map each raw version to its group name; preserve display order
+	type groupEntry struct {
+		name     string
+		versions []string
+	}
+	groups := []groupEntry{
+		{"DSTU2", models.DSTU2Versions},
+		{"STU3", models.STU3Versions},
+		{"R4", models.R4Versions},
+		{"R4B", models.R4BVersions},
+		{"R5", models.R5Versions},
+	}
+
+	var result []string
+	for _, g := range groups {
+		for _, v := range g.versions {
+			if rawVersions[v] {
+				result = append(result, g.name)
+				break
+			}
+		}
+	}
+	// Special literal values stored directly in fhir_version column
+	if rawVersions["No Cap Stat"] {
+		result = append(result, "No Cap Stat")
+	}
+	if rawVersions["Unknown"] {
+		result = append(result, "Unknown")
+	}
+
+	models.WriteJSON(w, http.StatusOK, result)
+}
+
 // FilterResources returns distinct resource types.
 func (h *Handler) FilterResources(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.db.QueryContext(r.Context(),

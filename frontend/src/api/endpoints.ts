@@ -4,15 +4,14 @@ import type {
   EndpointDetail,
   EndpointQueryParams,
   HTTPHistoryPoint,
-  PaginatedResponse,
   ResponseTimePoint,
 } from './types';
 import { encodeUrlPathParam } from '@/lib/url';
 
 export async function fetchEndpoints(
   params?: EndpointQueryParams,
-): Promise<PaginatedResponse<Endpoint>> {
-  return apiClient<PaginatedResponse<Endpoint>>('/api/v1/endpoints', {
+): Promise<Endpoint[]> {
+  return apiClient<Endpoint[]>('/api/v1/endpoints', {
     page: params?.page,
     page_size: params?.page_size,
     fhir_versions: params?.fhir_versions,
@@ -24,6 +23,20 @@ export async function fetchEndpoints(
     sort_by: params?.sort_by,
     sort_dir: params?.sort_dir,
   });
+}
+
+export async function fetchEndpointsCount(
+  params?: Omit<EndpointQueryParams, 'page' | 'page_size' | 'sort_by' | 'sort_dir'>,
+): Promise<number> {
+  const result = await apiClient<{ total_count: number }>('/api/v1/endpoints/count', {
+    fhir_versions: params?.fhir_versions,
+    vendor: params?.vendor,
+    availability: params?.availability,
+    source: params?.source,
+    search: params?.search,
+    q: params?.q,
+  });
+  return result.total_count;
 }
 
 export async function fetchEndpointDetails(url: string): Promise<EndpointDetail> {

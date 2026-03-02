@@ -52,26 +52,31 @@ export function DataTable<T>({
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto rounded-md border border-neutral-200">
-        <table className="min-w-full text-sm">
+      <div className="w-full rounded-md border border-neutral-200">
+        <table className="w-full table-fixed text-xs">
           <thead className="bg-navy-900 text-white">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider"
-                    style={{ cursor: header.column.getCanSort() ? 'pointer' : 'default' }}
+                    className="whitespace-nowrap px-2 py-2.5 text-left text-xs font-semibold uppercase tracking-wider"
+                    style={{
+                      cursor: header.column.getCanSort() ? 'pointer' : 'default',
+                      width: header.column.columnDef.size
+                        ? `${header.column.columnDef.size}%`
+                        : undefined,
+                    }}
                     onClick={header.column.getToggleSortingHandler()}
                   >
                     <span className="inline-flex items-center gap-1">
                       {flexRender(header.column.columnDef.header, header.getContext())}
                       {header.column.getCanSort() && (
                         <>
-                          {header.column.getIsSorted() === 'asc' && <ArrowUp size={14} />}
-                          {header.column.getIsSorted() === 'desc' && <ArrowDown size={14} />}
+                          {header.column.getIsSorted() === 'asc' && <ArrowUp size={12} />}
+                          {header.column.getIsSorted() === 'desc' && <ArrowDown size={12} />}
                           {!header.column.getIsSorted() && (
-                            <ArrowUpDown size={14} className="opacity-40" />
+                            <ArrowUpDown size={12} className="opacity-40" />
                           )}
                         </>
                       )}
@@ -90,7 +95,7 @@ export function DataTable<T>({
                 }`}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="whitespace-nowrap px-4 py-2.5 text-neutral-700">
+                  <td key={cell.id} className="overflow-hidden px-2 py-2 text-neutral-700">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
