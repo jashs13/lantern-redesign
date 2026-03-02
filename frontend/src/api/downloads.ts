@@ -3,6 +3,7 @@ import { downloadUrl } from './client';
 export interface EndpointCsvParams {
   fhir_versions?: string[];
   availability?: string;
+  vendor?: string;
 }
 
 /**
@@ -17,6 +18,9 @@ export function getEndpointsCsvUrl(params?: EndpointCsvParams): string {
   }
   if (params?.availability) {
     parts.push(`availability=${encodeURIComponent(params.availability)}`);
+  }
+  if (params?.vendor) {
+    parts.push(`vendor=${encodeURIComponent(params.vendor)}`);
   }
 
   return parts.length > 0 ? `${base}?${parts.join('&')}` : base;

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
@@ -111,10 +112,12 @@ const columns: ColumnDef<Organization, unknown>[] = [
 export default function OrganizationsPage() {
   const { filters } = useFilters();
   const { page, pageSize, setPage } = usePagination();
-  const [search, setSearch] = useState('');
-  const [state, setState] = useState<string | null>(null);
-  const [fhirVersion, setFhirVersion] = useState<string | null>(null);
-  const [vendor, setVendor] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [state, setState] = useState<string | null>(searchParams.get('state') || null);
+  const [fhirVersion, setFhirVersion] = useState<string | null>(searchParams.get('fhir_version') || null);
+  const [vendor, setVendor] = useState<string | null>(searchParams.get('vendor') || null);
   const debouncedSearch = useDebounce(search);
 
   const { data: stateOptions = [] } = useQuery({
@@ -196,7 +199,7 @@ export default function OrganizationsPage() {
         </div>
 
         {/* Filter dropdowns grid */}
-        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="flex flex-col gap-2">
             <label
               className="font-sans font-bold uppercase"

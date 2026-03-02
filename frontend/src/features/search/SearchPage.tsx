@@ -311,7 +311,7 @@ function VendorResultCard({ item }: { item: SearchResult }) {
         </div>
         {/* TODO: Fix these links to point to actual working pages once implemented */}
         <Link
-          to={`/endpoints?search=${encodeURIComponent(item.name)}`}
+          to={`/endpoints?vendor=${encodeURIComponent(item.name)}`}
           className="shrink-0 text-navy-700 hover:text-sky-600"
           title="View endpoints by this vendor"
         >

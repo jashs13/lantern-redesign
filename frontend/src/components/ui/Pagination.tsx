@@ -7,6 +7,7 @@ interface PaginationProps {
   totalPages: number;
   totalCount: number;
   pageSize?: number;
+  hideStats?: boolean;
   onPageChange: (page: number) => void;
 }
 
@@ -15,6 +16,7 @@ export function Pagination({
   totalPages,
   totalCount,
   pageSize = 25,
+  hideStats = false,
   onPageChange,
 }: PaginationProps) {
   const start = (page - 1) * pageSize + 1;
@@ -39,12 +41,14 @@ export function Pagination({
 
   return (
     <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
-      <p className="text-sm text-neutral-500">
-        Showing <span className="font-semibold text-neutral-700">{formatNumber(start)}</span>
-        {' \u2013 '}
-        <span className="font-semibold text-neutral-700">{formatNumber(end)}</span> of{' '}
-        <span className="font-semibold text-neutral-700">{formatNumber(totalCount)}</span> results
-      </p>
+      {!hideStats && (
+        <p className="text-sm text-neutral-500">
+          Showing <span className="font-semibold text-neutral-700">{formatNumber(start)}</span>
+          {' \u2013 '}
+          <span className="font-semibold text-neutral-700">{formatNumber(end)}</span> of{' '}
+          <span className="font-semibold text-neutral-700">{formatNumber(totalCount)}</span> results
+        </p>
+      )}
 
       <div className="flex items-center gap-1">
         <button

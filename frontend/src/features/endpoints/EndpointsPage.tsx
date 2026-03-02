@@ -1,13 +1,15 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
 import { fetchEndpoints, fetchEndpointsCount } from '@/api/endpoints';
 import { fetchDashboardSummary } from '@/api/dashboard';
-import { fetchFHIRVersionGroups } from '@/api/filters';
+import { fetchFHIRVersionGroups, fetchVendors } from '@/api/filters';
 import { DataTable } from '@/components/ui/DataTable';
 import { SearchInput } from '@/components/ui/SearchInput';
+import { Select } from '@/components/ui/Select';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { KpiCard } from '@/components/ui/KpiCard';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -131,7 +133,10 @@ const FHIR_GROUP_ORDER = ['DSTU2', 'STU3', 'R4', 'R4B', 'R5', 'No Cap Stat', 'Un
 export default function EndpointsPage() {
   const { filters } = useFilters();
   const { page, pageSize, setPage } = usePagination();
-  const [search, setSearch] = useState('');
+  const [searchParams] = useSearchParams();
+
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [vendor, setVendor] = useState<string | null>(searchParams.get('vendor') || null);
   const debouncedSearch = useDebounce(search);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
@@ -153,17 +158,23 @@ export default function EndpointsPage() {
     staleTime: 10 * 60 * 1000,
   });
 
+  const { data: vendorOptions = [] } = useQuery({
+    queryKey: ['filters', 'vendors'],
+    queryFn: fetchVendors,
+    staleTime: 10 * 60 * 1000,
+  });
+
   // Ordered list of group keys to display as filter chips (only those with data)
   const fhirFilterGroups = FHIR_GROUP_ORDER.filter((g) => availableGroups?.includes(g));
 
   // Shared filter params (no page/sort — used for the count key so count is cached across page changes)
   const filterParams = {
     fhir_versions: activeFhirVersions.size > 0 ? Array.from(activeFhirVersions) : filters.fhirVersions,
-    vendor: filters.vendor ?? undefined,
+    vendor: vendor || filters.vendor || undefined,
     availability: highUptimeOnly ? '99-100' : undefined,
     search: debouncedSearch || undefined,
   };
-  const filterKey = [filters, debouncedSearch, Array.from(activeFhirVersions).sort(), highUptimeOnly];
+  const filterKey = [filters, debouncedSearch, vendor, Array.from(activeFhirVersions).sort(), highUptimeOnly];
 
   // Count query: keyed by filters only — does NOT include page, so pagination doesn't retrigger it
   const { data: totalCount = 0 } = useQuery({
@@ -201,12 +212,13 @@ export default function EndpointsPage() {
     setPage(1);
   };
 
-  const hasActiveFilters = activeFhirVersions.size > 0 || highUptimeOnly || !!search;
+  const hasActiveFilters = activeFhirVersions.size > 0 || highUptimeOnly || !!search || !!vendor;
 
   const clearAllFilters = () => {
     setActiveFhirVersions(new Set());
     setHighUptimeOnly(false);
     setSearch('');
+    setVendor(null);
     setPage(1);
   };
 
@@ -226,51 +238,89 @@ export default function EndpointsPage() {
         <KpiCard label="Network Uptime" value="97.4%" borderColor="#02bfe7" icon={<Activity size={18} />} />
       </div>
 
-      {/* Search + Export Row */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Search by endpoint name, URL, or organization..."
-          className="sm:max-w-md"
-        />
-        <div className="flex items-center gap-3">
+      {/* Search + Filters Card */}
+      <section
+        className="rounded-md bg-white"
+        style={{ padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}
+        aria-label="Search and filter endpoints"
+      >
+        {/* Search row */}
+        <div className="mb-4 flex flex-wrap gap-4">
+          <SearchInput
+            value={search}
+            onChange={(v) => { setSearch(v); setPage(1); }}
+            placeholder="Search by endpoint name, URL, or organization..."
+            className="flex-1 min-w-[280px]"
+          />
           <DownloadButton
             url={getEndpointsCsvUrl({
               fhir_versions: activeFhirVersions.size > 0 ? Array.from(activeFhirVersions) : undefined,
               availability: highUptimeOnly ? '99-100' : undefined,
+              vendor: vendor || undefined,
             })}
             label="Export CSV"
           />
-          {hasActiveFilters && (
+        </div>
+
+        {/* Filter dropdowns grid */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="flex flex-col gap-2 md:col-span-2">
+            <label
+              className="font-sans font-bold uppercase"
+              style={{ fontSize: '0.8125rem', color: 'var(--color-gray-dark)', letterSpacing: '0.03em' }}
+            >
+              Quick Filters
+            </label>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">FHIR:</span>
+              {fhirFilterGroups.map((group) => (
+                <QuickFilter
+                  key={group}
+                  label={group}
+                  active={activeFhirVersions.has(group)}
+                  onClick={() => toggleFhirVersion(group)}
+                />
+              ))}
+              <span className="mx-1 text-neutral-300">|</span>
+              <QuickFilter
+                label="≥99% Uptime"
+                active={highUptimeOnly}
+                onClick={() => { setHighUptimeOnly((v) => !v); setPage(1); }}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label
+              className="font-sans font-bold uppercase"
+              style={{ fontSize: '0.8125rem', color: 'var(--color-gray-dark)', letterSpacing: '0.03em' }}
+            >
+              EHR Developer
+            </label>
+            <Select
+              value={vendor ?? '__all__'}
+              onValueChange={(v) => { setVendor(v === '__all__' ? null : v); setPage(1); }}
+              options={[{ value: '__all__', label: 'All Developers' }, ...vendorOptions.map((o) => ({ value: o.value, label: o.value }))]}
+              placeholder="All Developers"
+            />
+          </div>
+        </div>
+
+        {/* Clear Filters Button */}
+        {hasActiveFilters && (
+          <div
+            className="mt-4 flex justify-end"
+            style={{ paddingTop: '1rem', borderTop: '1px solid var(--color-gray-lighter)' }}
+          >
             <button
               onClick={clearAllFilters}
-              className="text-sm text-neutral-500 hover:text-navy-700"
+              className="text-sm font-semibold text-neutral-500 hover:text-navy-700 hover:underline"
             >
-              Clear Filters
+              Clear All Filters
             </button>
-          )}
-        </div>
-      </div>
-
-      {/* Quick Filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">FHIR:</span>
-        {fhirFilterGroups.map((group) => (
-          <QuickFilter
-            key={group}
-            label={group}
-            active={activeFhirVersions.has(group)}
-            onClick={() => toggleFhirVersion(group)}
-          />
-        ))}
-        <span className="mx-1 text-neutral-300">|</span>
-        <QuickFilter
-          label="≥99% Uptime"
-          active={highUptimeOnly}
-          onClick={() => { setHighUptimeOnly((v) => !v); setPage(1); }}
-        />
-      </div>
+          </div>
+        )}
+      </section>
 
       {/* Results bar */}
       <div className="flex items-center justify-between">
