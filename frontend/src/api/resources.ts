@@ -6,6 +6,7 @@ export async function fetchResources(
 ): Promise<PaginatedResponse<Resource>> {
   return apiClient<PaginatedResponse<Resource>>('/api/v1/resources', {
     fhir_versions: params?.fhir_versions,
+    vendor: params?.vendor,
     resources: params?.resources,
     operations: params?.operations,
     search: params?.search,

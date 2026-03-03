@@ -374,6 +374,7 @@ export interface OrganizationQueryParams {
 
 export interface ResourceQueryParams {
   fhir_versions?: string[];
+  vendor?: string;
   resources?: string[];
   operations?: string[];
   search?: string;

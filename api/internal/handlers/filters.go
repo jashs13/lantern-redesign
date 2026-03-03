@@ -120,9 +120,9 @@ func (h *Handler) FilterFHIRVersionGroups(w http.ResponseWriter, r *http.Request
 // FilterResources returns distinct resource types.
 func (h *Handler) FilterResources(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.db.QueryContext(r.Context(),
-		`SELECT DISTINCT resource_type FROM mv_endpoint_resource_types
-		 WHERE resource_type IS NOT NULL
-		 ORDER BY resource_type`)
+		`SELECT DISTINCT type FROM mv_endpoint_resource_types
+		 WHERE type IS NOT NULL
+		 ORDER BY type`)
 	if err != nil {
 		log.WithError(err).Error("querying resource filter")
 		models.WriteError(w, http.StatusInternalServerError, "failed to fetch resources")
@@ -217,6 +217,32 @@ func (h *Handler) FilterStates(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		options = append(options, models.FilterOption{Value: state})
+	}
+	if options == nil {
+		options = []models.FilterOption{}
+	}
+	models.WriteJSON(w, http.StatusOK, options)
+}
+
+// FilterOperations returns distinct operation codes from mv_resource_interactions.
+func (h *Handler) FilterOperations(w http.ResponseWriter, r *http.Request) {
+	rows, err := h.db.QueryContext(r.Context(),
+		`SELECT DISTINCT op FROM mv_resource_interactions, unnest(operations) AS op
+		 WHERE op IS NOT NULL ORDER BY op`)
+	if err != nil {
+		log.WithError(err).Error("querying operations filter")
+		models.WriteError(w, http.StatusInternalServerError, "failed to fetch operations")
+		return
+	}
+	defer rows.Close()
+
+	var options []models.FilterOption
+	for rows.Next() {
+		var op string
+		if err := rows.Scan(&op); err != nil {
+			continue
+		}
+		options = append(options, models.FilterOption{Value: op})
 	}
 	if options == nil {
 		options = []models.FilterOption{}

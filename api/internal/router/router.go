@@ -96,6 +96,7 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 		r.Get("/filters/fhir-versions", h.FilterFHIRVersions)
 		r.Get("/filters/fhir-version-groups", h.FilterFHIRVersionGroups)
 		r.Get("/filters/resources", h.FilterResources)
+		r.Get("/filters/operations", h.FilterOperations)
 		r.Get("/filters/auth-types", h.FilterAuthTypes)
 		r.Get("/filters/profiles", h.FilterProfiles)
 		r.Get("/filters/validation-groups", h.FilterValidationGroups)

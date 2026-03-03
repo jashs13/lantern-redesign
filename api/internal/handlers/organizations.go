@@ -43,7 +43,7 @@ func (h *Handler) ListOrganizations(w http.ResponseWriter, r *http.Request) {
 	// State filter — match ", ST " or ", ST<br/>" patterns in addresses_html
 	if state := strings.ToUpper(q.Get("state")); state != "" && utf8.RuneCountInString(state) == 2 {
 		baseConditions = append(baseConditions, fmt.Sprintf("addresses_html ILIKE $%d", argIdx))
-		args = append(args, "%, "+state+"%")
+		args = append(args, "%, "+state+", %")
 		argIdx++
 	}
 
