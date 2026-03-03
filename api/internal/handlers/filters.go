@@ -196,12 +196,10 @@ func (h *Handler) FilterProfiles(w http.ResponseWriter, r *http.Request) {
 	models.WriteJSON(w, http.StatusOK, options)
 }
 
-// FilterStates returns distinct 2-letter US state codes extracted from organization addresses.
+// FilterStates returns distinct 2-letter US state codes from mv_organization_states (precomputed MV).
 func (h *Handler) FilterStates(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.db.QueryContext(r.Context(), `
-		SELECT DISTINCT (regexp_matches(addresses_html, '(?:,\s*)([A-Z]{2})(?:\s+\d{5})', 'g'))[1] AS state
-		FROM mv_organizations_final
-		ORDER BY state`)
+	rows, err := h.db.QueryContext(r.Context(),
+		`SELECT state FROM mv_organization_states WHERE state IS NOT NULL ORDER BY state`)
 	if err != nil {
 		log.WithError(err).Error("querying states filter")
 		models.WriteError(w, http.StatusInternalServerError, "failed to fetch states")

@@ -54,6 +54,7 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 
 		// Organizations
 		r.Get("/organizations", h.ListOrganizations)
+		r.Get("/organizations/count", h.CountOrganizations)
 
 		// Search
 		r.Get("/search", h.Search)

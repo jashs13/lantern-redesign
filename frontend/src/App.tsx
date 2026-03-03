@@ -47,22 +47,22 @@ export default function App() {
 
             {/* All data pages share the constrained DataPageLayout */}
             <Route element={<DataPageLayout />}>
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="endpoints" element={<EndpointsPage />} />
-              <Route path="organizations" element={<OrganizationsPage />} />
-              <Route path="resources" element={<ResourcesPage />} />
-              <Route path="implementation-guides" element={<ImplementationGuidesPage />} />
-              <Route path="fields" element={<FieldsPage />} />
-              <Route path="field-values" element={<FieldValuesPage />} />
-              <Route path="profiles" element={<ProfilesPage />} />
-              <Route path="capstat-size" element={<CapStatSizePage />} />
-              <Route path="validations" element={<ValidationsPage />} />
-              <Route path="security" element={<SecurityPage />} />
-              <Route path="smart-response" element={<SmartResponsePage />} />
-              <Route path="contacts" element={<ContactsPage />} />
-              <Route path="downloads" element={<DownloadsPage />} />
-              <Route path="about" element={<AboutPage />} />
-              <Route path="search" element={<SearchPage />} />
+              <Route path="dashboard" element={<Suspense fallback={<LoadingState />}><DashboardPage /></Suspense>} />
+              <Route path="endpoints" element={<Suspense fallback={<LoadingState />}><EndpointsPage /></Suspense>} />
+              <Route path="organizations" element={<Suspense fallback={<LoadingState />}><OrganizationsPage /></Suspense>} />
+              <Route path="resources" element={<Suspense fallback={<LoadingState />}><ResourcesPage /></Suspense>} />
+              <Route path="implementation-guides" element={<Suspense fallback={<LoadingState />}><ImplementationGuidesPage /></Suspense>} />
+              <Route path="fields" element={<Suspense fallback={<LoadingState />}><FieldsPage /></Suspense>} />
+              <Route path="field-values" element={<Suspense fallback={<LoadingState />}><FieldValuesPage /></Suspense>} />
+              <Route path="profiles" element={<Suspense fallback={<LoadingState />}><ProfilesPage /></Suspense>} />
+              <Route path="capstat-size" element={<Suspense fallback={<LoadingState />}><CapStatSizePage /></Suspense>} />
+              <Route path="validations" element={<Suspense fallback={<LoadingState />}><ValidationsPage /></Suspense>} />
+              <Route path="security" element={<Suspense fallback={<LoadingState />}><SecurityPage /></Suspense>} />
+              <Route path="smart-response" element={<Suspense fallback={<LoadingState />}><SmartResponsePage /></Suspense>} />
+              <Route path="contacts" element={<Suspense fallback={<LoadingState />}><ContactsPage /></Suspense>} />
+              <Route path="downloads" element={<Suspense fallback={<LoadingState />}><DownloadsPage /></Suspense>} />
+              <Route path="about" element={<Suspense fallback={<LoadingState />}><AboutPage /></Suspense>} />
+              <Route path="search" element={<Suspense fallback={<LoadingState />}><SearchPage /></Suspense>} />
             </Route>
           </Routes>
         </FilterProvider>

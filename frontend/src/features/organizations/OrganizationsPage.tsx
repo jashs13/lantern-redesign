@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
-import { fetchOrganizations } from '@/api/organizations';
+import { fetchOrganizations, fetchOrganizationsCount } from '@/api/organizations';
 import { fetchVendors, fetchStates, fetchFHIRVersions } from '@/api/filters';
 import { DataTable } from '@/components/ui/DataTable';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -135,17 +135,26 @@ export default function OrganizationsPage() {
     queryFn: fetchVendors,
   });
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['organizations', page, pageSize, filters, debouncedSearch, state, fhirVersion, vendor],
-    queryFn: () =>
-      fetchOrganizations({
-        page,
-        page_size: pageSize,
-        fhir_versions: fhirVersion ? [fhirVersion] : filters.fhirVersions,
-        vendor: vendor ?? undefined,
-        search: debouncedSearch || undefined,
-        state: state ?? undefined,
-      }),
+  const filterParams = {
+    fhir_versions: fhirVersion ? [fhirVersion] : filters.fhirVersions,
+    vendor: vendor ?? undefined,
+    search: debouncedSearch || undefined,
+    state: state ?? undefined,
+  };
+
+  const filterKey = [filters, debouncedSearch, state, fhirVersion, vendor];
+
+  // Count query — keyed by filters only, cached across page changes
+  const { data: totalCount = 0 } = useQuery({
+    queryKey: ['organizations-count', ...filterKey],
+    queryFn: () => fetchOrganizationsCount(filterParams),
+    staleTime: 30 * 1000,
+  });
+
+  // Data query — includes page, fast index scan
+  const { data = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['organizations-data', page, pageSize, ...filterKey],
+    queryFn: () => fetchOrganizations({ ...filterParams, page, page_size: pageSize }),
   });
 
   const ALL = '__all__';
@@ -177,7 +186,7 @@ export default function OrganizationsPage() {
     <div className="space-y-5">
       <PageHeader
         title="Healthcare Organizations"
-        subtitle={`Browse ${(data?.pagination.total_count ?? 0).toLocaleString()} organizations with FHIR endpoints across the United States`}
+        subtitle={`Browse ${totalCount.toLocaleString()} organizations with FHIR endpoints across the United States`}
         breadcrumbs={[{ label: 'Organizations' }]}
       />
 
@@ -265,16 +274,16 @@ export default function OrganizationsPage() {
         <p className="font-sans" style={{ fontSize: '0.9375rem', color: 'var(--color-gray)' }}>
           Showing{' '}
           <strong style={{ color: 'var(--color-primary-dark)', fontWeight: 700 }}>
-            {(data?.pagination.total_count ?? 0).toLocaleString()}
+            {totalCount.toLocaleString()}
           </strong>{' '}
           organizations
         </p>
       </div>
 
       <DataTable
-        data={data?.data ?? []}
+        data={data}
         columns={columns}
-        totalCount={data?.pagination.total_count ?? 0}
+        totalCount={totalCount}
         page={page}
         pageSize={pageSize}
         onPageChange={setPage}
