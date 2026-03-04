@@ -6,7 +6,7 @@ import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
 import { fetchEndpoints, fetchEndpointsCount } from '@/api/endpoints';
 import { fetchDashboardSummary } from '@/api/dashboard';
-import { fetchFHIRVersionGroups, fetchVendors } from '@/api/filters';
+import { fetchFHIRVersions, fetchVendors } from '@/api/filters';
 import { DataTable } from '@/components/ui/DataTable';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { Select } from '@/components/ui/Select';
@@ -127,11 +127,10 @@ const columns: ColumnDef<Endpoint, unknown>[] = [
   },
 ];
 
-// Display order for FHIR version group filters
-const FHIR_GROUP_ORDER = ['DSTU2', 'STU3', 'R4', 'R4B', 'R5', 'No Cap Stat', 'Unknown'] as const;
+
 
 export default function EndpointsPage() {
-  const { filters, setSource } = useFilters();
+  const { filters, setSource, setFhirVersions } = useFilters();
   const { page, pageSize, setPage } = usePagination();
   const [searchParams] = useSearchParams();
 
@@ -140,8 +139,6 @@ export default function EndpointsPage() {
   const debouncedSearch = useDebounce(search);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
-  // Active FHIR version group filters (multi-select, any combination)
-  const [activeFhirVersions, setActiveFhirVersions] = useState<Set<string>>(new Set());
   // High-uptime filter: availability >= 99%
   const [highUptimeOnly, setHighUptimeOnly] = useState(false);
 
@@ -151,10 +148,9 @@ export default function EndpointsPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch which FHIR version groups actually have data so we only show populated filters
-  const { data: availableGroups } = useQuery({
-    queryKey: ['filters', 'fhir-version-groups'],
-    queryFn: fetchFHIRVersionGroups,
+  const { data: fhirVersionOptions = [] } = useQuery({
+    queryKey: ['filters', 'fhir-versions'],
+    queryFn: fetchFHIRVersions,
     staleTime: 10 * 60 * 1000,
   });
 
@@ -164,18 +160,16 @@ export default function EndpointsPage() {
     staleTime: 10 * 60 * 1000,
   });
 
-  // Ordered list of group keys to display as filter chips (only those with data)
-  const fhirFilterGroups = FHIR_GROUP_ORDER.filter((g) => availableGroups?.includes(g));
 
-  // Shared filter params (no page/sort — used for the count key so count is cached across page changes)
+
   const filterParams = {
-    fhir_versions: activeFhirVersions.size > 0 ? Array.from(activeFhirVersions) : filters.fhirVersions,
+    fhir_versions: filters.fhirVersions.length > 0 ? filters.fhirVersions : undefined,
     vendor: vendor || filters.vendor || undefined,
     availability: highUptimeOnly ? '99-100' : undefined,
     source: filters.source || undefined,
     search: debouncedSearch || undefined,
   };
-  const filterKey = [filters, debouncedSearch, vendor, Array.from(activeFhirVersions).sort(), highUptimeOnly, filters.source];
+  const filterKey = [filters, debouncedSearch, vendor, highUptimeOnly];
 
   // Count query: keyed by filters only — does NOT include page, so pagination doesn't retrigger it
   const { data: totalCount = 0 } = useQuery({
@@ -203,20 +197,10 @@ export default function EndpointsPage() {
   const availableCount = summary?.response_tally?.http_200 ?? 0;
   const unavailableCount = totalEndpoints - availableCount;
 
-  const toggleFhirVersion = (key: string) => {
-    setActiveFhirVersions((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-    setPage(1);
-  };
-
-  const hasActiveFilters = activeFhirVersions.size > 0 || highUptimeOnly || !!search || !!vendor || !!filters.source;
+  const hasActiveFilters = filters.fhirVersions.length > 0 || highUptimeOnly || !!search || !!vendor || !!filters.source;
 
   const clearAllFilters = () => {
-    setActiveFhirVersions(new Set());
+    setFhirVersions([]);
     setHighUptimeOnly(false);
     setSearch('');
     setVendor(null);
@@ -256,7 +240,7 @@ export default function EndpointsPage() {
           />
           <DownloadButton
             url={getEndpointsCsvUrl({
-              fhir_versions: activeFhirVersions.size > 0 ? Array.from(activeFhirVersions) : undefined,
+              fhir_versions: filters.fhirVersions.length > 0 ? filters.fhirVersions : undefined,
               availability: highUptimeOnly ? '99-100' : undefined,
               vendor: vendor || undefined,
             })}
@@ -266,30 +250,19 @@ export default function EndpointsPage() {
 
         {/* Filter dropdowns grid */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <div className="flex flex-col gap-2 md:col-span-2">
+          <div className="flex flex-col gap-2">
             <label
               className="font-sans font-bold uppercase"
               style={{ fontSize: '0.8125rem', color: 'var(--color-gray-dark)', letterSpacing: '0.03em' }}
             >
-              Quick Filters
+              FHIR Version
             </label>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">FHIR:</span>
-              {fhirFilterGroups.map((group) => (
-                <QuickFilter
-                  key={group}
-                  label={group}
-                  active={activeFhirVersions.has(group)}
-                  onClick={() => toggleFhirVersion(group)}
-                />
-              ))}
-              <span className="mx-1 text-neutral-300">|</span>
-              <QuickFilter
-                label="≥99% Uptime"
-                active={highUptimeOnly}
-                onClick={() => { setHighUptimeOnly((v) => !v); setPage(1); }}
-              />
-            </div>
+            <Select
+              value={filters.fhirVersions[0] ?? '__all__'}
+              onValueChange={(v) => { setFhirVersions(v === '__all__' ? [] : [v]); setPage(1); }}
+              options={[{ value: '__all__', label: 'All FHIR Versions' }, ...fhirVersionOptions.map((o) => ({ value: o.value, label: o.value }))]}
+              placeholder="All FHIR Versions"
+            />
           </div>
 
           <div className="flex flex-col gap-2">
@@ -327,6 +300,15 @@ export default function EndpointsPage() {
               placeholder="All Sources"
             />
           </div>
+        </div>
+
+        {/* Quick filters */}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <QuickFilter
+            label="≥99% Uptime"
+            active={highUptimeOnly}
+            onClick={() => { setHighUptimeOnly((v) => !v); setPage(1); }}
+          />
         </div>
 
         {/* Clear Filters Button */}
