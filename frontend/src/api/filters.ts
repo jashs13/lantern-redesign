@@ -18,6 +18,10 @@ export async function fetchFilterResources(): Promise<FilterOption[]> {
   return apiClient<FilterOption[]>('/api/v1/filters/resources');
 }
 
+export async function fetchFilterOperations(): Promise<FilterOption[]> {
+  return apiClient<FilterOption[]>('/api/v1/filters/operations');
+}
+
 export async function fetchAuthTypes(): Promise<FilterOption[]> {
   return apiClient<FilterOption[]>('/api/v1/filters/auth-types');
 }
