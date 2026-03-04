@@ -58,7 +58,7 @@ const columns: ColumnDef<Endpoint, unknown>[] = [
     header: 'Endpoint',
     size: 30,
     cell: ({ row }) => (
-      <div className="min-w-0">
+      <div className="min-w-0 max-w-[300px]">
         <p className="truncate font-semibold text-navy-700 text-xs">
           {row.original.endpoint_names || row.original.url}
         </p>
@@ -131,7 +131,7 @@ const columns: ColumnDef<Endpoint, unknown>[] = [
 const FHIR_GROUP_ORDER = ['DSTU2', 'STU3', 'R4', 'R4B', 'R5', 'No Cap Stat', 'Unknown'] as const;
 
 export default function EndpointsPage() {
-  const { filters } = useFilters();
+  const { filters, setSource } = useFilters();
   const { page, pageSize, setPage } = usePagination();
   const [searchParams] = useSearchParams();
 
@@ -172,9 +172,10 @@ export default function EndpointsPage() {
     fhir_versions: activeFhirVersions.size > 0 ? Array.from(activeFhirVersions) : filters.fhirVersions,
     vendor: vendor || filters.vendor || undefined,
     availability: highUptimeOnly ? '99-100' : undefined,
+    source: filters.source || undefined,
     search: debouncedSearch || undefined,
   };
-  const filterKey = [filters, debouncedSearch, vendor, Array.from(activeFhirVersions).sort(), highUptimeOnly];
+  const filterKey = [filters, debouncedSearch, vendor, Array.from(activeFhirVersions).sort(), highUptimeOnly, filters.source];
 
   // Count query: keyed by filters only — does NOT include page, so pagination doesn't retrigger it
   const { data: totalCount = 0 } = useQuery({
@@ -212,13 +213,14 @@ export default function EndpointsPage() {
     setPage(1);
   };
 
-  const hasActiveFilters = activeFhirVersions.size > 0 || highUptimeOnly || !!search || !!vendor;
+  const hasActiveFilters = activeFhirVersions.size > 0 || highUptimeOnly || !!search || !!vendor || !!filters.source;
 
   const clearAllFilters = () => {
     setActiveFhirVersions(new Set());
     setHighUptimeOnly(false);
     setSearch('');
     setVendor(null);
+    setSource(null);
     setPage(1);
   };
 
@@ -263,7 +265,7 @@ export default function EndpointsPage() {
         </div>
 
         {/* Filter dropdowns grid */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <div className="flex flex-col gap-2 md:col-span-2">
             <label
               className="font-sans font-bold uppercase"
@@ -302,6 +304,27 @@ export default function EndpointsPage() {
               onValueChange={(v) => { setVendor(v === '__all__' ? null : v); setPage(1); }}
               options={[{ value: '__all__', label: 'All Developers' }, ...vendorOptions.map((o) => ({ value: o.value, label: o.value }))]}
               placeholder="All Developers"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label
+              className="font-sans font-bold uppercase"
+              style={{ fontSize: '0.8125rem', color: 'var(--color-gray-dark)', letterSpacing: '0.03em' }}
+            >
+              Source
+            </label>
+            <Select
+              value={filters.source ?? '__all__'}
+              onValueChange={(v) => { setSource(v === '__all__' ? null : v); setPage(1); }}
+              options={[
+                { value: '__all__', label: 'All Sources' },
+                { value: 'CHPL', label: 'CHPL' },
+                { value: 'State Medicaid', label: 'State Medicaid' },
+                { value: 'Payer', label: 'Payer' },
+                { value: 'Other', label: 'Other' },
+              ]}
+              placeholder="All Sources"
             />
           </div>
         </div>

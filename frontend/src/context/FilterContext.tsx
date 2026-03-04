@@ -10,12 +10,14 @@ import { decodeArrayParam, encodeArrayParam } from '@/lib/url';
 export interface FilterState {
   fhirVersions: string[];
   vendor: string | null;
+  source: string | null;
 }
 
 export interface FilterContextValue {
   filters: FilterState;
   setFhirVersions: (versions: string[]) => void;
   setVendor: (vendor: string | null) => void;
+  setSource: (source: string | null) => void;
   resetFilters: () => void;
 }
 
@@ -28,6 +30,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     return {
       fhirVersions: decodeArrayParam(searchParams.get('fhir_versions')),
       vendor: searchParams.get('vendor') || null,
+      source: searchParams.get('source') || null,
     };
   }, [searchParams]);
 
@@ -67,12 +70,31 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     [setSearchParams],
   );
 
+  const setSource = useCallback(
+    (source: string | null) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (source) {
+            next.set('source', source);
+          } else {
+            next.delete('source');
+          }
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
   const resetFilters = useCallback(() => {
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
         next.delete('fhir_versions');
         next.delete('vendor');
+        next.delete('source');
         return next;
       },
       { replace: true },
@@ -80,8 +102,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   }, [setSearchParams]);
 
   const value = useMemo<FilterContextValue>(
-    () => ({ filters, setFhirVersions, setVendor, resetFilters }),
-    [filters, setFhirVersions, setVendor, resetFilters],
+    () => ({ filters, setFhirVersions, setVendor, setSource, resetFilters }),
+    [filters, setFhirVersions, setVendor, setSource, resetFilters],
   );
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>;

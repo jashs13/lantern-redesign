@@ -61,18 +61,11 @@ func buildEndpointFilters(q map[string][]string) (whereClause string, args []any
 		argIdx += 2
 	}
 
-	// Source filter (CHPL)
-	if source := get("source"); source != "" {
-		switch strings.ToLower(source) {
-		case "chpl":
-			conditions = append(conditions, fmt.Sprintf("is_chpl = $%d", argIdx))
-			args = append(args, "TRUE")
-			argIdx++
-		case "non-chpl":
-			conditions = append(conditions, fmt.Sprintf("(is_chpl IS NULL OR is_chpl = $%d)", argIdx))
-			args = append(args, "FALSE")
-			argIdx++
-		}
+	// Source filter
+	if source := get("source"); source != "" && source != "All" {
+        conditions = append(conditions, fmt.Sprintf("is_chpl = $%d", argIdx))
+        args = append(args, source)
+        argIdx++
 	}
 
 	// Text search
