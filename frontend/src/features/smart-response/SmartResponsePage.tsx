@@ -118,7 +118,11 @@ export default function SmartResponsePage() {
         subtitle="SMART on FHIR capabilities and response data for endpoints"
         breadcrumbs={[{ label: 'SMART Response' }]}
         titleClassName="font-sans text-2xl font-bold text-navy-900"
-      />
+      >
+        <p className="text-neutral-600 text-sm mt-2 whitespace-nowrap">
+          FHIR endpoints requiring authorization shall provide a JSON document at the endpoint URL with <code>/.well-known/smart-configuration</code> appended to the end of the base URL.
+        </p>
+      </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <KpiCard label="Total Indexed" value={summaryData?.total_indexed ?? 0} borderColor="#205493" icon={<Database size={18} />} />
