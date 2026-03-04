@@ -11,7 +11,7 @@ import (
 // FilterVendors returns distinct vendor names.
 func (h *Handler) FilterVendors(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.db.QueryContext(r.Context(),
-		`SELECT DISTINCT name FROM vendors WHERE name IS NOT NULL ORDER BY name`)
+		`SELECT DISTINCT vendor_name FROM endpoint_export_mv WHERE vendor_name IS NOT NULL ORDER BY vendor_name`)
 	if err != nil {
 		log.WithError(err).Error("querying vendor filter")
 		models.WriteError(w, http.StatusInternalServerError, "failed to fetch vendors")
