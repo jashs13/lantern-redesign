@@ -13,14 +13,17 @@ export async function fetchSmartResponse(
     page: params?.page,
     page_size: params?.page_size,
     fhir_versions: params?.fhir_versions,
+    vendor: params?.vendor,
     search: params?.search,
   });
 }
 
 export async function fetchSmartSummary(params?: {
   fhir_versions?: string[];
+  vendor?: string;
 }): Promise<SmartSummaryData> {
   return apiClient<SmartSummaryData>('/api/v1/smart-response/summary', {
     fhir_versions: params?.fhir_versions,
+    vendor: params?.vendor,
   });
 }

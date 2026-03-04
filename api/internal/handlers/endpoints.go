@@ -174,7 +174,7 @@ func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request) {
 	argIdx := len(args) + 1
 	dataQuery := fmt.Sprintf(`SELECT url, endpoint_names, info_created, info_updated, list_source,
 		vendor_name, capability_fhir_version, fhir_version, format,
-		http_response, response_time_seconds, smart_http_response, errors,
+		http_response, response_time_seconds, errors,
 		availability, kind, requested_fhir_version, is_chpl, status, cap_stat_exists
 		FROM fhir_endpoint_comb_mv %s %s LIMIT $%d OFFSET $%d`,
 		whereClause, orderClause, argIdx, argIdx+1)
@@ -195,7 +195,7 @@ func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request) {
 			&ep.URL, &ep.EndpointNames, &ep.InfoCreated, &ep.InfoUpdated,
 			&ep.ListSource, &ep.VendorName, &ep.CapabilityFHIRVersion,
 			&ep.FHIRVersion, &ep.Format, &ep.HTTPResponse,
-			&ep.ResponseTimeSeconds, &ep.SMARTHTTPResponse, &ep.Errors,
+			&ep.ResponseTimeSeconds, &ep.Errors,
 			&ep.Availability, &ep.Kind, &ep.RequestedFHIRVersion,
 			&ep.IsChpl, &ep.Status, &ep.CapStatExists,
 		); err != nil {
@@ -239,8 +239,8 @@ func parseAvailabilityRange(avail string) (float64, float64) {
 // sanitizeSortColumn returns a safe column name for ORDER BY.
 func sanitizeSortColumn(col string) string {
 	allowed := map[string]string{
-		"url":                    "url",
-		"vendor_name":            "vendor_name",
+		"url":                   "url",
+		"vendor_name":           "vendor_name",
 		"fhir_version":          "fhir_version",
 		"http_response":         "http_response",
 		"availability":          "availability",

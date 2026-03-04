@@ -302,20 +302,18 @@ export interface AuthTypeCount {
 export interface SmartEndpoint {
   url: string;
   vendor_name: string | null;
+  organization_names: string | null;
   fhir_version: string | null;
   smart_http_response: number | null;
 }
 
 export interface SmartSummaryData {
-  well_known_summary: WellKnownSummary[];
+  total_indexed: number;
+  http_200: number;
+  smart_http_200: number;
+  well_known_valid_doc: number;
+  well_known_invalid_doc: number;
   capability_counts: SmartCapability[];
-}
-
-export interface WellKnownSummary {
-  vendor_name: string | null;
-  fhir_version: string | null;
-  http_200_count: number;
-  total_count: number;
 }
 
 export interface SmartCapability {
@@ -391,6 +389,7 @@ export interface SmartQueryParams {
   page?: number;
   page_size?: number;
   fhir_versions?: string[];
+  vendor?: string;
   search?: string;
 }
 

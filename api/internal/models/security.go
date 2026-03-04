@@ -33,22 +33,19 @@ type AuthTypeCount struct {
 type SmartEndpoint struct {
 	URL               string  `json:"url"`
 	VendorName        *string `json:"vendor_name"`
+	OrganizationNames *string `json:"organization_names"`
 	FHIRVersion       *string `json:"fhir_version"`
 	SMARTHTTPResponse *int    `json:"smart_http_response"`
 }
 
 // SmartSummaryData holds SMART response aggregation data.
 type SmartSummaryData struct {
-	WellKnownSummary   []WellKnownSummary   `json:"well_known_summary"`
-	CapabilityCounts   []SmartCapability     `json:"capability_counts"`
-}
-
-// WellKnownSummary aggregates well-known endpoint status.
-type WellKnownSummary struct {
-	VendorName    *string `json:"vendor_name"`
-	FHIRVersion   *string `json:"fhir_version"`
-	HTTP200Count  int     `json:"http_200_count"`
-	TotalCount    int     `json:"total_count"`
+	TotalIndexed        int               `json:"total_indexed"`
+	Http200             int               `json:"http_200"`
+	SmartHttp200        int               `json:"smart_http_200"`
+	WellKnownValidDoc   int               `json:"well_known_valid_doc"`
+	WellKnownInvalidDoc int               `json:"well_known_invalid_doc"`
+	CapabilityCounts    []SmartCapability `json:"capability_counts"`
 }
 
 // SmartCapability from mv_smart_response_capabilities.
@@ -92,12 +89,12 @@ type FieldValue struct {
 
 // Profile from mv_profiles_paginated.
 type Profile struct {
-	URL          string  `json:"url"`
-	ProfileURL   *string `json:"profile_url"`
-	ProfileName  *string `json:"profile_name"`
-	Resource     *string `json:"resource"`
-	VendorName   *string `json:"vendor_name"`
-	FHIRVersion  *string `json:"fhir_version"`
+	URL         string  `json:"url"`
+	ProfileURL  *string `json:"profile_url"`
+	ProfileName *string `json:"profile_name"`
+	Resource    *string `json:"resource"`
+	VendorName  *string `json:"vendor_name"`
+	FHIRVersion *string `json:"fhir_version"`
 }
 
 // CapStatSize from mv_capstat_sizes_tbl.
