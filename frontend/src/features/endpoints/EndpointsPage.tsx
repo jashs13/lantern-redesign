@@ -249,7 +249,7 @@ export default function EndpointsPage() {
         </div>
 
         {/* Filter dropdowns grid */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="flex flex-col gap-2">
             <label
               className="font-sans font-bold uppercase"
@@ -260,8 +260,8 @@ export default function EndpointsPage() {
             <Select
               value={filters.fhirVersions[0] ?? '__all__'}
               onValueChange={(v) => { setFhirVersions(v === '__all__' ? [] : [v]); setPage(1); }}
-              options={[{ value: '__all__', label: 'All FHIR Versions' }, ...fhirVersionOptions.map((o) => ({ value: o.value, label: o.value }))]}
-              placeholder="All FHIR Versions"
+              options={[{ value: '__all__', label: 'All Versions' }, ...fhirVersionOptions.map((o) => ({ value: o.value, label: o.value }))]}
+              placeholder="All Versions"
             />
           </div>
 

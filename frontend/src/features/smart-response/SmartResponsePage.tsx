@@ -141,6 +141,17 @@ export default function SmartResponsePage() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="flex flex-col gap-2">
             <label className="font-sans font-bold uppercase" style={{ fontSize: '0.8125rem', color: 'var(--color-gray-dark)', letterSpacing: '0.03em' }}>
+              FHIR Version
+            </label>
+            <Select
+              options={[{ value: '__all__', label: 'All Versions' }, ...(fhirVersions?.map(v => ({ value: v.value, label: v.value })) || [])]}
+              value={filters.fhirVersions?.[0] || '__all__'}
+              onValueChange={(v: string) => { setFhirVersions(v === '__all__' ? [] : [v]); setPage(1); }}
+              placeholder="All Versions"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="font-sans font-bold uppercase" style={{ fontSize: '0.8125rem', color: 'var(--color-gray-dark)', letterSpacing: '0.03em' }}>
               EHR Developer
             </label>
             <Select
@@ -148,17 +159,6 @@ export default function SmartResponsePage() {
               value={filters.vendor || '__all__'}
               onValueChange={(v: string) => { setVendor(v === '__all__' ? null : v); setPage(1); }}
               placeholder="All Developers"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="font-sans font-bold uppercase" style={{ fontSize: '0.8125rem', color: 'var(--color-gray-dark)', letterSpacing: '0.03em' }}>
-              FHIR Version
-            </label>
-            <Select
-              options={[{ value: '__all__', label: 'All FHIR Versions' }, ...(fhirVersions?.map(v => ({ value: v.value, label: v.value })) || [])]}
-              value={filters.fhirVersions?.[0] || '__all__'}
-              onValueChange={(v: string) => { setFhirVersions(v === '__all__' ? [] : [v]); setPage(1); }}
-              placeholder="All FHIR Versions"
             />
           </div>
           <div className="flex flex-col gap-2 md:mt-auto">
