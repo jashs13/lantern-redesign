@@ -102,6 +102,8 @@ export default function ResourcesPage() {
     queryKey: ['resources', page, pageSize, fhirVersions, vendor, selectedResources, selectedOperations],
     queryFn: () =>
       fetchResources({
+        page,
+        page_size: pageSize,
         fhir_versions: fhirVersions.length > 0 ? fhirVersions : undefined,
         vendor: vendor ?? undefined,
         resources: selectedResources,

@@ -373,6 +373,8 @@ export interface OrganizationQueryParams {
 }
 
 export interface ResourceQueryParams {
+  page?: number;
+  page_size?: number;
   fhir_versions?: string[];
   vendor?: string;
   resources?: string[];
