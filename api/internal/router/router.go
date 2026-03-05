@@ -69,6 +69,7 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 		// Fields
 		r.Get("/fields", h.ListFields)
 		r.Get("/field-values", h.FieldValues)
+		r.Get("/field-value-summary", h.FieldValueSummary)
 
 		// Profiles
 		r.Get("/profiles", h.ListProfiles)

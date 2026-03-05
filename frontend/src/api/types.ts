@@ -200,6 +200,11 @@ export interface FieldValue {
   endpoint_count: number;
 }
 
+export interface FieldValueSummary {
+  is_used: string;
+  count: number;
+}
+
 // =============================================================================
 // Profiles
 // =============================================================================
@@ -425,15 +430,24 @@ export interface FieldQueryParams {
   page?: number;
   page_size?: number;
   fhir_versions?: string[];
+  vendor?: string;
   search?: string;
+  is_extension?: boolean;
 }
 
 export interface FieldValueQueryParams {
   page?: number;
   page_size?: number;
   fhir_versions?: string[];
-  field_name?: string;
+  vendor?: string;
+  field?: string;
   search?: string;
+}
+
+export interface FieldValueSummaryQueryParams {
+  fhir_versions?: string[];
+  vendor?: string;
+  field?: string;
 }
 
 export interface SearchQueryParams {

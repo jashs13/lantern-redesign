@@ -87,6 +87,12 @@ type FieldValue struct {
 	EndpointCount int    `json:"endpoint_count"`
 }
 
+// FieldValueSummary holds usage counts (yes/no) for a field.
+type FieldValueSummary struct {
+	IsUsed string `json:"is_used"`
+	Count  int    `json:"count"`
+}
+
 // Profile from mv_profiles_paginated.
 type Profile struct {
 	URL         string  `json:"url"`
