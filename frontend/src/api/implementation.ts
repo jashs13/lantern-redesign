@@ -20,8 +20,11 @@ export async function fetchImplementationGuides(
 
 export async function fetchCapStatSizes(
   params?: CapStatSizeQueryParams,
-): Promise<CapStatSize[]> {
-  return apiClient<CapStatSize[]>('/api/v1/capstat-sizes', {
+): Promise<PaginatedResponse<CapStatSize>> {
+  return apiClient<PaginatedResponse<CapStatSize>>('/api/v1/capstat-sizes', {
     fhir_versions: params?.fhir_versions,
+    vendor: params?.vendor,
+    page: params?.page,
+    page_size: params?.page_size,
   });
 }
