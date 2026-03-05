@@ -8,6 +8,9 @@ export async function fetchProfiles(
     page: params?.page,
     page_size: params?.page_size,
     fhir_versions: params?.fhir_versions,
+    vendor: params?.vendor,
+    resource: params?.resource,
+    profile: params?.profile,
     search: params?.search,
   });
 }

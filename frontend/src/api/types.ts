@@ -423,6 +423,9 @@ export interface ProfileQueryParams {
   page?: number;
   page_size?: number;
   fhir_versions?: string[];
+  vendor?: string;
+  resource?: string;
+  profile?: string;
   search?: string;
 }
 

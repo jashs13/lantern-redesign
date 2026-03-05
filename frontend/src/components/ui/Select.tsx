@@ -32,6 +32,11 @@ export function Select({
           fontSize: '0.9375rem',
           color: 'var(--color-gray-dark)',
           cursor: 'pointer',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          minWidth: 0,
+          maxWidth: '100%',
         }}
         onMouseEnter={(e) =>
           (e.currentTarget.style.borderColor = 'var(--color-gray-light)')
