@@ -44,6 +44,7 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 	r.Route("/api/v1", func(r chi.Router) {
 		// Endpoints
 		r.Get("/endpoints", h.ListEndpoints)
+		r.Get("/endpoints/count", h.CountEndpoints)
 		r.Get("/endpoints/{url}/details", h.EndpointDetails)
 		r.Get("/endpoints/{url}/response-time", h.EndpointResponseTime)
 		r.Get("/endpoints/{url}/http-history", h.EndpointHTTPHistory)
@@ -53,6 +54,7 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 
 		// Organizations
 		r.Get("/organizations", h.ListOrganizations)
+		r.Get("/organizations/count", h.CountOrganizations)
 
 		// Search
 		r.Get("/search", h.Search)
@@ -67,6 +69,7 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 		// Fields
 		r.Get("/fields", h.ListFields)
 		r.Get("/field-values", h.FieldValues)
+		r.Get("/field-value-summary", h.FieldValueSummary)
 
 		// Profiles
 		r.Get("/profiles", h.ListProfiles)
@@ -93,10 +96,13 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 		// Filters
 		r.Get("/filters/vendors", h.FilterVendors)
 		r.Get("/filters/fhir-versions", h.FilterFHIRVersions)
+		r.Get("/filters/fhir-version-groups", h.FilterFHIRVersionGroups)
 		r.Get("/filters/resources", h.FilterResources)
+		r.Get("/filters/operations", h.FilterOperations)
 		r.Get("/filters/auth-types", h.FilterAuthTypes)
 		r.Get("/filters/profiles", h.FilterProfiles)
 		r.Get("/filters/validation-groups", h.FilterValidationGroups)
+		r.Get("/filters/states", h.FilterStates)
 
 		// Downloads
 		r.Get("/downloads/endpoints.csv", h.DownloadEndpointsCSV)

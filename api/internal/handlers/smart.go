@@ -51,7 +51,7 @@ func (h *Handler) SmartResponse(w http.ResponseWriter, r *http.Request) {
 		args...).Scan(&totalCount)
 
 	dataQuery := fmt.Sprintf(
-		`SELECT url, vendor_name, fhir_version, smart_http_response
+		`SELECT url, vendor_name, fhir_version, organization_names, 200 AS smart_http_response
 		 FROM mv_well_known_endpoints %s
 		 ORDER BY url
 		 LIMIT $%d OFFSET $%d`, whereClause, argIdx, argIdx+1)
@@ -68,7 +68,8 @@ func (h *Handler) SmartResponse(w http.ResponseWriter, r *http.Request) {
 	var endpoints []models.SmartEndpoint
 	for rows.Next() {
 		var ep models.SmartEndpoint
-		if err := rows.Scan(&ep.URL, &ep.VendorName, &ep.FHIRVersion, &ep.SMARTHTTPResponse); err != nil {
+		if err := rows.Scan(&ep.URL, &ep.VendorName, &ep.FHIRVersion, &ep.OrganizationNames, &ep.SMARTHTTPResponse); err != nil {
+			log.WithError(err).Error("failed to scan SMART endpoint row")
 			continue
 		}
 		endpoints = append(endpoints, ep)
@@ -113,35 +114,37 @@ func (h *Handler) SmartResponseSummary(w http.ResponseWriter, r *http.Request) {
 
 	var summary models.SmartSummaryData
 
-	// Well-known URI summary
-	wkRows, err := h.db.QueryContext(ctx,
-		fmt.Sprintf(`SELECT vendor_name, fhir_version,
-			SUM(CASE WHEN smart_http_response = 200 THEN 1 ELSE 0 END) AS http_200_count,
-			COUNT(*) AS total_count
-		 FROM mv_well_known_endpoints %s
-		 GROUP BY vendor_name, fhir_version
-		 ORDER BY vendor_name`, whereClause), args...)
-	if err != nil {
-		log.WithError(err).Error("querying SMART summary")
-		models.WriteError(w, http.StatusInternalServerError, "failed to fetch SMART summary")
-		return
-	}
-	defer wkRows.Close()
+	// 1. Total Indexed Endpoints
+	h.db.QueryRowContext(ctx, fmt.Sprintf(`SELECT COUNT(DISTINCT url) FROM mv_endpoint_export_tbl %s`, whereClause), args...).Scan(&summary.TotalIndexed)
 
-	for wkRows.Next() {
-		var s models.WellKnownSummary
-		if err := wkRows.Scan(&s.VendorName, &s.FHIRVersion, &s.HTTP200Count, &s.TotalCount); err != nil {
-			continue
-		}
-		summary.WellKnownSummary = append(summary.WellKnownSummary, s)
+	// Since whereClause either is "" or starts with "WHERE ", we need to safely append conditions
+	andPrefix := "WHERE "
+	if len(conditions) > 0 {
+		andPrefix = " AND "
 	}
-	if summary.WellKnownSummary == nil {
-		summary.WellKnownSummary = []models.WellKnownSummary{}
-	}
+
+	// 2. HTTP 200
+	h.db.QueryRowContext(ctx, fmt.Sprintf(`SELECT COUNT(DISTINCT url) FROM mv_endpoint_export_tbl %s%shttp_response = 200`,
+		whereClause, andPrefix), args...).Scan(&summary.Http200)
+
+	// 3. SMART HTTP 200 (Well Known endpoints with HTTP 200)
+	h.db.QueryRowContext(ctx, fmt.Sprintf(`SELECT COUNT(DISTINCT url) FROM mv_endpoint_export_tbl %s%ssmart_http_response = 200`,
+		whereClause, andPrefix), args...).Scan(&summary.SmartHttp200)
+
+	// 4. Well Known Valid JSON Document
+	h.db.QueryRowContext(ctx, fmt.Sprintf(`SELECT COUNT(*) FROM mv_well_known_endpoints %s`, whereClause), args...).Scan(&summary.WellKnownValidDoc)
+
+	// 5. Well Known Invalid JSON Document
+	h.db.QueryRowContext(ctx, fmt.Sprintf(`SELECT COUNT(*) FROM mv_well_known_no_doc %s`, whereClause), args...).Scan(&summary.WellKnownInvalidDoc)
 
 	// SMART capabilities
-	capRows, err := h.db.QueryContext(ctx,
-		`SELECT capability, count FROM mv_smart_response_capabilities ORDER BY count DESC`)
+	capRows, err := h.db.QueryContext(ctx, fmt.Sprintf(`
+		SELECT capability, COUNT(id) as count 
+		FROM mv_smart_response_capabilities 
+		%s
+		GROUP BY capability 
+		ORDER BY count DESC`, whereClause), args...)
+
 	if err == nil {
 		defer capRows.Close()
 		for capRows.Next() {
@@ -151,7 +154,10 @@ func (h *Handler) SmartResponseSummary(w http.ResponseWriter, r *http.Request) {
 			}
 			summary.CapabilityCounts = append(summary.CapabilityCounts, c)
 		}
+	} else {
+		log.WithError(err).Error("querying SMART capabilities summary")
 	}
+
 	if summary.CapabilityCounts == nil {
 		summary.CapabilityCounts = []models.SmartCapability{}
 	}

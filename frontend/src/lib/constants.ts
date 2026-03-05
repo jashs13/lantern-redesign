@@ -12,11 +12,11 @@ export interface NavItem {
  * Top navigation bar — primary links always visible.
  */
 export const TOP_NAV_ITEMS: NavItem[] = [
+  { label: 'Home', path: '/' },
   { label: 'Dashboard', path: '/dashboard' },
   { label: 'Endpoints', path: '/endpoints' },
   { label: 'Organizations', path: '/organizations' },
   { label: 'Resources', path: '/resources' },
-  { label: 'Map', path: '/map' },
   { label: 'Security', path: '/security' },
   { label: 'SMART Response', path: '/smart-response' },
 ];
@@ -27,7 +27,6 @@ export const TOP_NAV_ITEMS: NavItem[] = [
 export const MORE_NAV_ITEMS: NavItem[] = [
   { label: 'Implementation Guides', path: '/implementation-guides' },
   { label: 'Fields', path: '/fields' },
-  { label: 'Field Values', path: '/field-values' },
   { label: 'Profiles', path: '/profiles' },
   { label: 'CapStat Size', path: '/capstat-size' },
   { label: 'Validations', path: '/validations' },

@@ -64,6 +64,6 @@ func NewFromViper() *Config {
 
 // DatabaseConnStr returns a PostgreSQL connection string.
 func (c *Config) DatabaseConnStr() string {
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s options='-c statement_timeout=120000'",
 		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, c.DBSSLMode)
 }

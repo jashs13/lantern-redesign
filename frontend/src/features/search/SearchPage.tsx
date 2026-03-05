@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { fetchSearch } from '@/api/search';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -15,22 +15,40 @@ import {
   ExternalLink,
   MapPin,
 } from 'lucide-react';
+import { Pagination } from '@/components/ui/Pagination';
 import type { SearchResult } from '@/api/types';
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryParam = searchParams.get('q') || '';
+
+  // Local state for pagination avoids URL clutter and prevents scroll jumping
+  const [endpointPage, setEndpointPage] = useState(1);
+  const [orgPage, setOrgPage] = useState(1);
+  const [vendorPage, setVendorPage] = useState(1);
+
   const [localSearch, setLocalSearch] = useState(queryParam);
 
   // Sync input when URL changes (e.g. popular search links)
+  // Also reset local page states when a brand new search term arrives
   useEffect(() => {
     setLocalSearch(queryParam);
+    setEndpointPage(1);
+    setOrgPage(1);
+    setVendorPage(1);
   }, [queryParam]);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['search', queryParam],
-    queryFn: () => fetchSearch({ q: queryParam, limit: 25 }),
+    queryKey: ['search', queryParam, endpointPage, orgPage, vendorPage],
+    queryFn: () => fetchSearch({
+      q: queryParam,
+      limit: 10,
+      endpoint_page: endpointPage,
+      organization_page: orgPage,
+      vendor_page: vendorPage
+    }),
     enabled: queryParam.length > 0,
+    placeholderData: keepPreviousData, // Prevent layout jumps when turning pages
   });
 
   const handleSearch = (value: string) => {
@@ -44,10 +62,10 @@ export default function SearchPage() {
     }
   };
 
-  const endpointCount = data?.endpoints?.length ?? 0;
-  const orgCount = data?.organizations?.length ?? 0;
-  const vendorCount = data?.vendors?.length ?? 0;
-  const totalCount = endpointCount + orgCount + vendorCount;
+  const endpointCount = data?.endpoints_total ?? 0;
+  const orgCount = data?.organizations_total ?? 0;
+  const vendorCount = data?.vendors_total ?? 0;
+  const totalCount = data?.total_count ?? 0;
 
   return (
     <div className="space-y-6">
@@ -63,6 +81,12 @@ export default function SearchPage() {
           <SearchInput
             value={localSearch}
             onChange={handleSearch}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSubmit(e as unknown as React.FormEvent);
+              }
+            }}
             placeholder="Search by name, location, or FHIR URL..."
           />
         </div>
@@ -106,12 +130,12 @@ export default function SearchPage() {
               <Badge variant="navy">{orgCount} Organizations</Badge>
             )}
             {vendorCount > 0 && (
-              <Badge variant="fhir">{vendorCount} Developers</Badge>
+              <Badge variant="success">{vendorCount} Developers</Badge>
             )}
           </div>
 
           {/* Endpoint results */}
-          {endpointCount > 0 && (
+          {data!.endpoints && data!.endpoints.length > 0 && (
             <ResultSection
               title="Endpoints"
               icon={<Globe size={20} />}
@@ -120,11 +144,23 @@ export default function SearchPage() {
               renderItem={(item, index) => (
                 <EndpointResultCard key={`endpoint-${index}`} item={item} />
               )}
+              pagination={
+                endpointCount > 10 ? (
+                  <Pagination
+                    page={endpointPage}
+                    totalPages={Math.ceil(endpointCount / 10)}
+                    totalCount={endpointCount}
+                    pageSize={10}
+                    hideStats={false}
+                    onPageChange={(p) => setEndpointPage(p)}
+                  />
+                ) : undefined
+              }
             />
           )}
 
           {/* Organization results */}
-          {orgCount > 0 && (
+          {data!.organizations && data!.organizations.length > 0 && (
             <ResultSection
               title="Organizations"
               icon={<Building2 size={20} />}
@@ -133,11 +169,23 @@ export default function SearchPage() {
               renderItem={(item, index) => (
                 <OrganizationResultCard key={`org-${index}`} item={item} />
               )}
+              pagination={
+                orgCount > 10 ? (
+                  <Pagination
+                    page={orgPage}
+                    totalPages={Math.ceil(orgCount / 10)}
+                    totalCount={orgCount}
+                    pageSize={10}
+                    hideStats={false}
+                    onPageChange={(p) => setOrgPage(p)}
+                  />
+                ) : undefined
+              }
             />
           )}
 
           {/* Vendor results */}
-          {vendorCount > 0 && (
+          {data!.vendors && data!.vendors.length > 0 && (
             <ResultSection
               title="Developers / Vendors"
               icon={<Monitor size={20} />}
@@ -146,6 +194,18 @@ export default function SearchPage() {
               renderItem={(item, index) => (
                 <VendorResultCard key={`vendor-${index}`} item={item} />
               )}
+              pagination={
+                vendorCount > 10 ? (
+                  <Pagination
+                    page={vendorPage}
+                    totalPages={Math.ceil(vendorCount / 10)}
+                    totalCount={vendorCount}
+                    pageSize={10}
+                    hideStats={false}
+                    onPageChange={(p) => setVendorPage(p)}
+                  />
+                ) : undefined
+              }
             />
           )}
         </div>
@@ -162,12 +222,14 @@ function ResultSection({
   count,
   results,
   renderItem,
+  pagination,
 }: {
   title: string;
   icon: React.ReactNode;
   count: number;
   results: SearchResult[];
   renderItem: (item: SearchResult, index: number) => React.ReactNode;
+  pagination?: React.ReactNode;
 }) {
   return (
     <section>
@@ -176,7 +238,8 @@ function ResultSection({
         <h2 className="text-lg font-bold text-navy-900">{title}</h2>
         <Badge variant="navy">{count}</Badge>
       </div>
-      <div className="space-y-2">{results.map((item, index) => renderItem(item, index))}</div>
+      <div className="space-y-1.5">{results.map((item, index) => renderItem(item, index))}</div>
+      {pagination && <div className="mt-3 border-t border-neutral-100 pt-3">{pagination}</div>}
     </section>
   );
 }
@@ -185,17 +248,12 @@ function ResultSection({
 
 function EndpointResultCard({ item }: { item: SearchResult }) {
   return (
-    <div className="rounded-lg border border-neutral-200 bg-white p-4 transition-all hover:shadow-card">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-navy-900">{item.name}</h3>
-          {item.url && (
-            <p className="mt-1 truncate font-mono text-xs text-neutral-500">{item.url}</p>
-          )}
-          {item.description && (
-            <p className="mt-1 line-clamp-2 text-sm text-neutral-500">{item.description}</p>
-          )}
+    <div className="rounded-lg border border-neutral-200 bg-white p-2.5 transition-all hover:shadow-card">
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0 flex-1 flex items-baseline gap-3">
+          <h3 className="font-semibold text-sm text-navy-900">{item.name}</h3>
         </div>
+        {/* TODO: Fix these links to point to actual working pages once implemented */}
         <Link
           to={`/endpoints?search=${encodeURIComponent(item.name)}`}
           className="shrink-0 text-navy-700 hover:text-sky-600"
@@ -215,17 +273,18 @@ function OrganizationResultCard({ item }: { item: SearchResult }) {
   const firstAddress = item.description?.split('\n')[0] || '';
 
   return (
-    <div className="rounded-lg border border-neutral-200 bg-white p-4 transition-all hover:shadow-card">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-navy-900">{item.name}</h3>
+    <div className="rounded-lg border border-neutral-200 bg-white p-2.5 transition-all hover:shadow-card">
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0 flex-1 flex items-center gap-3">
+          <h3 className="font-semibold text-sm text-navy-900">{item.name}</h3>
           {firstAddress && (
-            <p className="mt-1 flex items-center gap-1 text-sm text-neutral-500">
-              <MapPin size={13} className="shrink-0 text-neutral-400" />
+            <p className="flex items-center gap-1 text-xs text-neutral-500">
+              <MapPin size={12} className="shrink-0 text-neutral-400" />
               <span className="truncate">{firstAddress}</span>
             </p>
           )}
         </div>
+        {/* TODO: Fix these links to point to actual working pages once implemented */}
         <Link
           to={`/organizations?search=${encodeURIComponent(item.name)}`}
           className="shrink-0 text-navy-700 hover:text-sky-600"
@@ -242,16 +301,17 @@ function OrganizationResultCard({ item }: { item: SearchResult }) {
 
 function VendorResultCard({ item }: { item: SearchResult }) {
   return (
-    <div className="rounded-lg border border-neutral-200 bg-white p-4 transition-all hover:shadow-card">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-navy-900">{item.name}</h3>
+    <div className="rounded-lg border border-neutral-200 bg-white p-2.5 transition-all hover:shadow-card">
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0 flex-1 flex items-center gap-3">
+          <h3 className="font-semibold text-sm text-navy-900">{item.name}</h3>
           {item.description && (
-            <p className="mt-1 line-clamp-2 text-sm text-neutral-500">{item.description}</p>
+            <p className="line-clamp-1 text-xs text-neutral-500">{item.description}</p>
           )}
         </div>
+        {/* TODO: Fix these links to point to actual working pages once implemented */}
         <Link
-          to={`/endpoints?search=${encodeURIComponent(item.name)}`}
+          to={`/endpoints?vendor=${encodeURIComponent(item.name)}`}
           className="shrink-0 text-navy-700 hover:text-sky-600"
           title="View endpoints by this vendor"
         >

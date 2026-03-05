@@ -50,13 +50,13 @@ func (h *Handler) EndpointDetails(w http.ResponseWriter, r *http.Request) {
 
 	// Latest metadata
 	h.db.QueryRowContext(ctx,
-		`SELECT http_response, response_time_seconds, smart_http_response, availability
+		`SELECT http_response, response_time_seconds, availability
 		 FROM fhir_endpoints_metadata
 		 WHERE url = $1 AND requested_fhir_version = $2
 		 ORDER BY updated_at DESC LIMIT 1`,
 		endpointURL, requestedFHIRVersion,
 	).Scan(&detail.HTTPResponse, &detail.ResponseTimeSeconds,
-		&detail.SMARTHTTPResponse, &detail.Availability)
+		&detail.Availability)
 
 	// Organizations
 	orgRows, err := h.db.QueryContext(ctx,

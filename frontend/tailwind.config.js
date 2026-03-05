@@ -62,16 +62,16 @@ export default {
       },
       fontFamily: {
         sans: [
-          'Source Sans 3',
-          'Source Sans Pro',
+          "'Source Sans 3'",
+          "'Source Sans Pro'",
           '-apple-system',
           'BlinkMacSystemFont',
-          'Segoe UI',
+          "'Segoe UI'",
           'Roboto',
           'sans-serif',
         ],
-        serif: ['Merriweather', 'Georgia', 'serif'],
-        mono: ['Source Code Pro', 'Fira Code', 'Courier New', 'monospace'],
+        serif: ["'Merriweather'", 'Georgia', 'serif'],
+        mono: ["'Source Code Pro'", "'Courier New'", 'monospace'],
       },
       fontSize: {
         '2xs': '0.625rem',

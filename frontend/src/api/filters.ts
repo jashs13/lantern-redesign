@@ -9,8 +9,17 @@ export async function fetchFHIRVersions(): Promise<FilterOption[]> {
   return apiClient<FilterOption[]>('/api/v1/filters/fhir-versions');
 }
 
+/** Returns which FHIR version group names have data (e.g. ["R4", "DSTU2", "No Cap Stat"]). */
+export async function fetchFHIRVersionGroups(): Promise<string[]> {
+  return apiClient<string[]>('/api/v1/filters/fhir-version-groups');
+}
+
 export async function fetchFilterResources(): Promise<FilterOption[]> {
   return apiClient<FilterOption[]>('/api/v1/filters/resources');
+}
+
+export async function fetchFilterOperations(): Promise<FilterOption[]> {
+  return apiClient<FilterOption[]>('/api/v1/filters/operations');
 }
 
 export async function fetchAuthTypes(): Promise<FilterOption[]> {
@@ -23,4 +32,8 @@ export async function fetchFilterProfiles(): Promise<FilterOption[]> {
 
 export async function fetchValidationGroups(): Promise<FilterOption[]> {
   return apiClient<FilterOption[]>('/api/v1/filters/validation-groups');
+}
+
+export async function fetchStates(): Promise<FilterOption[]> {
+  return apiClient<FilterOption[]>('/api/v1/filters/states');
 }

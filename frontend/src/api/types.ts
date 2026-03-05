@@ -23,13 +23,16 @@ export interface DashboardSummary {
   response_tally: ResponseTally;
   vendor_counts: VendorFHIRCount[];
   http_codes: HTTPCodeCount[];
+  top_organizations?: string[];
 }
 
 export interface EndpointTotals {
   all_endpoints: number;
   indexed_endpoints: number;
   non_indexed_endpoints: number;
+  organizations: number;
   last_updated: string;
+  avg_response_time?: number;
 }
 
 export interface ResponseTally {
@@ -143,10 +146,21 @@ export interface Organization {
 // Search
 // =============================================================================
 
+export interface SearchQueryParams {
+  q: string;
+  limit?: number;
+  endpoint_page?: number;
+  organization_page?: number;
+  vendor_page?: number;
+}
+
 export interface SearchResponse {
   endpoints: SearchResult[];
+  endpoints_total: number;
   organizations: SearchResult[];
+  organizations_total: number;
   vendors: SearchResult[];
+  vendors_total: number;
   total_count: number;
 }
 
@@ -184,6 +198,11 @@ export interface FieldValue {
   field_value: string;
   fhir_version: string;
   endpoint_count: number;
+}
+
+export interface FieldValueSummary {
+  is_used: string;
+  count: number;
 }
 
 // =============================================================================
@@ -288,20 +307,18 @@ export interface AuthTypeCount {
 export interface SmartEndpoint {
   url: string;
   vendor_name: string | null;
+  organization_names: string | null;
   fhir_version: string | null;
   smart_http_response: number | null;
 }
 
 export interface SmartSummaryData {
-  well_known_summary: WellKnownSummary[];
+  total_indexed: number;
+  http_200: number;
+  smart_http_200: number;
+  well_known_valid_doc: number;
+  well_known_invalid_doc: number;
   capability_counts: SmartCapability[];
-}
-
-export interface WellKnownSummary {
-  vendor_name: string | null;
-  fhir_version: string | null;
-  http_200_count: number;
-  total_count: number;
 }
 
 export interface SmartCapability {
@@ -355,10 +372,14 @@ export interface OrganizationQueryParams {
   fhir_versions?: string[];
   vendor?: string;
   search?: string;
+  state?: string;
 }
 
 export interface ResourceQueryParams {
+  page?: number;
+  page_size?: number;
   fhir_versions?: string[];
+  vendor?: string;
   resources?: string[];
   operations?: string[];
   search?: string;
@@ -376,6 +397,7 @@ export interface SmartQueryParams {
   page?: number;
   page_size?: number;
   fhir_versions?: string[];
+  vendor?: string;
   search?: string;
 }
 
@@ -408,15 +430,24 @@ export interface FieldQueryParams {
   page?: number;
   page_size?: number;
   fhir_versions?: string[];
+  vendor?: string;
   search?: string;
+  is_extension?: boolean;
 }
 
 export interface FieldValueQueryParams {
   page?: number;
   page_size?: number;
   fhir_versions?: string[];
-  field_name?: string;
+  vendor?: string;
+  field?: string;
   search?: string;
+}
+
+export interface FieldValueSummaryQueryParams {
+  fhir_versions?: string[];
+  vendor?: string;
+  field?: string;
 }
 
 export interface SearchQueryParams {
@@ -426,10 +457,14 @@ export interface SearchQueryParams {
 
 export interface CapStatSizeQueryParams {
   fhir_versions?: string[];
+  vendor?: string;
+  page?: number;
+  page_size?: number;
 }
 
 export interface ImplementationGuideQueryParams {
   fhir_versions?: string[];
+  vendor?: string;
   page?: number;
   page_size?: number;
 }

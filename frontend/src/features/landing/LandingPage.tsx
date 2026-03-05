@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import type { HTTPCodeCount } from '@/api/types';
 import { fetchDashboardSummary } from '@/api/dashboard';
 import {
   Search,
@@ -17,31 +18,56 @@ import {
    ========================================================================= */
 
 export default function LandingPage() {
-  const { data: summary } = useQuery({
-    queryKey: ['dashboard', 'summary'],
+  const query = useQuery({
+    queryKey: ['dashboardSummary'],
     queryFn: () => fetchDashboardSummary(),
     staleTime: 5 * 60 * 1000,
   });
 
-  const totalEndpoints = summary?.totals?.all_endpoints ?? 0;
-  const http200 = summary?.response_tally?.http_200 ?? 0;
-  const uniqueVendors = summary?.vendor_counts
-    ? new Set(summary.vendor_counts.map((v) => v.vendor_name)).size
-    : 0;
+  const { data: summary, isLoading, error } = query;
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-8">
+        <p className="text-navy-900 animate-pulse text-lg">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-8">
+        <div className="rounded border border-red-200 bg-red-50 p-6 text-red-700">
+          <h2 className="mb-2 font-bold">Error loading dashboard</h2>
+          <p>{error instanceof Error ? error.message : 'Unknown error occurred'}</p>
+          <button
+            onClick={() => query.refetch()}
+            className="mt-4 rounded bg-red-100 px-4 py-2 hover:bg-red-200"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
-      <HeroSection totalEndpoints={totalEndpoints} />
+      <HeroSection totalEndpoints={summary?.totals?.all_endpoints || 0} />
       <SearchSection />
       <main id="main-content" style={{ padding: '3rem 1rem' }}>
         <div className="container-narrow">
           <TaskCardsSection />
           <NetworkStatsSection
-            totalEndpoints={totalEndpoints}
-            availableCount={http200}
-            vendorCount={uniqueVendors}
+            totalEndpoints={summary?.totals?.all_endpoints || 0}
+            organizationsCount={summary?.totals?.organizations || 0}
+            vendorCount={summary?.vendor_counts?.length || 0}
+            httpCodes={summary?.http_codes || []}
           />
-          <PopularSearchesSection />
+          <PopularSearchesSection
+            topOrganizations={summary?.top_organizations || []}
+            vendorCounts={summary?.vendor_counts || []}
+          />
         </div>
         <AboutSection />
       </main>
@@ -397,26 +423,40 @@ function TaskCardsSection() {
 
 function NetworkStatsSection({
   totalEndpoints,
-  availableCount,
+  organizationsCount,
   vendorCount,
+  httpCodes,
 }: {
   totalEndpoints: number;
-  availableCount: number;
+  organizationsCount: number;
   vendorCount: number;
+  httpCodes: HTTPCodeCount[];
 }) {
+  // Aggregate accurate network status directly from http_codes array
+  let availableCount = 0;
+  let degradedCount = 0;
+  let downCount = 0;
+
+  httpCodes.forEach(hc => {
+    if (hc.http_code >= 200 && hc.http_code <= 299) {
+      availableCount += hc.count_endpoints;
+    } else if (hc.http_code >= 300 && hc.http_code <= 499) {
+      degradedCount += hc.count_endpoints;
+    } else if (hc.http_code >= 500 || hc.http_code === 0) {
+      downCount += hc.count_endpoints;
+    }
+  });
   const availablePct =
-    totalEndpoints > 0 ? ((availableCount / totalEndpoints) * 100).toFixed(1) : '97.4';
-  const degradedCount = Math.round(totalEndpoints * 0.018);
-  const degradedPct = '1.8';
-  const downCount = totalEndpoints - availableCount - degradedCount;
-  const downPct = totalEndpoints > 0
-    ? ((downCount / totalEndpoints) * 100).toFixed(1)
-    : '0.8';
+    totalEndpoints > 0 ? ((availableCount / totalEndpoints) * 100).toFixed(1) : '0.0';
+  const degradedPct =
+    totalEndpoints > 0 ? ((degradedCount / totalEndpoints) * 100).toFixed(1) : '0.0';
+  const downPct =
+    totalEndpoints > 0 ? ((downCount / totalEndpoints) * 100).toFixed(1) : '0.0';
 
   const stats = [
-    { value: totalEndpoints || '70,234', label: 'Total Endpoints Monitored' },
-    { value: '12,847', label: 'Healthcare Organizations' },
-    { value: vendorCount || 156, label: 'EHR Developers/Vendors' },
+    { value: totalEndpoints.toLocaleString() || '0', label: 'Total Endpoints Monitored' },
+    { value: organizationsCount.toLocaleString() || '0', label: 'Healthcare Organizations' },
+    { value: vendorCount.toLocaleString() || '0', label: 'EHR Developers/Vendors' },
     { value: `${availablePct}%`, label: 'Currently Available' },
   ];
 
@@ -484,7 +524,7 @@ function NetworkStatsSection({
                   marginBottom: '0.25rem',
                 }}
               >
-                {typeof s.value === 'number' ? s.value.toLocaleString() : s.value}
+                {s.value}
               </span>
               <span style={{ color: 'var(--color-gray)', fontSize: '0.9375rem' }}>
                 {s.label}
@@ -605,27 +645,41 @@ function NetworkStatsSection({
 
 /* ── Popular Searches Section ─────────────────────────────────────────── */
 
-const POPULAR_SEARCHES = {
-  Organizations: [
-    'Mayo Clinic',
-    'Cleveland Clinic',
-    'Johns Hopkins',
-    'Kaiser Permanente',
-    'Partners Healthcare',
-    'UCSF Health',
-  ],
-  Developers: [
-    'Epic Systems',
-    'Cerner/Oracle',
-    'Allscripts',
-    'athenahealth',
-    'eClinicalWorks',
-    'Meditech',
-  ],
-  'By Location': ['California', 'Texas', 'New York', 'Massachusetts', 'Florida', 'Illinois'],
-};
+function PopularSearchesSection({
+  topOrganizations,
+  vendorCounts,
+}: {
+  topOrganizations: string[];
+  vendorCounts: import('@/api/types').VendorFHIRCount[];
+}) {
+  // Aggregate counts by vendor_name (vendors have multiple entries for different FHIR versions)
+  // and filter out 'Unknown' vendor
+  const vendorTotals = vendorCounts.reduce((acc, v) => {
+    if (v.vendor_name && v.vendor_name.toLowerCase() !== 'unknown') {
+      acc[v.vendor_name] = (acc[v.vendor_name] || 0) + v.count;
+    }
+    return acc;
+  }, {} as Record<string, number>);
 
-function PopularSearchesSection() {
+  const topDevelopers = Object.entries(vendorTotals)
+    .sort(([, aCount], [, bCount]) => bCount - aCount)
+    .slice(0, 6)
+    .map(([name]) => name);
+
+  // Use fallback values if API hasn't loaded them yet
+  const displayOrgs = topOrganizations.length > 0
+    ? topOrganizations
+    : ['Mayo Clinic', 'Cleveland Clinic', 'Johns Hopkins', 'Kaiser Permanente', 'Partners Healthcare', 'UCSF Health'];
+
+  const displayDevs = topDevelopers.length > 0
+    ? topDevelopers
+    : ['Epic Systems', 'Cerner/Oracle', 'Allscripts', 'athenahealth', 'eClinicalWorks', 'Meditech'];
+
+  const dynamicSearches = {
+    Organizations: displayOrgs,
+    Developers: displayDevs,
+  };
+
   return (
     <section style={{ marginBottom: '4rem' }} aria-labelledby="popular-heading">
       <div className="text-center" style={{ marginBottom: '2rem' }}>
@@ -638,7 +692,7 @@ function PopularSearchesSection() {
             marginBottom: '0.5rem',
           }}
         >
-          Popular Searches
+          Top Organizations & Developers
         </h2>
         <p
           className="mx-auto"
@@ -648,7 +702,7 @@ function PopularSearchesSection() {
             maxWidth: '600px',
           }}
         >
-          Quick access to frequently searched organizations, developers, and locations.
+          Browse the most active healthcare organizations and EHR developers in the network.
         </p>
       </div>
 
@@ -659,28 +713,28 @@ function PopularSearchesSection() {
           gap: '1.5rem',
         }}
       >
-        {Object.entries(POPULAR_SEARCHES).map(([category, items]) => (
+        {Object.entries(dynamicSearches).map(([category, items]) => (
           <div
             key={category}
             style={{
-              background: 'var(--color-white)',
+              flex: 1,
+              background: '#fff',
               border: '1px solid var(--color-gray-lighter)',
               borderRadius: '8px',
               padding: '1.5rem',
             }}
           >
-            <h3
+            <div
               style={{
-                fontSize: '1rem',
-                fontWeight: 700,
-                color: 'var(--color-primary-dark)',
-                marginBottom: '0.75rem',
-                paddingBottom: '0.5rem',
-                borderBottom: '2px solid var(--color-gray-lightest)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginBottom: '1rem',
               }}
             >
-              {category}
-            </h3>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--color-primary-dark)' }}>
+                {category}
+              </h3>
+            </div>
             <div className="flex flex-wrap gap-2">
               {items.map((item) => (
                 <Link

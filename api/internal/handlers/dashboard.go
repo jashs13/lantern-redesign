@@ -31,6 +31,19 @@ func (h *Handler) DashboardSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 1a. Organizations count
+	err = h.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM mv_organizations_final`).Scan(&summary.Totals.Organizations)
+	if err != nil {
+		log.WithError(err).Warn("querying organizations count")
+	}
+
+	// 1b. Average response time — read from precomputed MV (live AVG over 31.5M rows takes 58s)
+	err = h.db.QueryRowContext(ctx,
+		`SELECT COALESCE(avg_response_time, 0) FROM mv_avg_response_time LIMIT 1`).Scan(&summary.Totals.AvgResponseTime)
+	if err != nil {
+		log.WithError(err).Warn("querying average response time")
+	}
+
 	// 2. Response tally
 	err = h.db.QueryRowContext(ctx,
 		`SELECT COALESCE(http_200, 0), COALESCE(http_404, 0), COALESCE(http_503, 0)
@@ -92,6 +105,29 @@ func (h *Handler) DashboardSummary(w http.ResponseWriter, r *http.Request) {
 	}
 	if summary.HTTPCodes == nil {
 		summary.HTTPCodes = []models.HTTPCodeCount{}
+	}
+
+	// 5. Top Organizations — ordered by endpoint count, junk names filtered out
+	orgRows, err := h.db.QueryContext(ctx,
+		`SELECT organization_name
+		 FROM mv_organizations_final
+		 WHERE organization_name IS NOT NULL
+		   AND organization_name ~ '^[A-Za-z0-9]'
+		 ORDER BY array_length(urls_array, 1) DESC NULLS LAST, organization_name ASC
+		 LIMIT 6`)
+	if err != nil {
+		log.WithError(err).Warn("querying top organizations")
+	} else {
+		defer orgRows.Close()
+		for orgRows.Next() {
+			var org string
+			if err := orgRows.Scan(&org); err == nil {
+				summary.TopOrganizations = append(summary.TopOrganizations, org)
+			}
+		}
+	}
+	if summary.TopOrganizations == nil {
+		summary.TopOrganizations = []string{}
 	}
 
 	models.WriteJSON(w, http.StatusOK, summary)

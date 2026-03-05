@@ -11,7 +11,7 @@ import (
 // FilterVendors returns distinct vendor names.
 func (h *Handler) FilterVendors(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.db.QueryContext(r.Context(),
-		`SELECT DISTINCT name FROM vendors WHERE name IS NOT NULL ORDER BY name`)
+		`SELECT DISTINCT vendor_name FROM endpoint_export_mv WHERE vendor_name IS NOT NULL ORDER BY vendor_name`)
 	if err != nil {
 		log.WithError(err).Error("querying vendor filter")
 		models.WriteError(w, http.StatusInternalServerError, "failed to fetch vendors")
@@ -62,12 +62,67 @@ func (h *Handler) FilterFHIRVersions(w http.ResponseWriter, r *http.Request) {
 	models.WriteJSON(w, http.StatusOK, options)
 }
 
+// FilterFHIRVersionGroups returns which FHIR version group names (DSTU2, STU3, R4, R4B, R5,
+// No Cap Stat, Unknown) have at least one endpoint in fhir_endpoint_comb_mv.
+func (h *Handler) FilterFHIRVersionGroups(w http.ResponseWriter, r *http.Request) {
+	rows, err := h.db.QueryContext(r.Context(),
+		`SELECT DISTINCT fhir_version FROM fhir_endpoint_comb_mv WHERE fhir_version IS NOT NULL`)
+	if err != nil {
+		log.WithError(err).Error("querying FHIR version groups filter")
+		models.WriteError(w, http.StatusInternalServerError, "failed to fetch FHIR version groups")
+		return
+	}
+	defer rows.Close()
+
+	// Collect all distinct raw fhir_version values present in the DB
+	rawVersions := make(map[string]bool)
+	for rows.Next() {
+		var v string
+		if err := rows.Scan(&v); err != nil {
+			continue
+		}
+		rawVersions[v] = true
+	}
+
+	// Map each raw version to its group name; preserve display order
+	type groupEntry struct {
+		name     string
+		versions []string
+	}
+	groups := []groupEntry{
+		{"DSTU2", models.DSTU2Versions},
+		{"STU3", models.STU3Versions},
+		{"R4", models.R4Versions},
+		{"R4B", models.R4BVersions},
+		{"R5", models.R5Versions},
+	}
+
+	var result []string
+	for _, g := range groups {
+		for _, v := range g.versions {
+			if rawVersions[v] {
+				result = append(result, g.name)
+				break
+			}
+		}
+	}
+	// Special literal values stored directly in fhir_version column
+	if rawVersions["No Cap Stat"] {
+		result = append(result, "No Cap Stat")
+	}
+	if rawVersions["Unknown"] {
+		result = append(result, "Unknown")
+	}
+
+	models.WriteJSON(w, http.StatusOK, result)
+}
+
 // FilterResources returns distinct resource types.
 func (h *Handler) FilterResources(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.db.QueryContext(r.Context(),
-		`SELECT DISTINCT resource_type FROM mv_endpoint_resource_types
-		 WHERE resource_type IS NOT NULL
-		 ORDER BY resource_type`)
+		`SELECT DISTINCT type FROM mv_endpoint_resource_types
+		 WHERE type IS NOT NULL
+		 ORDER BY type`)
 	if err != nil {
 		log.WithError(err).Error("querying resource filter")
 		models.WriteError(w, http.StatusInternalServerError, "failed to fetch resources")
@@ -134,6 +189,58 @@ func (h *Handler) FilterProfiles(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		options = append(options, models.FilterOption{Value: p})
+	}
+	if options == nil {
+		options = []models.FilterOption{}
+	}
+	models.WriteJSON(w, http.StatusOK, options)
+}
+
+// FilterStates returns distinct 2-letter US state codes from mv_organization_states (precomputed MV).
+func (h *Handler) FilterStates(w http.ResponseWriter, r *http.Request) {
+	rows, err := h.db.QueryContext(r.Context(),
+		`SELECT state FROM mv_organization_states WHERE state IS NOT NULL ORDER BY state`)
+	if err != nil {
+		log.WithError(err).Error("querying states filter")
+		models.WriteError(w, http.StatusInternalServerError, "failed to fetch states")
+		return
+	}
+	defer rows.Close()
+
+	var options []models.FilterOption
+	for rows.Next() {
+		var state string
+		if err := rows.Scan(&state); err != nil {
+			log.WithError(err).Error("scanning state row")
+			continue
+		}
+		options = append(options, models.FilterOption{Value: state})
+	}
+	if options == nil {
+		options = []models.FilterOption{}
+	}
+	models.WriteJSON(w, http.StatusOK, options)
+}
+
+// FilterOperations returns distinct operation codes from mv_resource_interactions.
+func (h *Handler) FilterOperations(w http.ResponseWriter, r *http.Request) {
+	rows, err := h.db.QueryContext(r.Context(),
+		`SELECT DISTINCT op FROM mv_resource_interactions, unnest(operations) AS op
+		 WHERE op IS NOT NULL ORDER BY op`)
+	if err != nil {
+		log.WithError(err).Error("querying operations filter")
+		models.WriteError(w, http.StatusInternalServerError, "failed to fetch operations")
+		return
+	}
+	defer rows.Close()
+
+	var options []models.FilterOption
+	for rows.Next() {
+		var op string
+		if err := rows.Scan(&op); err != nil {
+			continue
+		}
+		options = append(options, models.FilterOption{Value: op})
 	}
 	if options == nil {
 		options = []models.FilterOption{}

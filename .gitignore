@@ -30,3 +30,6 @@ certs/
 .RData
 .Ruserdata
 shiny_logs/
+
+# Claude files
+.claude/

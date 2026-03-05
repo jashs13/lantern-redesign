@@ -2,18 +2,21 @@ package models
 
 // DashboardSummary combines all dashboard data.
 type DashboardSummary struct {
-	Totals       EndpointTotals    `json:"totals"`
-	ResponseTally ResponseTally    `json:"response_tally"`
-	VendorCounts []VendorFHIRCount `json:"vendor_counts"`
-	HTTPCodes    []HTTPCodeCount   `json:"http_codes"`
+	Totals           EndpointTotals    `json:"totals"`
+	ResponseTally    ResponseTally     `json:"response_tally"`
+	VendorCounts     []VendorFHIRCount `json:"vendor_counts"`
+	HTTPCodes        []HTTPCodeCount   `json:"http_codes"`
+	TopOrganizations []string          `json:"top_organizations"`
 }
 
 // EndpointTotals from mv_endpoint_totals.
 type EndpointTotals struct {
-	AllEndpoints       int    `json:"all_endpoints"`
-	IndexedEndpoints   int    `json:"indexed_endpoints"`
-	NonIndexedEndpoints int   `json:"non_indexed_endpoints"`
-	LastUpdated        string `json:"last_updated"`
+	AllEndpoints        int     `json:"all_endpoints"`
+	IndexedEndpoints    int     `json:"indexed_endpoints"`
+	NonIndexedEndpoints int     `json:"non_indexed_endpoints"`
+	Organizations       int     `json:"organizations"`
+	LastUpdated         string  `json:"last_updated"`
+	AvgResponseTime     float64 `json:"avg_response_time"`
 }
 
 // ResponseTally from mv_response_tally.
