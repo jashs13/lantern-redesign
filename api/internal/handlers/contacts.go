@@ -36,9 +36,9 @@ func (h *Handler) ListContacts(w http.ResponseWriter, r *http.Request) {
 	if hasContact := q.Get("has_contact"); hasContact != "" {
 		switch strings.ToLower(hasContact) {
 		case "true":
-			conditions = append(conditions, "contact_name IS NOT NULL")
+			conditions = append(conditions, "has_contact = TRUE")
 		case "false":
-			conditions = append(conditions, "contact_name IS NULL")
+			conditions = append(conditions, "has_contact = FALSE")
 		}
 	}
 
