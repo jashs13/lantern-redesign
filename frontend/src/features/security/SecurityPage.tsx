@@ -65,7 +65,7 @@ function buildColumns(
         if (names.length === 0) return <span className="text-neutral-400 text-xs">—</span>;
         const visible = names.slice(0, 3);
         return (
-          <div className="min-w-0">
+          <div className="min-w-0 max-w-[180px]">
             <p className="truncate text-xs text-neutral-600">{visible.join('; ')}</p>
             {row.original.has_more_orgs && (
               <button
@@ -103,7 +103,7 @@ function buildColumns(
       cell: ({ getValue }) => {
         const code = getValue() as string | null;
         return code ? (
-          <span className="inline-flex items-center whitespace-nowrap rounded bg-status-green-bg px-2 py-0.5 text-xs font-medium text-status-green">
+          <span className="inline-flex items-center rounded bg-status-green-bg px-2 py-0.5 text-xs font-medium text-status-green">
             {code}
           </span>
         ) : (
