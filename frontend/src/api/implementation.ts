@@ -12,6 +12,7 @@ export async function fetchImplementationGuides(
 ): Promise<PaginatedResponse<ImplementationGuide>> {
   return apiClient<PaginatedResponse<ImplementationGuide>>('/api/v1/implementation-guides', {
     fhir_versions: params?.fhir_versions,
+    vendor: params?.vendor,
     page: params?.page,
     page_size: params?.page_size,
   });

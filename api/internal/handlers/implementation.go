@@ -14,6 +14,7 @@ import (
 func (h *Handler) ImplementationGuides(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := r.URL.Query()
+	page, pageSize := models.ParsePagination(r)
 
 	var conditions []string
 	var args []any
@@ -37,10 +38,30 @@ func (h *Handler) ImplementationGuides(w http.ResponseWriter, r *http.Request) {
 		whereClause = "WHERE " + strings.Join(conditions, " AND ")
 	}
 
-	rows, err := h.db.QueryContext(ctx,
-		fmt.Sprintf(`SELECT ig_name, fhir_version, count
-		 FROM mv_implementation_guide %s
-		 ORDER BY count DESC, ig_name`, whereClause), args...)
+	// Count distinct (implementation_guide, fhir_version) pairs
+	var totalCount int
+	countSQL := fmt.Sprintf(`
+		SELECT COUNT(*) FROM (
+			SELECT implementation_guide, fhir_version
+			FROM mv_implementation_guide %s
+			GROUP BY implementation_guide, fhir_version
+		) sub`, whereClause)
+	if err := h.db.QueryRowContext(ctx, countSQL, args...).Scan(&totalCount); err != nil {
+		log.WithError(err).Error("counting implementation guides")
+		models.WriteError(w, http.StatusInternalServerError, "failed to fetch implementation guides")
+		return
+	}
+
+	// Paginated data query with correct column name and aggregation
+	args = append(args, pageSize, models.Offset(page, pageSize))
+	dataSQL := fmt.Sprintf(`
+		SELECT implementation_guide, fhir_version, COUNT(DISTINCT url) AS count
+		FROM mv_implementation_guide %s
+		GROUP BY implementation_guide, fhir_version
+		ORDER BY count DESC, implementation_guide
+		LIMIT $%d OFFSET $%d`, whereClause, argIdx, argIdx+1)
+
+	rows, err := h.db.QueryContext(ctx, dataSQL, args...)
 	if err != nil {
 		log.WithError(err).Error("querying implementation guides")
 		models.WriteError(w, http.StatusInternalServerError, "failed to fetch implementation guides")
@@ -59,7 +80,12 @@ func (h *Handler) ImplementationGuides(w http.ResponseWriter, r *http.Request) {
 	if guides == nil {
 		guides = []models.ImplementationGuide{}
 	}
-	models.WriteJSON(w, http.StatusOK, guides)
+
+	resp := models.PaginatedResponse[models.ImplementationGuide]{
+		Data:       guides,
+		Pagination: models.NewPagination(page, pageSize, totalCount),
+	}
+	models.WriteJSON(w, http.StatusOK, resp)
 }
 
 // CapStatSizes returns capability statement size statistics.
