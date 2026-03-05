@@ -26,11 +26,11 @@ const columns: ColumnDef<Contact, unknown>[] = [
   },
   {
     accessorKey: 'vendor_name',
-    header: 'Vendor',
+    header: 'Developer',
     cell: ({ getValue }) => {
       const vendor = getValue() as string | null;
       return vendor ? (
-        <Badge variant="navy">{vendor}</Badge>
+        <Badge variant="navy" className="whitespace-nowrap">{vendor}</Badge>
       ) : (
         <span className="text-neutral-400">—</span>
       );
