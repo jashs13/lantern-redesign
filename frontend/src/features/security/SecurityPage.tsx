@@ -103,7 +103,7 @@ function buildColumns(
       cell: ({ getValue }) => {
         const code = getValue() as string | null;
         return code ? (
-          <span className="inline-flex items-center rounded bg-status-green-bg px-2 py-0.5 text-xs font-medium text-status-green">
+          <span className="inline-flex items-center whitespace-nowrap rounded bg-status-green-bg px-2 py-0.5 text-xs font-medium text-status-green">
             {code}
           </span>
         ) : (
