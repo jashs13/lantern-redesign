@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { fetchImplementationGuides } from '@/api/implementation';
+import { fetchFHIRVersions, fetchVendors } from '@/api/filters';
 import { DataTable } from '@/components/ui/DataTable';
+import { Select } from '@/components/ui/Select';
+import { FilterTag } from '@/components/ui/FilterTag';
+import { MultiSelectDropdown } from '@/components/ui/MultiSelectDropdown';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Badge } from '@/components/ui/Badge';
@@ -38,19 +43,52 @@ const columns: ColumnDef<ImplementationGuide, unknown>[] = [
   },
 ];
 
+const LABEL_STYLE: React.CSSProperties = {
+  fontSize: '0.8125rem',
+  color: 'var(--color-gray-dark)',
+  letterSpacing: '0.03em',
+  fontWeight: 700,
+};
+
+const ALL = '__all__';
+
 export default function ImplementationGuidesPage() {
   const { filters } = useFilters();
   const { page, pageSize, setPage } = usePagination();
 
+  const [fhirVersions, setFhirVersions] = useState<string[]>(filters.fhirVersions ?? []);
+  const [vendor, setVendor] = useState<string | null>(null);
+
+  const { data: fhirVersionOptions = [] } = useQuery({
+    queryKey: ['filters', 'fhir-versions'],
+    queryFn: fetchFHIRVersions,
+  });
+
+  const { data: vendorOptions = [] } = useQuery({
+    queryKey: ['filters', 'vendors'],
+    queryFn: fetchVendors,
+  });
+
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['implementation-guides', page, pageSize, filters.fhirVersions],
+    queryKey: ['implementation-guides', page, pageSize, fhirVersions, vendor],
     queryFn: () =>
       fetchImplementationGuides({
-        fhir_versions: filters.fhirVersions,
+        fhir_versions: fhirVersions.length > 0 ? fhirVersions : undefined,
+        vendor: vendor ?? undefined,
         page,
         page_size: pageSize,
       }),
   });
+
+  function handleFhirVersionChange(v: string[]) {
+    setFhirVersions(v);
+    setPage(1);
+  }
+
+  function handleVendorChange(v: string) {
+    setVendor(v === ALL ? null : v);
+    setPage(1);
+  }
 
   if (error) return <ErrorState message={error.message} onRetry={() => refetch()} />;
 
@@ -61,6 +99,55 @@ export default function ImplementationGuidesPage() {
         subtitle="FHIR implementation guides referenced by endpoints"
         breadcrumbs={[{ label: 'Implementation Guides' }]}
       />
+
+      <section
+        className="rounded-md bg-white"
+        style={{ padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}
+        aria-label="Filters"
+      >
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="flex flex-col gap-2">
+            <label className="font-sans font-bold uppercase" style={LABEL_STYLE}>
+              FHIR Version
+            </label>
+            <MultiSelectDropdown
+              options={fhirVersionOptions.map((o) => o.value)}
+              selected={fhirVersions}
+              onChange={handleFhirVersionChange}
+              placeholder="FHIR Versions"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="font-sans font-bold uppercase" style={LABEL_STYLE}>
+              Developer
+            </label>
+            <Select
+              value={vendor ?? ALL}
+              onValueChange={handleVendorChange}
+              options={[
+                { value: ALL, label: 'All Developers' },
+                ...vendorOptions.map((o) => ({ value: o.value, label: o.value })),
+              ]}
+              placeholder="All Developers"
+            />
+          </div>
+        </div>
+
+        {vendor && (
+          <div
+            className="mt-4 flex flex-wrap gap-2"
+            style={{ paddingTop: '1rem', borderTop: '1px solid var(--color-gray-lighter)' }}
+            aria-live="polite"
+          >
+            <FilterTag
+              label="Developer"
+              value={vendor}
+              onRemove={() => { setVendor(null); setPage(1); }}
+            />
+          </div>
+        )}
+      </section>
 
       <DataTable
         data={data?.data ?? []}

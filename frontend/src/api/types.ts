@@ -447,6 +447,7 @@ export interface CapStatSizeQueryParams {
 
 export interface ImplementationGuideQueryParams {
   fhir_versions?: string[];
+  vendor?: string;
   page?: number;
   page_size?: number;
 }
