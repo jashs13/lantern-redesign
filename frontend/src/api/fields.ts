@@ -1,14 +1,22 @@
 import { apiClient } from './client';
-import type { Field, FieldQueryParams, FieldValue, FieldValueQueryParams, PaginatedResponse } from './types';
+import type {
+  Field,
+  FieldQueryParams,
+  FieldValue,
+  FieldValueQueryParams,
+  FieldValueSummary,
+  FieldValueSummaryQueryParams,
+  PaginatedResponse
+} from './types';
 
 export async function fetchFields(
   params?: FieldQueryParams,
-): Promise<PaginatedResponse<Field>> {
-  return apiClient<PaginatedResponse<Field>>('/api/v1/fields', {
-    page: params?.page,
-    page_size: params?.page_size,
+): Promise<Field[]> {
+  return apiClient<Field[]>('/api/v1/fields', {
     fhir_versions: params?.fhir_versions,
+    vendor: params?.vendor,
     search: params?.search,
+    is_extension: params?.is_extension,
   });
 }
 
@@ -19,7 +27,18 @@ export async function fetchFieldValues(
     page: params?.page,
     page_size: params?.page_size,
     fhir_versions: params?.fhir_versions,
-    field_name: params?.field_name,
+    vendor: params?.vendor,
+    field: params?.field,
     search: params?.search,
+  });
+}
+
+export async function fetchFieldValueSummary(
+  params?: FieldValueSummaryQueryParams,
+): Promise<FieldValueSummary[]> {
+  return apiClient<FieldValueSummary[]>('/api/v1/field-value-summary', {
+    fhir_versions: params?.fhir_versions,
+    vendor: params?.vendor,
+    field: params?.field,
   });
 }

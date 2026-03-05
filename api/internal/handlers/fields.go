@@ -32,15 +32,30 @@ func (h *Handler) ListFields(w http.ResponseWriter, r *http.Request) {
 		argIdx++
 	}
 
-	whereClause := ""
-	if len(conditions) > 0 {
-		whereClause = "WHERE " + strings.Join(conditions, " AND ")
+	if search := q.Get("search"); search != "" {
+		conditions = append(conditions, fmt.Sprintf("field ILIKE $%d", argIdx))
+		args = append(args, "%"+search+"%")
+		argIdx++
 	}
 
-	rows, err := h.db.QueryContext(ctx,
-		fmt.Sprintf(`SELECT field_name, fhir_version, count, is_required
-		 FROM mv_capstat_fields %s
-		 ORDER BY field_name, fhir_version`, whereClause), args...)
+	isExtension := "false"
+	if q.Get("is_extension") == "true" {
+		isExtension = "true"
+	}
+
+	whereClause := fmt.Sprintf("WHERE extension = '%s' AND exist = 'true'", isExtension)
+	if len(conditions) > 0 {
+		whereClause += " AND " + strings.Join(conditions, " AND ")
+	}
+
+	dataQuery := fmt.Sprintf(`SELECT field as field_name, fhir_version, COUNT(DISTINCT endpoint_id) as count, 
+		 field IN ('status', 'kind', 'fhirVersion', 'format', 'date') as is_required
+		 FROM mv_capstat_fields 
+		 %s
+		 GROUP BY field, fhir_version
+		 ORDER BY is_required DESC, field, fhir_version`, whereClause)
+
+	rows, err := h.db.QueryContext(ctx, dataQuery, args...)
 	if err != nil {
 		log.WithError(err).Error("querying fields")
 		models.WriteError(w, http.StatusInternalServerError, "failed to fetch fields")
@@ -78,36 +93,43 @@ func (h *Handler) FieldValues(w http.ResponseWriter, r *http.Request) {
 	var args []any
 	argIdx := 1
 
-	conditions = append(conditions, fmt.Sprintf("field_name = $%d", argIdx))
+	conditions = append(conditions, fmt.Sprintf("field = $%d", argIdx))
 	args = append(args, field)
 	argIdx++
 
 	if fv := q.Get("fhir_versions"); fv != "" {
 		versions := models.ExpandVersionGroups(strings.Split(fv, ","))
-		conditions = append(conditions, fmt.Sprintf("fhir_version = ANY($%d::text[])", argIdx))
+		conditions = append(conditions, fmt.Sprintf("\"FHIR Version\" = ANY($%d::text[])", argIdx))
 		args = append(args, pqStringArray(versions))
 		argIdx++
 	}
 
 	if vendor := q.Get("vendor"); vendor != "" {
-		conditions = append(conditions, fmt.Sprintf("vendor_name = $%d", argIdx))
+		conditions = append(conditions, fmt.Sprintf("\"Developer\" = $%d", argIdx))
 		args = append(args, vendor)
 		argIdx++
 	}
 
+	if search := q.Get("search"); search != "" {
+		conditions = append(conditions, fmt.Sprintf("field_value ILIKE $%d", argIdx))
+		args = append(args, "%"+search+"%")
+		argIdx++
+	}
+
+	conditions = append(conditions, "is_used = 'yes'")
 	whereClause := "WHERE " + strings.Join(conditions, " AND ")
 
 	// Count
 	var totalCount int
 	h.db.QueryRowContext(ctx,
-		fmt.Sprintf("SELECT COUNT(*) FROM mv_capstat_values %s", whereClause),
+		fmt.Sprintf("SELECT COUNT(*) FROM selected_fhir_endpoints_values_mv %s", whereClause),
 		args...).Scan(&totalCount)
 
 	// Data
 	dataQuery := fmt.Sprintf(
-		`SELECT field_name, field_value, fhir_version, endpoint_count
-		 FROM mv_capstat_values %s
-		 ORDER BY endpoint_count DESC
+		`SELECT field as field_name, field_value, "FHIR Version" as fhir_version, "Endpoints" as endpoint_count
+		 FROM selected_fhir_endpoints_values_mv %s
+		 ORDER BY "Endpoints" DESC
 		 LIMIT $%d OFFSET $%d`, whereClause, argIdx, argIdx+1)
 	args = append(args, pageSize, models.Offset(page, pageSize))
 
@@ -136,4 +158,66 @@ func (h *Handler) FieldValues(w http.ResponseWriter, r *http.Request) {
 		Pagination: models.NewPagination(page, pageSize, totalCount),
 	}
 	models.WriteJSON(w, http.StatusOK, resp)
+}
+
+// FieldValueSummary returns usage counts for a field from capstat_usage_summary_mv.
+func (h *Handler) FieldValueSummary(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := r.URL.Query()
+
+	field := q.Get("field")
+	if field == "" {
+		models.WriteError(w, http.StatusBadRequest, "field parameter is required")
+		return
+	}
+
+	var conditions []string
+	var args []any
+	argIdx := 1
+
+	conditions = append(conditions, fmt.Sprintf("field = $%d", argIdx))
+	args = append(args, field)
+	argIdx++
+
+	if fv := q.Get("fhir_versions"); fv != "" {
+		versions := models.ExpandVersionGroups(strings.Split(fv, ","))
+		conditions = append(conditions, fmt.Sprintf("\"FHIR Version\" = ANY($%d::text[])", argIdx))
+		args = append(args, pqStringArray(versions))
+		argIdx++
+	}
+
+	if vendor := q.Get("vendor"); vendor != "" {
+		conditions = append(conditions, fmt.Sprintf("\"Developer\" = $%d", argIdx))
+		args = append(args, vendor)
+		argIdx++
+	}
+
+	whereClause := "WHERE " + strings.Join(conditions, " AND ")
+
+	dataQuery := fmt.Sprintf(
+		`SELECT is_used, COALESCE(SUM(count), 0) AS count
+		 FROM capstat_usage_summary_mv %s
+		 GROUP BY is_used`, whereClause)
+
+	rows, err := h.db.QueryContext(ctx, dataQuery, args...)
+	if err != nil {
+		log.WithError(err).Error("querying field value summary")
+		models.WriteError(w, http.StatusInternalServerError, "failed to fetch field value summary")
+		return
+	}
+	defer rows.Close()
+
+	var summary []models.FieldValueSummary
+	for rows.Next() {
+		var s models.FieldValueSummary
+		if err := rows.Scan(&s.IsUsed, &s.Count); err != nil {
+			continue
+		}
+		summary = append(summary, s)
+	}
+	if summary == nil {
+		summary = []models.FieldValueSummary{}
+	}
+
+	models.WriteJSON(w, http.StatusOK, summary)
 }

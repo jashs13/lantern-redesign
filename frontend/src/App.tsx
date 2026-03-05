@@ -16,7 +16,6 @@ const ImplementationGuidesPage = lazy(
   () => import('@/features/implementation-guides/ImplementationGuidesPage'),
 );
 const FieldsPage = lazy(() => import('@/features/fields/FieldsPage'));
-const FieldValuesPage = lazy(() => import('@/features/fields/FieldValuesPage'));
 const ProfilesPage = lazy(() => import('@/features/profiles/ProfilesPage'));
 const CapStatSizePage = lazy(() => import('@/features/capstat-size/CapStatSizePage'));
 const ValidationsPage = lazy(() => import('@/features/validations/ValidationsPage'));
@@ -53,7 +52,6 @@ export default function App() {
               <Route path="resources" element={<Suspense fallback={<LoadingState />}><ResourcesPage /></Suspense>} />
               <Route path="implementation-guides" element={<Suspense fallback={<LoadingState />}><ImplementationGuidesPage /></Suspense>} />
               <Route path="fields" element={<Suspense fallback={<LoadingState />}><FieldsPage /></Suspense>} />
-              <Route path="field-values" element={<Suspense fallback={<LoadingState />}><FieldValuesPage /></Suspense>} />
               <Route path="profiles" element={<Suspense fallback={<LoadingState />}><ProfilesPage /></Suspense>} />
               <Route path="capstat-size" element={<Suspense fallback={<LoadingState />}><CapStatSizePage /></Suspense>} />
               <Route path="validations" element={<Suspense fallback={<LoadingState />}><ValidationsPage /></Suspense>} />
