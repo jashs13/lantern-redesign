@@ -8,6 +8,8 @@ export async function fetchContacts(
     page: params?.page,
     page_size: params?.page_size,
     fhir_versions: params?.fhir_versions,
+    vendor: params?.vendor,
+    has_contact: params?.has_contact,
     search: params?.search,
   });
 }

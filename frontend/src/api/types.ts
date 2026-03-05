@@ -417,6 +417,8 @@ export interface ContactQueryParams {
   page?: number;
   page_size?: number;
   fhir_versions?: string[];
+  vendor?: string;
+  has_contact?: 'true' | 'false';
   search?: string;
 }
 
