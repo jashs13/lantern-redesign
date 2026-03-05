@@ -56,13 +56,14 @@ export function DataTable<T>({
       {/* Table card */}
       <div className="overflow-hidden rounded-md border border-neutral-200 bg-white">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
+          <table className="min-w-full table-fixed text-sm">
             <thead className="bg-navy-900 text-white">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
+                      style={{ width: `${header.getSize()}%` }}
                       className={clsx(
                         'px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider',
                         header.column.getCanSort() ? 'cursor-pointer select-none' : 'cursor-default'
@@ -95,7 +96,7 @@ export function DataTable<T>({
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className="break-all px-4 py-3 align-middle text-neutral-800"
+                      className="overflow-hidden px-4 py-3 align-middle text-neutral-800"
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>

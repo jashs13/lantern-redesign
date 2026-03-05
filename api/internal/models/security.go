@@ -1,12 +1,16 @@
 package models
 
 // SecurityEndpoint represents a row from security_endpoints_distinct_mv.
+// Actual MV columns: url, condensed_organization_names, vendor_name,
+// capability_fhir_version, tls_version, code
 type SecurityEndpoint struct {
-	URL            string  `json:"url"`
-	VendorName     *string `json:"vendor_name"`
-	FHIRVersion    *string `json:"fhir_version"`
-	SecurityCode   *string `json:"security_code"`
-	SecuritySystem *string `json:"security_system"`
+	URL          string  `json:"url"`
+	OrgNames     *string `json:"org_names"`
+	VendorName   *string `json:"vendor_name"`
+	FHIRVersion  *string `json:"fhir_version"`
+	TLSVersion   *string `json:"tls_version"`
+	SecurityCode *string `json:"security_code"`
+	HasMoreOrgs  bool    `json:"has_more_orgs"`
 }
 
 // SecuritySummaryData combines security counts and auth type data.
@@ -16,13 +20,14 @@ type SecuritySummaryData struct {
 }
 
 // SecurityCount from mv_endpoint_security_counts.
+// Actual MV columns: "Status" (text), "Endpoints" (int)
 type SecurityCount struct {
-	FHIRVersion string `json:"fhir_version"`
-	HasSecurity int    `json:"has_security"`
-	NoSecurity  int    `json:"no_security"`
+	Status    string `json:"status"`
+	Endpoints int    `json:"endpoints"`
 }
 
 // AuthTypeCount from mv_auth_type_count.
+// Actual MV columns: "Code", "FHIR Version", "Endpoints", "Percent"
 type AuthTypeCount struct {
 	Code        string `json:"code"`
 	FHIRVersion string `json:"fhir_version"`

@@ -25,3 +25,7 @@ export async function fetchSecuritySummary(params?: {
     fhir_versions: params?.fhir_versions,
   });
 }
+
+export async function fetchSecurityOrgs(url: string): Promise<string[]> {
+  return apiClient<string[]>('/api/v1/security/orgs', { url });
+}

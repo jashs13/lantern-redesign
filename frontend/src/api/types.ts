@@ -277,10 +277,12 @@ export interface ValidationFailure {
 
 export interface SecurityEndpoint {
   url: string;
+  org_names: string | null;
   vendor_name: string | null;
   fhir_version: string | null;
+  tls_version: string | null;
   security_code: string | null;
-  security_system: string | null;
+  has_more_orgs: boolean;
 }
 
 export interface SecuritySummaryData {
@@ -289,9 +291,8 @@ export interface SecuritySummaryData {
 }
 
 export interface SecurityCount {
-  fhir_version: string;
-  has_security: number;
-  no_security: number;
+  status: string;
+  endpoints: number;
 }
 
 export interface AuthTypeCount {
