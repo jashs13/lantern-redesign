@@ -84,6 +84,7 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 		// Security
 		r.Get("/security", h.ListSecurity)
 		r.Get("/security/summary", h.SecuritySummary)
+		r.Get("/security/orgs", h.GetSecurityOrgs)
 
 		// SMART Response
 		r.Get("/smart-response", h.SmartResponse)
