@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -21,6 +22,16 @@ func validateQueryParams(q map[string][]string, allowed map[string]bool) (unknow
 		}
 	}
 	return unknown
+}
+
+func sanitizeAlphaNum(s string) string {
+	reg := regexp.MustCompile(`[^a-zA-Z0-9]+`)
+	return reg.ReplaceAllString(s, "")
+}
+
+func sanitizeWithUnderscore(s string) string {
+	reg := regexp.MustCompile(`[^a-zA-Z0-9_]+`)
+	return reg.ReplaceAllString(s, "_")
 }
 
 // DownloadEndpointsCSV streams endpoint data as a CSV file.
@@ -123,7 +134,26 @@ func (h *Handler) DownloadEndpointsCSV(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	filename := fmt.Sprintf("fhir_endpoints_%s.csv", time.Now().Format("2006-01-02"))
+	// Build dynamic filename
+	filenameParts := []string{"fhir_endpoints"}
+	if dev := q.Get("developer"); dev != "" {
+		filenameParts = append(filenameParts, sanitizeWithUnderscore(dev))
+	}
+	if fv := q.Get("fhir_version"); fv != "" {
+		filenameParts = append(filenameParts, "fhir_"+sanitizeAlphaNum(fv))
+	}
+	if src := q.Get("source"); src != "" && src != "All" {
+		filenameParts = append(filenameParts, "source_"+sanitizeAlphaNum(src))
+	}
+	if avail := q.Get("availability"); avail != "" {
+		filenameParts = append(filenameParts, "availability_"+sanitizeAlphaNum(avail))
+	}
+	if search := q.Get("search"); search != "" {
+		filenameParts = append(filenameParts, "search_"+sanitizeAlphaNum(search))
+	}
+	filenameParts = append(filenameParts, time.Now().Format("2006-01-02"))
+	filename := strings.Join(filenameParts, "_") + ".csv"
+
 	w.Header().Set("Content-Type", "text/csv")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 
@@ -381,7 +411,29 @@ func (h *Handler) DownloadOrganizationsCSV(w http.ResponseWriter, r *http.Reques
 	}
 	defer rows.Close()
 
-	filename := fmt.Sprintf("fhir_organizations_%s.csv", time.Now().Format("2006-01-02"))
+	// Build dynamic filename
+	filenameParts := []string{"fhir_organizations"}
+	if dev := q.Get("developer"); dev != "" {
+		filenameParts = append(filenameParts, sanitizeWithUnderscore(dev))
+	}
+	if id := q.Get("identifier"); id != "" {
+		filenameParts = append(filenameParts, "id_"+sanitizeAlphaNum(id))
+	}
+	if od := q.Get("organization_detail"); od != "" {
+		filenameParts = append(filenameParts, "organization_detail_"+sanitizeAlphaNum(od))
+	}
+	if fv := q.Get("fhir_version"); fv != "" {
+		filenameParts = append(filenameParts, "fhir_"+sanitizeAlphaNum(fv))
+	}
+	if st := q.Get("state"); st != "" {
+		filenameParts = append(filenameParts, "state_"+sanitizeAlphaNum(st))
+	}
+	if search := q.Get("search"); search != "" {
+		filenameParts = append(filenameParts, "search_"+sanitizeAlphaNum(search))
+	}
+	filenameParts = append(filenameParts, time.Now().Format("2006-01-02"))
+	filename := strings.Join(filenameParts, "_") + ".csv"
+
 	w.Header().Set("Content-Type", "text/csv")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
 
