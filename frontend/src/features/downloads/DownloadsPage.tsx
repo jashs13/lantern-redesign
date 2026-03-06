@@ -32,22 +32,51 @@ export default function DownloadsPage() {
           API Access
         </h2>
         <p className="mt-2 text-sm text-neutral-500">
-          Lantern exposes a REST API for programmatic data access. All endpoints are read-only
-          and return JSON.
+          These REST APIs enable programmatic access to download daily Lantern data in CSV format.
         </p>
-        <div className="mt-4 space-y-3 rounded-md border border-neutral-200 bg-neutral-50 p-4">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-              Base URL
-            </span>
-            <p className="mt-1 font-mono text-sm text-navy-700">/api/v1</p>
+        <div className="mt-4 space-y-6">
+          {/* Endpoint API */}
+          <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4">
+            <h3 className="text-sm font-bold text-navy-900">Endpoint Download API</h3>
+            <p className="mt-1 text-sm text-neutral-600">Downloads daily FHIR endpoint data.</p>
+            <div className="mt-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Endpoint</span>
+              <p className="mt-1 font-mono text-sm text-navy-700">[GET] /api/v1/downloads/endpoints.csv</p>
+            </div>
+            <div className="mt-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Query Parameters</span>
+              <ul className="mt-1 list-inside list-disc space-y-1 text-sm text-neutral-600">
+                <li><code className="rounded bg-neutral-200 px-1 py-0.5">developer</code> &ndash; Filter by certified API developer name.</li>
+                <li><code className="rounded bg-neutral-200 px-1 py-0.5">fhir_versions</code> &ndash; Comma-separated list of FHIR versions to include.</li>
+                <li><code className="rounded bg-neutral-200 px-1 py-0.5">source</code> &ndash; Filter by source name (e.g., CHPL, State Medicaid, etc).</li>
+              </ul>
+            </div>
           </div>
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-              Example Request
-            </span>
-            <p className="mt-1 font-mono text-sm text-navy-700">
-              GET /api/v1/endpoints?page=1&page_size=25
+
+          {/* Org API */}
+          <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4">
+            <h3 className="text-sm font-bold text-navy-900">Organization Download API</h3>
+            <p className="mt-1 text-sm text-neutral-600">Downloads daily organization data associated with endpoints.</p>
+            <div className="mt-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Endpoint</span>
+              <p className="mt-1 font-mono text-sm text-navy-700">[GET] /api/v1/downloads/organizations.csv</p>
+            </div>
+            <div className="mt-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Query Parameters</span>
+              <ul className="mt-1 list-inside list-disc space-y-1 text-sm text-neutral-600">
+                <li><code className="rounded bg-neutral-200 px-1 py-0.5">developer</code> &ndash; Filter by certified API developer name.</li>
+                <li><code className="rounded bg-neutral-200 px-1 py-0.5">fhir_versions</code> &ndash; Comma-separated list of FHIR versions to include.</li>
+                <li><code className="rounded bg-neutral-200 px-1 py-0.5">identifier</code> &ndash; Exact match on organization identifier (e.g., NPI).</li>
+                <li><code className="rounded bg-neutral-200 px-1 py-0.5">organization_detail</code> &ndash; Use <code className="rounded bg-neutral-200 px-1 py-0.5">organization_detail=present</code> to return only organizations with data.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="rounded-md bg-sky-50 p-4 border border-sky-100 text-sm text-sky-900">
+            <p>
+              <strong>Note:</strong> Developer names and other parameter values must match exactly as stored in the system.
+              If the value contains spaces, commas, or other special characters, it must be URL encoded.
+              These APIs will initiate download of the data in CSV format automatically.
             </p>
           </div>
         </div>
