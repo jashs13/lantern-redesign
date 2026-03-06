@@ -1,29 +1,23 @@
 package models
 
-// ValidationSummary represents a row from mv_validation_results_plot.
+// ValidationSummary represents aggregated valid/invalid counts for a rule.
 type ValidationSummary struct {
-	RuleName    string `json:"rule_name"`
-	Valid       int    `json:"valid"`
-	Invalid     int    `json:"invalid"`
-	FHIRVersion string `json:"fhir_version"`
+	RuleName string `json:"rule_name"`
+	Valid    int    `json:"valid"`
+	Invalid  int    `json:"invalid"`
 }
 
-// ValidationDetail represents a row from mv_validation_details.
+// ValidationDetail represents a validation rule and the FHIR versions it applies to.
 type ValidationDetail struct {
-	RuleName    string  `json:"rule_name"`
-	Description *string `json:"description"`
-	Reference   *string `json:"reference"`
-	Valid       int     `json:"valid"`
-	Invalid     int     `json:"invalid"`
-	FHIRVersion string  `json:"fhir_version"`
+	RuleName    string `json:"rule_name"`
+	FHIRVersion string `json:"fhir_version"`
 }
 
 // ValidationFailure represents a row from the validation failures query.
 type ValidationFailure struct {
-	URL              string  `json:"url"`
-	VendorName       *string `json:"vendor_name"`
-	Expected         *string `json:"expected"`
-	Actual           *string `json:"actual"`
-	Comment          *string `json:"comment"`
-	FHIRVersion      *string `json:"fhir_version"`
+	URL         string  `json:"url"`
+	VendorName  *string `json:"vendor_name"`
+	Expected    *string `json:"expected"`
+	Actual      *string `json:"actual"`
+	FHIRVersion *string `json:"fhir_version"`
 }

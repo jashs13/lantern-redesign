@@ -13,6 +13,8 @@ export async function fetchValidationsSummary(
 ): Promise<ValidationSummary[]> {
   return apiClient<ValidationSummary[]>('/api/v1/validations/summary', {
     fhir_versions: params?.fhir_versions,
+    vendor: params?.vendor,
+    validation_group: params?.validation_group,
   });
 }
 
@@ -21,6 +23,8 @@ export async function fetchValidationsDetails(
 ): Promise<ValidationDetail[]> {
   return apiClient<ValidationDetail[]>('/api/v1/validations/details', {
     fhir_versions: params?.fhir_versions,
+    vendor: params?.vendor,
+    validation_group: params?.validation_group,
   });
 }
 
@@ -32,5 +36,7 @@ export async function fetchValidationsFailures(
     page: params.page,
     page_size: params.page_size,
     fhir_versions: params.fhir_versions,
+    vendor: params.vendor,
+    validation_group: params.validation_group,
   });
 }

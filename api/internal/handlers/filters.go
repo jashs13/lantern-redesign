@@ -250,13 +250,15 @@ func (h *Handler) FilterOperations(w http.ResponseWriter, r *http.Request) {
 
 // FilterValidationGroups returns static validation group names.
 func (h *Handler) FilterValidationGroups(w http.ResponseWriter, r *http.Request) {
-	// Validation groups are static configuration, not from the database.
 	groups := []models.FilterOption{
-		{Value: "Base Resource Fields"},
-		{Value: "Conformance/Terminology"},
-		{Value: "Security"},
-		{Value: "Search"},
-		{Value: "Miscellaneous"},
+		{Value: "HTTP"},
+		{Value: "R4 Capability Statement"},
+		{Value: "SMART"},
+		{Value: "US-CORE"},
+		{Value: "DSTU2 Conformance Statement"},
+		{Value: "STU3 Capability Statement"},
+		{Value: "$versions Operation"},
+		{Value: "Other"},
 	}
 	models.WriteJSON(w, http.StatusOK, groups)
 }

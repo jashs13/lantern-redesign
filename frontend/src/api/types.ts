@@ -250,15 +250,10 @@ export interface ValidationSummary {
   rule_name: string;
   valid: number;
   invalid: number;
-  fhir_version: string;
 }
 
 export interface ValidationDetail {
   rule_name: string;
-  description: string | null;
-  reference: string | null;
-  valid: number;
-  invalid: number;
   fhir_version: string;
 }
 
@@ -404,6 +399,8 @@ export interface SmartQueryParams {
 
 export interface ValidationQueryParams {
   fhir_versions?: string[];
+  vendor?: string;
+  validation_group?: string;
 }
 
 export interface ValidationFailureQueryParams {
@@ -411,6 +408,8 @@ export interface ValidationFailureQueryParams {
   page?: number;
   page_size?: number;
   fhir_versions?: string[];
+  vendor?: string;
+  validation_group?: string;
 }
 
 export interface ContactQueryParams {
