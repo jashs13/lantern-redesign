@@ -1,7 +1,7 @@
 import { downloadUrl } from './client';
 
 export interface EndpointCsvParams {
-  fhir_versions?: string[];
+  fhir_version?: string[];
   developer?: string;
   source?: string;
   availability?: string;
@@ -15,8 +15,8 @@ export function getEndpointsCsvUrl(params?: EndpointCsvParams): string {
   const base = downloadUrl('/api/v1/downloads/endpoints.csv');
   const parts: string[] = [];
 
-  if (params?.fhir_versions && params.fhir_versions.length > 0) {
-    parts.push(`fhir_versions=${encodeURIComponent(params.fhir_versions.join(','))}`);
+  if (params?.fhir_version && params.fhir_version.length > 0) {
+    parts.push(`fhir_version=${encodeURIComponent(params.fhir_version.join(','))}`);
   }
   if (params?.developer) {
     parts.push(`developer=${encodeURIComponent(params.developer)}`);
@@ -36,7 +36,7 @@ export function getEndpointsCsvUrl(params?: EndpointCsvParams): string {
 
 export interface OrganizationCsvParams {
   developer?: string;
-  fhir_versions?: string[];
+  fhir_version?: string[];
   identifier?: string;
   organization_detail?: string;
   state?: string;
@@ -53,8 +53,8 @@ export function getOrganizationsCsvUrl(params?: OrganizationCsvParams): string {
   if (params?.developer) {
     parts.push(`developer=${encodeURIComponent(params.developer)}`);
   }
-  if (params?.fhir_versions && params.fhir_versions.length > 0) {
-    parts.push(`fhir_versions=${encodeURIComponent(params.fhir_versions.join(','))}`);
+  if (params?.fhir_version && params.fhir_version.length > 0) {
+    parts.push(`fhir_version=${encodeURIComponent(params.fhir_version.join(','))}`);
   }
   if (params?.identifier) {
     parts.push(`identifier=${encodeURIComponent(params.identifier)}`);

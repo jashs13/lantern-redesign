@@ -47,7 +47,7 @@ export default function DownloadsPage() {
               <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Query Parameters</span>
               <ul className="mt-1 list-inside list-disc space-y-1 text-sm text-neutral-600">
                 <li><code className="rounded bg-neutral-200 px-1 py-0.5">developer</code> &ndash; Filter by certified API developer name.</li>
-                <li><code className="rounded bg-neutral-200 px-1 py-0.5">fhir_versions</code> &ndash; Comma-separated list of FHIR versions to include.</li>
+                <li><code className="rounded bg-neutral-200 px-1 py-0.5">fhir_version</code> &ndash; Comma-separated list of FHIR versions to include.</li>
                 <li><code className="rounded bg-neutral-200 px-1 py-0.5">source</code> &ndash; Filter by source name (e.g., CHPL, State Medicaid, etc).</li>
               </ul>
             </div>
@@ -65,7 +65,7 @@ export default function DownloadsPage() {
               <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Query Parameters</span>
               <ul className="mt-1 list-inside list-disc space-y-1 text-sm text-neutral-600">
                 <li><code className="rounded bg-neutral-200 px-1 py-0.5">developer</code> &ndash; Filter by certified API developer name.</li>
-                <li><code className="rounded bg-neutral-200 px-1 py-0.5">fhir_versions</code> &ndash; Comma-separated list of FHIR versions to include.</li>
+                <li><code className="rounded bg-neutral-200 px-1 py-0.5">fhir_version</code> &ndash; Comma-separated list of FHIR versions to include.</li>
                 <li><code className="rounded bg-neutral-200 px-1 py-0.5">identifier</code> &ndash; Exact match on organization identifier (e.g., NPI).</li>
                 <li><code className="rounded bg-neutral-200 px-1 py-0.5">organization_detail</code> &ndash; Use <code className="rounded bg-neutral-200 px-1 py-0.5">organization_detail=present</code> to return only organizations with data.</li>
               </ul>

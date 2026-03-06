@@ -13,14 +13,74 @@ import (
 )
 
 // DownloadEndpointsCSV streams endpoint data as a CSV file.
-// Accepts optional query params: fhir_versions, developer, source, availability, search.
+// Accepts optional query params: fhir_version, developer, source, availability, search.
 func (h *Handler) DownloadEndpointsCSV(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := r.URL.Query()
 
-	// Map REST API 'developer' param to internal 'vendor' param for shared filter logic
+	// --- Input validation ---
+
+	// Validate developer against the vendors table
 	if dev := q.Get("developer"); dev != "" {
+		var exists bool
+		err := h.db.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM vendors WHERE name = $1)", dev).Scan(&exists)
+		if err != nil {
+			log.WithError(err).Error("checking vendor existence")
+			models.WriteError(w, http.StatusInternalServerError, "failed to validate developer")
+			return
+		}
+		if !exists {
+			models.WriteError(w, http.StatusBadRequest,
+				fmt.Sprintf("Developer '%s' not found in the CHPL-certified vendor list. Please check for typos or verify the exact developer name.", dev))
+			return
+		}
 		q.Set("vendor", dev)
+	}
+
+	// Validate FHIR versions
+	if fv := q.Get("fhir_version"); fv != "" {
+		raw := strings.Split(fv, ",")
+		allValid := models.AllValidFHIRVersions()
+		validSet := make(map[string]bool, len(allValid))
+		for _, v := range allValid {
+			validSet[v] = true
+		}
+		for k := range models.VersionGroupMap {
+			validSet[k] = true
+		}
+		validSet["Unknown"] = true
+		validSet["No Cap Stat"] = true
+
+		var validVersions []string
+		var invalidVersions []string
+		for _, v := range raw {
+			v = strings.TrimSpace(v)
+			if validSet[v] {
+				validVersions = append(validVersions, v)
+			} else {
+				invalidVersions = append(invalidVersions, v)
+			}
+		}
+		if len(validVersions) == 0 {
+			models.WriteError(w, http.StatusBadRequest,
+				fmt.Sprintf("None of the provided FHIR versions are valid. Accepted values include: %s",
+					strings.Join(allValid, ", ")))
+			return
+		}
+		if len(invalidVersions) > 0 {
+			log.Infof("Ignoring invalid FHIR versions: %s", strings.Join(invalidVersions, ", "))
+		}
+		q.Set("fhir_versions", strings.Join(validVersions, ","))
+	}
+
+	// Validate source
+	if source := q.Get("source"); source != "" {
+		validSources := map[string]bool{"true": true, "CHPL": true, "Other": true, "Payer": true, "State Medicaid": true, "All": true}
+		if !validSources[source] {
+			models.WriteError(w, http.StatusBadRequest,
+				fmt.Sprintf("Invalid source '%s'. Accepted values: CHPL, Other, Payer, State Medicaid.", source))
+			return
+		}
 	}
 
 	whereClause, args, _ := buildEndpointFilters(q)
@@ -117,6 +177,70 @@ func (h *Handler) DownloadOrganizationsCSV(w http.ResponseWriter, r *http.Reques
 	ctx := r.Context()
 	q := r.URL.Query()
 
+	// --- Input validation (mirrors restendpoints.R) ---
+
+	// Validate developer against the vendors table
+	if dev := q.Get("developer"); dev != "" {
+		var exists bool
+		err := h.db.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM vendors WHERE name = $1)", dev).Scan(&exists)
+		if err != nil {
+			log.WithError(err).Error("checking vendor existence")
+			models.WriteError(w, http.StatusInternalServerError, "failed to validate developer")
+			return
+		}
+		if !exists {
+			models.WriteError(w, http.StatusBadRequest,
+				fmt.Sprintf("Developer '%s' not found in the CHPL-certified vendor list. Please check for typos or verify the exact developer name.", dev))
+			return
+		}
+	}
+
+	// Validate FHIR versions
+	if fv := q.Get("fhir_version"); fv != "" {
+		raw := strings.Split(fv, ",")
+		allValid := models.AllValidFHIRVersions()
+		validSet := make(map[string]bool, len(allValid))
+		for _, v := range allValid {
+			validSet[v] = true
+		}
+		// Also accept group names (DSTU2, STU3, R4, R4B, R5, Unknown, No Cap Stat)
+		for k := range models.VersionGroupMap {
+			validSet[k] = true
+		}
+		validSet["Unknown"] = true
+		validSet["No Cap Stat"] = true
+
+		var validVersions []string
+		var invalidVersions []string
+		for _, v := range raw {
+			v = strings.TrimSpace(v)
+			if validSet[v] {
+				validVersions = append(validVersions, v)
+			} else {
+				invalidVersions = append(invalidVersions, v)
+			}
+		}
+		if len(validVersions) == 0 {
+			models.WriteError(w, http.StatusBadRequest,
+				fmt.Sprintf("None of the provided FHIR versions are valid. Accepted values include: %s",
+					strings.Join(allValid, ", ")))
+			return
+		}
+		if len(invalidVersions) > 0 {
+			log.Infof("Ignoring invalid FHIR versions: %s", strings.Join(invalidVersions, ", "))
+		}
+		// Rewrite the param to only include valid versions for downstream filters
+		q.Set("fhir_version", strings.Join(validVersions, ","))
+	}
+
+	// Validate organization_detail
+	if orgDetail := q.Get("organization_detail"); orgDetail != "" && orgDetail != "present" {
+		models.WriteError(w, http.StatusBadRequest, "Invalid value for 'organization_detail'. Only 'present' is supported.")
+		return
+	}
+
+	// --- Build query filters ---
+
 	var conditions []string
 	var args []any
 	argIdx := 1
@@ -127,7 +251,7 @@ func (h *Handler) DownloadOrganizationsCSV(w http.ResponseWriter, r *http.Reques
 		argIdx++
 	}
 
-	if fv := q.Get("fhir_versions"); fv != "" {
+	if fv := q.Get("fhir_version"); fv != "" {
 		versions := models.ExpandVersionGroups(strings.Split(fv, ","))
 		conditions = append(conditions, fmt.Sprintf("fhir_versions_array && ARRAY[%s]::text[]", makePlaceholderList(argIdx, len(versions))))
 		for _, v := range versions {
@@ -180,7 +304,7 @@ func (h *Handler) DownloadOrganizationsCSV(w http.ResponseWriter, r *http.Reques
 		args = append(args, dev)
 		argIdx++
 	}
-	if fv := q.Get("fhir_versions"); fv != "" {
+	if fv := q.Get("fhir_version"); fv != "" {
 		versions := models.ExpandVersionGroups(strings.Split(fv, ","))
 		filterLateral += fmt.Sprintf(" AND fhir_version IN (%s)", makePlaceholderList(argIdx, len(versions)))
 		for _, v := range versions {

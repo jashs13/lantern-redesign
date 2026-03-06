@@ -207,7 +207,7 @@ export default function OrganizationsPage() {
           <DownloadButton
             url={getOrganizationsCsvUrl({
               developer: vendor || undefined,
-              fhir_versions: fhirVersion ? [fhirVersion] : (filters.fhirVersions.length > 0 ? filters.fhirVersions : undefined),
+              fhir_version: fhirVersion ? [fhirVersion] : (filters.fhirVersions.length > 0 ? filters.fhirVersions : undefined),
               state: state || undefined,
               search: debouncedSearch || undefined,
             })}
