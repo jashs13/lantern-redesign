@@ -12,11 +12,32 @@ import (
 	"github.com/onc-healthit/lantern-back-end/api/internal/models"
 )
 
+// validateQueryParams checks that every query-string key is in the allowed set.
+// Returns an error string listing unknown params, or "" if all are valid.
+func validateQueryParams(q map[string][]string, allowed map[string]bool) (unknown []string) {
+	for key := range q {
+		if !allowed[key] {
+			unknown = append(unknown, key)
+		}
+	}
+	return unknown
+}
+
 // DownloadEndpointsCSV streams endpoint data as a CSV file.
 // Accepts optional query params: fhir_version, developer, source, availability, search.
 func (h *Handler) DownloadEndpointsCSV(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := r.URL.Query()
+
+	// Reject unknown query parameters
+	allowedParams := map[string]bool{"fhir_version": true, "developer": true, "source": true, "availability": true, "search": true}
+	if bad := validateQueryParams(q, allowedParams); len(bad) > 0 {
+		validList := []string{"fhir_version", "developer", "source", "availability", "search"}
+		models.WriteError(w, http.StatusBadRequest,
+			fmt.Sprintf("Unknown query parameter(s): %s. Valid parameters are: %s",
+				strings.Join(bad, ", "), strings.Join(validList, ", ")))
+		return
+	}
 
 	// --- Input validation ---
 
@@ -176,6 +197,16 @@ func (h *Handler) DownloadEndpointsCSV(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) DownloadOrganizationsCSV(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := r.URL.Query()
+
+	// Reject unknown query parameters
+	allowedParams := map[string]bool{"fhir_version": true, "developer": true, "identifier": true, "organization_detail": true, "state": true, "search": true}
+	if bad := validateQueryParams(q, allowedParams); len(bad) > 0 {
+		validList := []string{"fhir_version", "developer", "identifier", "organization_detail", "state", "search"}
+		models.WriteError(w, http.StatusBadRequest,
+			fmt.Sprintf("Unknown query parameter(s): %s. Valid parameters are: %s",
+				strings.Join(bad, ", "), strings.Join(validList, ", ")))
+		return
+	}
 
 	// --- Input validation (mirrors restendpoints.R) ---
 
