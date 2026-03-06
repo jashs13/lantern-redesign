@@ -204,7 +204,15 @@ export default function OrganizationsPage() {
             placeholder="Search by name, NPI, city, or address..."
             className="flex-1 min-w-[280px]"
           />
-          <DownloadButton url={getOrganizationsCsvUrl()} label="Export to CSV" />
+          <DownloadButton
+            url={getOrganizationsCsvUrl({
+              developer: vendor || undefined,
+              fhir_version: fhirVersion ? [fhirVersion] : (filters.fhirVersions.length > 0 ? filters.fhirVersions : undefined),
+              state: state || undefined,
+              search: debouncedSearch || undefined,
+            })}
+            label="Export to CSV"
+          />
         </div>
 
         {/* Filter dropdowns grid */}

@@ -240,9 +240,11 @@ export default function EndpointsPage() {
           />
           <DownloadButton
             url={getEndpointsCsvUrl({
-              fhir_versions: filters.fhirVersions.length > 0 ? filters.fhirVersions : undefined,
+              fhir_version: filters.fhirVersions.length > 0 ? filters.fhirVersions : undefined,
+              developer: vendor || undefined,
+              source: filters.source || undefined,
               availability: highUptimeOnly ? '99-100' : undefined,
-              vendor: vendor || undefined,
+              search: search || undefined,
             })}
             label="Export CSV"
           />
