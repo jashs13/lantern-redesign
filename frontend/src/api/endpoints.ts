@@ -6,7 +6,6 @@ import type {
   HTTPHistoryPoint,
   ResponseTimePoint,
 } from './types';
-import { encodeUrlPathParam } from '@/lib/url';
 
 export async function fetchEndpoints(
   params?: EndpointQueryParams,
@@ -40,17 +39,13 @@ export async function fetchEndpointsCount(
 }
 
 export async function fetchEndpointDetails(url: string): Promise<EndpointDetail> {
-  return apiClient<EndpointDetail>(`/api/v1/endpoints/${encodeUrlPathParam(url)}/details`);
+  return apiClient<EndpointDetail>('/api/v1/endpoints/details', { url });
 }
 
-export async function fetchEndpointResponseTime(url: string): Promise<ResponseTimePoint[]> {
-  return apiClient<ResponseTimePoint[]>(
-    `/api/v1/endpoints/${encodeUrlPathParam(url)}/response-time`,
-  );
+export async function fetchEndpointResponseTime(url: string, days = 7): Promise<ResponseTimePoint[]> {
+  return apiClient<ResponseTimePoint[]>('/api/v1/endpoints/response-time', { url, days });
 }
 
-export async function fetchEndpointHTTPHistory(url: string): Promise<HTTPHistoryPoint[]> {
-  return apiClient<HTTPHistoryPoint[]>(
-    `/api/v1/endpoints/${encodeUrlPathParam(url)}/http-history`,
-  );
+export async function fetchEndpointHTTPHistory(url: string, days = 7): Promise<HTTPHistoryPoint[]> {
+  return apiClient<HTTPHistoryPoint[]>('/api/v1/endpoints/http-history', { url, days });
 }

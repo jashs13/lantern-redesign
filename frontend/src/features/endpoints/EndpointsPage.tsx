@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
@@ -19,6 +19,7 @@ import { ViewToggle } from '@/components/ui/ViewToggle';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DownloadButton } from '@/components/ui/DownloadButton';
 import { getEndpointsCsvUrl } from '@/api/downloads';
+import { EndpointDetailModal } from './EndpointDetailModal';
 import type { Endpoint } from '@/api/types';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
 import { formatPercent, formatDuration, formatHttpStatus } from '@/lib/formatters';
@@ -52,16 +53,21 @@ function getFhirLabel(ver: string | null) {
   return ver;
 }
 
-const columns: ColumnDef<Endpoint, unknown>[] = [
+function buildColumns(onOpenDetail: (url: string) => void): ColumnDef<Endpoint, unknown>[] {
+  return [
   {
     accessorKey: 'url',
     header: 'Endpoint',
     size: 30,
     cell: ({ row }) => (
       <div className="min-w-0 max-w-[300px]">
-        <p className="truncate font-semibold text-navy-700 text-xs">
+        <button
+          type="button"
+          className="truncate block w-full text-left font-semibold text-navy-700 text-xs hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700 focus-visible:ring-offset-1 rounded-sm"
+          onClick={() => onOpenDetail(row.original.url)}
+        >
           {row.original.endpoint_names || row.original.url}
-        </p>
+        </button>
         <p className="truncate text-xs text-neutral-400">{row.original.url}</p>
       </div>
     ),
@@ -125,7 +131,8 @@ const columns: ColumnDef<Endpoint, unknown>[] = [
       return <Badge variant={getFhirBadgeVariant(ver)}>{getFhirLabel(ver)}</Badge>;
     },
   },
-];
+  ];
+}
 
 
 
@@ -136,11 +143,17 @@ export default function EndpointsPage() {
 
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [vendor, setVendor] = useState<string | null>(searchParams.get('vendor') || null);
-  const debouncedSearch = useDebounce(search);
+  const debouncedSearch = useDebounce(search, 500);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   // High-uptime filter: availability >= 99%
   const [highUptimeOnly, setHighUptimeOnly] = useState(false);
+  const [selectedEndpointUrl, setSelectedEndpointUrl] = useState<string | null>(null);
+
+  const columns = useMemo(
+    () => buildColumns((url) => setSelectedEndpointUrl(url)),
+    [],
+  );
 
   const { data: summary } = useQuery({
     queryKey: ['dashboard', 'summary-for-endpoints'],
@@ -364,9 +377,13 @@ export default function EndpointsPage() {
               >
                 <div className="mb-2 flex items-start justify-between">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold text-navy-700">
+                    <button
+                      type="button"
+                      className="truncate block w-full text-left font-semibold text-navy-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700 focus-visible:ring-offset-1 rounded-sm"
+                      onClick={() => setSelectedEndpointUrl(ep.url)}
+                    >
                       {ep.endpoint_names || ep.url}
-                    </p>
+                    </button>
                     <p className="truncate text-xs text-neutral-400">{ep.url}</p>
                   </div>
                   <StatusBadge status={getStatusVariant(ep.http_response)} />
@@ -385,6 +402,11 @@ export default function EndpointsPage() {
           )}
         </div>
       )}
+
+      <EndpointDetailModal
+        url={selectedEndpointUrl}
+        onClose={() => setSelectedEndpointUrl(null)}
+      />
     </div>
   );
 }

@@ -25,32 +25,59 @@ type Endpoint struct {
 
 // EndpointDetail holds full detail from multiple tables for a single endpoint.
 type EndpointDetail struct {
-	URL                   string                  `json:"url"`
-	EndpointNames         *string                 `json:"endpoint_names"`
-	VendorName            *string                 `json:"vendor_name"`
-	FHIRVersion           *string                 `json:"fhir_version"`
-	CapabilityFHIRVersion *string                 `json:"capability_fhir_version"`
-	Format                *string                 `json:"format"`
-	HTTPResponse          *int                    `json:"http_response"`
-	ResponseTimeSeconds   *float64                `json:"response_time_seconds"`
-	SMARTHTTPResponse     *int                    `json:"smart_http_response"`
-	Availability          *float64                `json:"availability"`
-	Status                *string                 `json:"status"`
-	TLSVersion            *string                 `json:"tls_version"`
-	MIMETypes             *string                 `json:"mime_types"`
-	CapabilityStatement   *string                 `json:"capability_statement"`
-	SMARTResponse         *string                 `json:"smart_response"`
-	Organizations         []EndpointOrganization  `json:"organizations"`
-	Products              []EndpointProduct       `json:"products"`
-	IncludedFields        *string                 `json:"included_fields"`
-	OperationResource     *string                 `json:"operation_resource"`
+	URL                   string             `json:"url"`
+	EndpointNames         *string            `json:"endpoint_names"`
+	VendorName            *string            `json:"vendor_name"`
+	FHIRVersion           *string            `json:"fhir_version"`
+	CapabilityFHIRVersion *string            `json:"capability_fhir_version"`
+	Format                *string            `json:"format"`
+	HTTPResponse          *int               `json:"http_response"`
+	ResponseTimeSeconds   *float64           `json:"response_time_seconds"`
+	SMARTHTTPResponse     *int               `json:"smart_http_response"`
+	Availability          *float64           `json:"availability"`
+	Status                *string            `json:"status"`
+	TLSVersion            *string            `json:"tls_version"`
+	MIMETypes             *string            `json:"mime_types"`
+	CapabilityStatement   *string            `json:"capability_statement"`
+	SMARTResponse         *string            `json:"smart_response"`
+	Organizations         []EndpointOrganization `json:"organizations"`
+	Products              []EndpointProduct      `json:"products"`
+	IncludedFields        *string            `json:"included_fields"`
+	OperationResource     *string            `json:"operation_resource"`
+	ListSource            *string            `json:"list_source"`
+	SoftwareName          *string            `json:"software_name"`
+	SoftwareVersion       *string            `json:"software_version"`
+	Security              *string            `json:"security"`
+	ImplementationGuides  []string           `json:"implementation_guides"`
+	SupportedProfiles     []EndpointProfile  `json:"supported_profiles"`
+	CapabilityFields      []CapabilityField  `json:"capability_fields"`
+	OperationResources    []OperationResource `json:"operation_resources"`
+	SMARTCapabilities     []string           `json:"smart_capabilities"`
 }
 
 // EndpointOrganization represents an organization linked to an endpoint.
 type EndpointOrganization struct {
-	OrganizationNPIID string  `json:"organization_npi_id"`
-	OrganizationName  *string `json:"organization_name"`
-	Confidence        *int    `json:"confidence"`
+	OrganizationName string `json:"organization_name"`
+}
+
+// CapabilityField represents a field entry from the included_fields JSON array.
+type CapabilityField struct {
+	FieldName   string `json:"field_name"`
+	Exists      bool   `json:"exists"`
+	IsExtension bool   `json:"is_extension"`
+}
+
+// OperationResource represents a FHIR operation mapped to a resource type.
+type OperationResource struct {
+	Operation string `json:"operation"`
+	Resource  string `json:"resource"`
+}
+
+// EndpointProfile represents a supported profile declared in a capability statement.
+type EndpointProfile struct {
+	ProfileURL  string  `json:"profile_url"`
+	ProfileName *string `json:"profile_name"`
+	Resource    *string `json:"resource"`
 }
 
 // EndpointProduct represents a CHPL/HealthIT product linked to an endpoint.
