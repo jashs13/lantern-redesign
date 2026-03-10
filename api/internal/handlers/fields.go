@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strings"
@@ -220,4 +221,35 @@ func (h *Handler) FieldValueSummary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	models.WriteJSON(w, http.StatusOK, summary)
+}
+
+// FieldMetrics returns static aggregate KPI counts for capability statement fields.
+func (h *Handler) FieldMetrics(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var metrics models.FieldMetrics
+
+	query := `SELECT average_per_cap_stat, extension_count, optional_count 
+	          FROM capstat_kpi_metrics_mv LIMIT 1`
+	
+	err := h.db.QueryRowContext(ctx, query).Scan(
+		&metrics.AveragePerCapStat,
+		&metrics.ExtensionCount,
+		&metrics.OptionalCount,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// If view is empty or unpopulated, leave them as nil pointers.
+			// The frontend will receive JSON nulls and can display "N/A"
+		} else {
+			log.WithError(err).Error("querying capstat_kpi_metrics_mv")
+			models.WriteError(w, http.StatusInternalServerError, "failed to fetch field metrics")
+			return
+		}
+	}
+
+	// Required fields are currently statically tracked in the codebase as 5 fields.
+	metrics.RequiredCount = 5
+
+	models.WriteJSON(w, http.StatusOK, metrics)
 }

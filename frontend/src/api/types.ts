@@ -217,6 +217,13 @@ export interface Field {
   is_required: boolean;
 }
 
+export interface FieldMetrics {
+  required_count: number | null;
+  optional_count: number | null;
+  average_per_cap_stat: number | null;
+  extension_count: number | null;
+}
+
 export interface FieldValue {
   field_name: string;
   field_value: string;

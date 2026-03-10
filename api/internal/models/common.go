@@ -80,3 +80,11 @@ func parseIntDefault(s string, def int) int {
 	}
 	return v
 }
+
+// FieldMetrics aggregates KPI metrics for capability statement fields.
+type FieldMetrics struct {
+	RequiredCount     int  `json:"required_count"`
+	OptionalCount     *int `json:"optional_count"`
+	AveragePerCapStat *int `json:"average_per_cap_stat"`
+	ExtensionCount    *int `json:"extension_count"`
+}

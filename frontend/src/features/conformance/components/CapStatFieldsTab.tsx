@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
-import { fetchFields } from '@/api/fields';
+import { fetchFields, fetchFieldMetrics } from '@/api/fields';
 import { fetchFHIRVersions, fetchVendors } from '@/api/filters';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Badge } from '@/components/ui/Badge';
@@ -36,7 +36,11 @@ export function CapStatFieldsTab() {
     staleTime: 10 * 60 * 1000,
   });
 
-
+  const { data: fieldMetrics, isLoading: metricsLoading } = useQuery({
+    queryKey: ['fields-metrics'],
+    queryFn: fetchFieldMetrics,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+  });
 
   const { data: fields, isLoading, error, refetch } = useQuery({
     queryKey: ['fields', filters.fhirVersions, filters.vendor, debouncedSearch],
@@ -128,22 +132,30 @@ export function CapStatFieldsTab() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-success">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Required Fields</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">{groupedRequired.length}</div>
+          <div className="text-3xl font-bold text-navy-900 leading-tight">
+            {metricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (fieldMetrics?.required_count ?? 'N/A')}
+          </div>
           <p className="text-sm text-gray-500 mt-1">Fields required by FHIR spec</p>
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-primary">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Optional Fields</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">{fields?.filter(f => !f.is_required).length || 0}</div>
+          <div className="text-3xl font-bold text-navy-900 leading-tight">
+             {metricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (fieldMetrics?.optional_count ?? 'N/A')}
+          </div>
           <p className="text-sm text-gray-500 mt-1">Additional fields observed</p>
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border border-neutral-200">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Avg Fields per CapStat</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">34</div>
+          <div className="text-3xl font-bold text-navy-900 leading-tight">
+             {metricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (fieldMetrics?.average_per_cap_stat ?? 'N/A')}
+          </div>
           <p className="text-sm text-gray-500 mt-1">Mean across all endpoints</p>
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-warning">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Extensions Observed</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">{extensions?.length || 0}</div>
+          <div className="text-3xl font-bold text-navy-900 leading-tight">
+             {metricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (fieldMetrics?.extension_count ?? 'N/A')}
+          </div>
           <p className="text-sm text-gray-500 mt-1">Distinct extension URLs</p>
         </article>
       </div>
