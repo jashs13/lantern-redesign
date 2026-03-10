@@ -45,9 +45,9 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 		// Endpoints
 		r.Get("/endpoints", h.ListEndpoints)
 		r.Get("/endpoints/count", h.CountEndpoints)
-		r.Get("/endpoints/{url}/details", h.EndpointDetails)
-		r.Get("/endpoints/{url}/response-time", h.EndpointResponseTime)
-		r.Get("/endpoints/{url}/http-history", h.EndpointHTTPHistory)
+		r.Get("/endpoints/details", h.EndpointDetails)
+		r.Get("/endpoints/response-time", h.EndpointResponseTime)
+		r.Get("/endpoints/http-history", h.EndpointHTTPHistory)
 
 		// Dashboard
 		r.Get("/dashboard/summary", h.DashboardSummary)

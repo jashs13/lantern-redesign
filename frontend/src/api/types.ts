@@ -98,12 +98,36 @@ export interface EndpointDetail {
   products: EndpointProduct[];
   included_fields: string | null;
   operation_resource: string | null;
+  list_source: string | null;
+  software_name: string | null;
+  software_version: string | null;
+  security: string | null;
+  implementation_guides: string[];
+  supported_profiles: EndpointProfile[];
+  capability_fields: CapabilityField[];
+  operation_resources: OperationResource[];
+  smart_capabilities: string[];
 }
 
 export interface EndpointOrganization {
-  organization_npi_id: string;
-  organization_name: string | null;
-  confidence: number | null;
+  organization_name: string;
+}
+
+export interface EndpointProfile {
+  profile_url: string;
+  profile_name: string | null;
+  resource: string | null;
+}
+
+export interface CapabilityField {
+  field_name: string;
+  exists: boolean;
+  is_extension: boolean;
+}
+
+export interface OperationResource {
+  operation: string;
+  resource: string;
 }
 
 export interface EndpointProduct {
