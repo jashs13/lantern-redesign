@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { fetchValidationsSummary, fetchValidationsDetails, fetchValidationsFailures, fetchValidationMetrics } from '@/api/validations';
 import { fetchFHIRVersions, fetchValidationGroups, fetchVendors } from '@/api/filters';
@@ -130,6 +130,7 @@ export function ValidationResultsTab() {
   } = useQuery({
     queryKey: ['validations-summary', filterParams],
     queryFn: () => fetchValidationsSummary(filterParams),
+    placeholderData: keepPreviousData,
   });
 
   const {
@@ -139,6 +140,7 @@ export function ValidationResultsTab() {
   } = useQuery({
     queryKey: ['validations-details', filterParams],
     queryFn: () => fetchValidationsDetails(filterParams),
+    placeholderData: keepPreviousData,
   });
 
   if (detailsData && detailsData.length > 0 && !selectedRule) {
@@ -158,6 +160,7 @@ export function ValidationResultsTab() {
         page: failuresPage,
         page_size: failuresPageSize,
       }),
+    placeholderData: keepPreviousData,
     enabled: !!selectedRule,
   });
 
@@ -279,19 +282,25 @@ export function ValidationResultsTab() {
           </div>
         </header>
 
-        <div className="p-6">
-            <div className="h-[400px] w-full">
+        <div className="p-6 pb-2">
+            <div className="w-full" style={{ height: Math.max(400, chartData.length * 35) }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 150, bottom: 5 }}>
+                <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E5E7EB" />
                   <XAxis type="number" />
-                  <YAxis dataKey="rule_name" type="category" tick={{ fontSize: 12, fill: '#4B5563' }} width={140} />
+                  <YAxis dataKey="rule_name" type="category" tick={{ fontSize: 12, fill: '#4B5563' }} width={180} interval={0} />
                   <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
                   <Bar dataKey="valid" name="Success" stackId="a" fill="#2e8540" maxBarSize={30} />
                   <Bar dataKey="invalid" name="Failure" stackId="a" fill="#e31c3d" maxBarSize={30} />
                 </BarChart>
               </ResponsiveContainer>
+            </div>
+        </div>
+        <div className="px-6 pb-6">
+            <div className="text-[0.875rem] text-gray-600 bg-blue-50/50 border border-blue-100/60 rounded-md p-4 shadow-sm">
+                <span className="font-bold text-navy-900 pr-1">Note:</span>
+                The <code className="bg-white/80 border border-blue-200 px-1 py-0.5 rounded text-xs">messagingEndptRule</code> is not broken, there is an issue with the Capability Statement invariant (cpb-3). The invariant states that the Messaging endpoint has to be present when the kind is 'instance', and Messaging endpoint cannot be present when kind is NOT 'instance', but the FHIRPath expression is <code>messaging.endpoint.empty() or kind = 'instance'</code>, which is not consistent with the expectation for the invariant and will not properly evaluate the conditions required.
             </div>
         </div>
       </section>
