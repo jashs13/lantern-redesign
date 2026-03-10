@@ -83,6 +83,7 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 		r.Get("/validations/summary", h.ValidationsSummary)
 		r.Get("/validations/details", h.ValidationsDetails)
 		r.Get("/validations/failures", h.ValidationsFailures)
+		r.Get("/validations/metrics", h.ValidationMetrics)
 
 		// Security
 		r.Get("/security", h.ListSecurity)

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strings"
@@ -246,4 +247,34 @@ func (h *Handler) ValidationsFailures(w http.ResponseWriter, r *http.Request) {
 		Pagination: models.NewPagination(page, pageSize, totalCount),
 	}
 	models.WriteJSON(w, http.StatusOK, resp)
+}
+
+// ValidationMetrics returns static aggregate KPI counts for validation results.
+func (h *Handler) ValidationMetrics(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var metrics models.ValidationMetrics
+
+	query := `SELECT passing_all, with_failures, pass_rate, total_rules, most_failed_rule, max_failures 
+	          FROM validation_kpi_metrics_mv LIMIT 1`
+	
+	err := h.db.QueryRowContext(ctx, query).Scan(
+		&metrics.PassingAll,
+		&metrics.WithFailures,
+		&metrics.PassRate,
+		&metrics.TotalRules,
+		&metrics.MostFailedRule,
+		&metrics.MaxFailures,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// If view is empty or unpopulated, leave them as nil pointers.
+		} else {
+			log.WithError(err).Error("querying validation_kpi_metrics_mv")
+			models.WriteError(w, http.StatusInternalServerError, "failed to fetch validation metrics")
+			return
+		}
+	}
+
+	models.WriteJSON(w, http.StatusOK, metrics)
 }

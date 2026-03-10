@@ -6,6 +6,7 @@ import type {
   ValidationFailureQueryParams,
   ValidationQueryParams,
   ValidationSummary,
+  ValidationMetrics,
 } from './types';
 
 export async function fetchValidationsSummary(
@@ -39,4 +40,8 @@ export async function fetchValidationsFailures(
     vendor: params.vendor,
     validation_group: params.validation_group,
   });
+}
+
+export async function fetchValidationMetrics(): Promise<ValidationMetrics> {
+  return apiClient<ValidationMetrics>('/api/v1/validations/metrics');
 }

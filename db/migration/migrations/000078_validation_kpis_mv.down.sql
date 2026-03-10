@@ -1,0 +1,5 @@
+BEGIN;
+
+DROP MATERIALIZED VIEW IF EXISTS validation_kpi_metrics_mv;
+
+COMMIT;

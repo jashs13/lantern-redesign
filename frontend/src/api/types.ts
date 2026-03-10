@@ -233,6 +233,15 @@ export interface FieldValueMetrics {
   most_varied_score: number | null;
 }
 
+export interface ValidationMetrics {
+  passing_all: number | null;
+  with_failures: number | null;
+  pass_rate: number | null;
+  total_rules: number | null;
+  most_failed_rule: string | null;
+  max_failures: number | null;
+}
+
 export interface FieldValue {
   field_name: string;
   field_value: string;

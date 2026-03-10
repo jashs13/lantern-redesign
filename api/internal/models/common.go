@@ -98,3 +98,13 @@ type FieldValueMetrics struct {
 	MostVariedField   *string  `json:"most_varied_field"`
 	MostVariedScore   *int     `json:"most_varied_score"`
 }
+
+// ValidationMetrics aggregates static KPIs for the Validation Results tab.
+type ValidationMetrics struct {
+	PassingAll     *int     `json:"passing_all"`
+	WithFailures   *int     `json:"with_failures"`
+	PassRate       *float64 `json:"pass_rate"`
+	TotalRules     *int     `json:"total_rules"`
+	MostFailedRule *string  `json:"most_failed_rule"`
+	MaxFailures    *int     `json:"max_failures"`
+}

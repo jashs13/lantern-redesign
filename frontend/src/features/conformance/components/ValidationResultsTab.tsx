@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
-import { fetchValidationsSummary, fetchValidationsDetails, fetchValidationsFailures } from '@/api/validations';
+import { fetchValidationsSummary, fetchValidationsDetails, fetchValidationsFailures, fetchValidationMetrics } from '@/api/validations';
 import { fetchFHIRVersions, fetchValidationGroups, fetchVendors } from '@/api/filters';
 import { Select } from '@/components/ui/Select';
 import { LoadingState } from '@/components/ui/LoadingState';
@@ -19,10 +19,10 @@ import {
 } from 'recharts';
 import { DataTable } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/Badge';
-import { InfoIcon, CheckCircle, XCircle } from 'lucide-react';
+import { InfoIcon, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { SearchInput } from '@/components/ui/SearchInput';
 import type { ColumnDef } from '@tanstack/react-table';
-import type { ValidationFailure } from '@/api/types';
+import type { ValidationFailure, ValidationMetrics } from '@/api/types';
 import { formatNumber } from '@/lib/formatters';
 
 const failuresColumns: ColumnDef<ValidationFailure, unknown>[] = [
@@ -161,6 +161,15 @@ export function ValidationResultsTab() {
     enabled: !!selectedRule,
   });
 
+  const {
+    data: metricsData,
+    isLoading: isMetricsLoading,
+  } = useQuery<ValidationMetrics>({
+    queryKey: ['validations-metrics'],
+    queryFn: fetchValidationMetrics,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const isLoading = isSummaryLoading || isDetailsLoading;
 
   if (isLoading) return <LoadingState />;
@@ -168,28 +177,6 @@ export function ValidationResultsTab() {
     return <ErrorState message={(summaryError || detailsError)?.message || 'Failed to load validations'} />;
     
   const chartData = summaryData ? [...summaryData].sort((a, b) => b.valid + b.invalid - (a.valid + a.invalid)) : [];
-
-  // Derived KPI metrics
-  const totalEndpoints = chartData.length > 0 ? (chartData[0].valid + chartData[0].invalid) : 0;
-  let passingAll = totalEndpoints;
-  let maxFailures = 0;
-  let maxFailedRule = '';
-
-  if (chartData.length > 0) {
-      // Find endpoints that fail ANY rule (mock estimation for KPI, actual logic requires backend support for true 'passing all' metric)
-      // For now, based on the mockup metrics pattern:
-      const totalFails = chartData.reduce((acc, curr) => acc + curr.invalid, 0); 
-      // Approximate passing all - this is just a UI filler mirroring the mockup numbers conceptually
-      passingAll = Math.max(0, totalEndpoints - Math.floor(totalFails / chartData.length)); 
-      
-      const mostFailed = [...chartData].sort((a,b) => b.invalid - a.invalid)[0];
-      if (mostFailed) {
-         maxFailures = mostFailed.invalid;
-         maxFailedRule = mostFailed.rule_name;
-      }
-  }
-
-  const passRate = totalEndpoints > 0 ? ((passingAll / totalEndpoints) * 100).toFixed(1) : 0;
 
   const filteredRules = detailsData?.filter(rule => 
       rule.rule_name.toLowerCase().includes(search.toLowerCase()) || 
@@ -203,6 +190,43 @@ export function ValidationResultsTab() {
         <div className="text-sm text-navy-900">
           <strong>About validations:</strong> Lantern evaluates endpoint capability statements against a set of validation rules derived from the FHIR specification and ONC requirements. The ONC Final Rule requires endpoints to support FHIR version 4.0.1, but all endpoints are included here for reference.
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-success">
+          <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Passing All Rules</div>
+          <div className="text-3xl font-bold text-navy-900 leading-tight">
+             {isMetricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (metricsData?.passing_all !== null && metricsData?.passing_all !== undefined ? formatNumber(metricsData.passing_all) : 'N/A')}
+          </div>
+          <p className="text-sm text-gray-500 mt-1">
+             {isMetricsLoading ? <span className="opacity-0">Loading...</span> : (metricsData?.pass_rate !== null && metricsData?.pass_rate !== undefined ? `${metricsData.pass_rate}% of endpoints pass all` : 'N/A')}
+          </p>
+        </article>
+        <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-destructive">
+          <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">With Failures</div>
+          <div className="text-3xl font-bold text-navy-900 leading-tight">
+             {isMetricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (metricsData?.with_failures !== null && metricsData?.with_failures !== undefined ? formatNumber(metricsData.with_failures) : 'N/A')}
+          </div>
+          <p className="text-sm text-gray-500 mt-1">
+             {isMetricsLoading ? <span className="opacity-0">Loading...</span> : (metricsData?.pass_rate !== null && metricsData?.pass_rate !== undefined ? `${(100 - metricsData.pass_rate).toFixed(1)}% have ≥1 failure` : 'N/A')}
+          </p>
+        </article>
+        <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-primary">
+          <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Validation Rules</div>
+          <div className="text-3xl font-bold text-navy-900 leading-tight">
+             {isMetricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (metricsData?.total_rules !== null && metricsData?.total_rules !== undefined ? formatNumber(metricsData.total_rules) : 'N/A')}
+          </div>
+          <p className="text-sm text-gray-500 mt-1">Rules evaluated per endpoint</p>
+        </article>
+        <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-warning">
+          <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Most Failed Rule</div>
+          <div className="text-xl font-bold text-navy-900 font-mono mt-1 mb-2">
+             {isMetricsLoading ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" /> : (metricsData?.most_failed_rule ?? 'N/A')}
+          </div>
+          <p className="text-sm text-gray-500 mt-1">
+             {isMetricsLoading ? <span className="opacity-0">Loading...</span> : (metricsData?.max_failures !== null && metricsData?.max_failures !== undefined ? `${formatNumber(metricsData.max_failures)} endpoints affected` : 'N/A')}
+          </p>
+        </article>
       </div>
 
       {/* Filters Section */}
@@ -246,29 +270,6 @@ export function ValidationResultsTab() {
           </div>
         </div>
       </section>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-success">
-          <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Passing All Rules</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">{formatNumber(passingAll)}</div>
-          <p className="text-sm text-gray-500 mt-1">{passRate}% of endpoints pass all</p>
-        </article>
-        <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-destructive">
-          <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">With Failures</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">{formatNumber(totalEndpoints - passingAll)}</div>
-          <p className="text-sm text-gray-500 mt-1">{(100 - Number(passRate)).toFixed(1)}% have ≥1 failure</p>
-        </article>
-        <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-primary">
-          <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Validation Rules</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">{detailsData?.length || 0}</div>
-          <p className="text-sm text-gray-500 mt-1">Rules evaluated per endpoint</p>
-        </article>
-        <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-warning">
-          <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Most Failed Rule</div>
-          <div className="text-xl font-bold text-navy-900 font-mono mt-1 mb-2">{maxFailedRule || 'N/A'}</div>
-          <p className="text-sm text-gray-500 mt-1">{formatNumber(maxFailures)} endpoints affected</p>
-        </article>
-      </div>
 
       <section className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
         <header className="p-5 border-b bg-white flex flex-wrap gap-4 justify-between items-center">
