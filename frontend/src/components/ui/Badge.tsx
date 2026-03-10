@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info' | 'fhir-r4' | 'fhir' | 'navy';
+type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info' | 'fhir-r4' | 'fhir' | 'navy' | 'purple';
 
 const VARIANT_CLASSES: Record<BadgeVariant, string> = {
   default: 'bg-neutral-100 text-neutral-700',
@@ -11,6 +11,7 @@ const VARIANT_CLASSES: Record<BadgeVariant, string> = {
   'fhir-r4': 'bg-sky-500/15 text-sky-600 font-semibold',
   fhir: 'bg-neutral-100 text-neutral-600',
   navy: 'bg-navy-700/10 text-navy-700',
+  purple: 'bg-purple-100 text-purple-800',
 };
 
 interface BadgeProps {

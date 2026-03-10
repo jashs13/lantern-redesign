@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Analyze FHIR endpoint conformance. Review capability statement fields, field values, and validation results across 70,000+ endpoints.">
+    <meta name="keywords" content="FHIR, conformance, validation, capability statement, fields, compliance, health IT">
+    <title>Conformance & Validation - Lantern | FHIR Endpoint Monitor</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Merriweather:wght@700&family=Source+Code+Pro:wght@500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --color-primary-darkest: #0a1628;
+            --color-primary-dark: #112e51;
+            --color-primary: #205493;
+            --color-primary-light: #4773aa;
+            --color-primary-lighter: #8ba6ca;
+            --color-secondary: #02bfe7;
+            --color-secondary-dark: #0095c8;
+            --color-accent-green: #2e8540;
+            --color-accent-green-light: #4aa564;
+            --color-accent-gold: #fdb81e;
+            --color-accent-red: #e31c3d;
+            --color-white: #ffffff;
+            --color-gray-lightest: #f1f1f1;
+            --color-gray-lighter: #d6d7d9;
+            --color-gray-light: #aeb0b5;
+            --color-gray: #5b616b;
+            --color-gray-dark: #323a45;
+            --color-black: #212121;
+            --color-status-available: #2e8540;
+            --color-status-available-bg: #e7f4e9;
+            --color-status-degraded: #b56a00;
+            --color-status-degraded-bg: #fff3e0;
+            --color-status-down: #e31c3d;
+            --color-status-down-bg: #fbe9ec;
+            --color-status-info: #02bfe7;
+            --color-status-info-bg: #e1f5fe;
+            --font-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-serif: 'Merriweather', Georgia, serif;
+            --font-mono: 'Source Code Pro', 'Courier New', monospace;
+            --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+            --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem; --space-8: 4rem;
+            --max-width: 1400px;
+            --border-radius: 4px; --border-radius-lg: 8px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --transition-fast: 150ms ease; --transition-base: 250ms ease;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; font-size: 16px; }
+        body { font-family: var(--font-sans); font-size: 1rem; line-height: 1.6; color: var(--color-black); background-color: var(--color-gray-lightest); -webkit-font-smoothing: antialiased; }
+        .skip-link { position: absolute; top: -40px; left: 0; background: var(--color-primary-dark); color: var(--color-white); padding: var(--space-2) var(--space-4); text-decoration: none; z-index: 1000; }
+        .skip-link:focus { top: 0; }
+        :focus-visible { outline: 3px solid var(--color-secondary); outline-offset: 2px; }
+
+        /* Header */
+        .header { background-color: var(--color-primary-dark); color: var(--color-white); }
+        .header__inner { max-width: var(--max-width); margin: 0 auto; padding: var(--space-4); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4); }
+        .header__brand { display: flex; align-items: center; gap: var(--space-3); text-decoration: none; color: var(--color-white); }
+        .header__logo { width: 48px; height: 48px; background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-dark) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .header__title { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; }
+        .header__subtitle { font-size: 0.875rem; opacity: 0.9; }
+        .nav { display: flex; gap: var(--space-1); align-items: center; }
+        .nav__link { color: var(--color-white); text-decoration: none; padding: var(--space-2) var(--space-4); border-radius: var(--border-radius); font-weight: 600; font-size: 0.9375rem; transition: background-color var(--transition-fast); }
+        .nav__link:hover, .nav__link:focus { background-color: rgba(255,255,255,0.1); }
+        .nav__link--active { background-color: rgba(255,255,255,0.15); }
+        .nav__dropdown { position: relative; }
+        .nav__dropdown-trigger { color: var(--color-white); text-decoration: none; padding: var(--space-2) var(--space-4); border-radius: var(--border-radius); font-weight: 600; font-size: 0.9375rem; transition: background-color var(--transition-fast); cursor: pointer; display: inline-flex; align-items: center; gap: var(--space-2); background: none; border: none; font-family: var(--font-sans); }
+        .nav__dropdown-trigger:hover, .nav__dropdown-trigger:focus { background-color: rgba(255,255,255,0.1); }
+        .nav__dropdown-trigger--active { background-color: rgba(255,255,255,0.15); }
+        .nav__dropdown-arrow { font-size: 0.625rem; transition: transform var(--transition-fast); }
+        .nav__dropdown:hover .nav__dropdown-arrow { transform: rotate(180deg); }
+        .nav__dropdown-menu { position: absolute; top: calc(100% + var(--space-2)); left: 0; min-width: 280px; background: var(--color-white); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); padding: var(--space-2); z-index: 100; opacity: 0; visibility: hidden; transform: translateY(-4px); transition: all var(--transition-fast); }
+        .nav__dropdown:hover .nav__dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+        .nav__dropdown-item { display: block; padding: var(--space-3) var(--space-4); border-radius: var(--border-radius); color: var(--color-gray-dark); text-decoration: none; transition: all var(--transition-fast); }
+        .nav__dropdown-item:hover { background: var(--color-gray-lightest); color: var(--color-primary); }
+        .nav__dropdown-item--active { background: var(--color-gray-lightest); color: var(--color-primary); }
+        .nav__dropdown-item-title { font-weight: 700; font-size: 0.9375rem; margin-bottom: 2px; }
+        .nav__dropdown-item-desc { font-size: 0.8125rem; color: var(--color-gray); }
+        .nav__dropdown-divider { height: 1px; background: var(--color-gray-lighter); margin: var(--space-2) var(--space-4); }
+        .nav__dropdown-header { padding: var(--space-2) var(--space-4); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-gray-light); }
+        .nav-toggle { display: none; background: transparent; border: 2px solid var(--color-white); color: var(--color-white); padding: var(--space-2) var(--space-3); border-radius: var(--border-radius); cursor: pointer; font-family: var(--font-sans); font-weight: 600; }
+
+        /* Breadcrumb */
+        .breadcrumb { background: var(--color-white); border-bottom: 1px solid var(--color-gray-lighter); padding: var(--space-3) var(--space-4); }
+        .breadcrumb__inner { max-width: var(--max-width); margin: 0 auto; font-size: 0.875rem; color: var(--color-gray); }
+        .breadcrumb__link { color: var(--color-primary); text-decoration: none; }
+        .breadcrumb__link:hover { text-decoration: underline; }
+        .breadcrumb__separator { margin: 0 var(--space-2); }
+        .breadcrumb__current { color: var(--color-gray-dark); font-weight: 600; }
+
+        /* Layout */
+        .container { max-width: var(--max-width); margin: 0 auto; padding: var(--space-6) var(--space-4) var(--space-8); }
+        .page-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-6); }
+        .page-header__title { font-family: var(--font-serif); font-size: 2rem; font-weight: 700; color: var(--color-primary-dark); margin-bottom: var(--space-2); }
+        .page-header__description { color: var(--color-gray); font-size: 1.125rem; max-width: 650px; }
+        .page-header__link { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); background: var(--color-primary); color: var(--color-white); border-radius: var(--border-radius); text-decoration: none; font-weight: 600; font-size: 0.9375rem; transition: background-color var(--transition-fast); }
+        .page-header__link:hover { background: var(--color-primary-dark); }
+
+        /* Sub-Navigation */
+        .sub-nav { display: flex; gap: var(--space-1); background: var(--color-white); border-radius: var(--border-radius-lg); padding: var(--space-1); box-shadow: var(--shadow-sm); margin-bottom: var(--space-6); }
+        .sub-nav__tab { padding: var(--space-3) var(--space-5); border-radius: var(--border-radius); font-weight: 600; font-size: 0.9375rem; color: var(--color-gray); background: transparent; border: none; cursor: pointer; white-space: nowrap; font-family: var(--font-sans); transition: all var(--transition-fast); }
+        .sub-nav__tab:hover { color: var(--color-primary); background: var(--color-gray-lightest); }
+        .sub-nav__tab--active { color: var(--color-white); background: var(--color-primary); }
+        .sub-nav__tab--active:hover { background: var(--color-primary-dark); color: var(--color-white); }
+        .tab-panel { display: none; }
+        .tab-panel--active { display: block; }
+
+        /* KPI Cards */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6); }
+        .kpi-card { background: var(--color-white); border-radius: var(--border-radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); border-left: 4px solid var(--color-primary); }
+        .kpi-card--green { border-left-color: var(--color-accent-green); }
+        .kpi-card--blue { border-left-color: var(--color-secondary); }
+        .kpi-card--gold { border-left-color: var(--color-accent-gold); }
+        .kpi-card--red { border-left-color: var(--color-accent-red); }
+        .kpi-card__label { font-size: 0.8125rem; color: var(--color-gray); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: var(--space-2); }
+        .kpi-card__value { font-size: 2rem; font-weight: 700; color: var(--color-primary-dark); line-height: 1.1; }
+        .kpi-card__subtitle { font-size: 0.875rem; color: var(--color-gray); margin-top: var(--space-1); }
+
+        /* Section Card */
+        .section-card { background: var(--color-white); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm); margin-bottom: var(--space-6); overflow: hidden; }
+        .section-card__header { padding: var(--space-5); border-bottom: 1px solid var(--color-gray-lighter); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4); }
+        .section-card__title { font-family: var(--font-serif); font-size: 1.25rem; font-weight: 700; color: var(--color-primary-dark); }
+        .section-card__subtitle { color: var(--color-gray); font-size: 0.9375rem; margin-top: var(--space-1); }
+        .section-card__body { padding: var(--space-5); }
+
+        /* Chart Placeholder */
+        .chart-container { padding: var(--space-5); }
+        .chart-placeholder { background: linear-gradient(135deg, #f8f9fb 0%, #eef1f5 100%); border: 2px dashed var(--color-gray-lighter); border-radius: var(--border-radius-lg); padding: var(--space-8); text-align: center; color: var(--color-gray); }
+        .chart-placeholder__icon { font-size: 2.5rem; margin-bottom: var(--space-3); }
+        .chart-placeholder__title { font-weight: 700; font-size: 1.125rem; color: var(--color-gray-dark); margin-bottom: var(--space-2); }
+        .chart-placeholder__stats { font-size: 0.9375rem; margin-bottom: var(--space-3); }
+        .chart-placeholder__note { font-size: 0.8125rem; font-style: italic; opacity: 0.7; }
+
+        /* Filter Bar */
+        .filter-bar { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; padding: var(--space-4) var(--space-5); background: var(--color-gray-lightest); border-bottom: 1px solid var(--color-gray-lighter); }
+        .filter-bar__search { flex: 1; min-width: 250px; padding: var(--space-2) var(--space-4); border: 1px solid var(--color-gray-lighter); border-radius: var(--border-radius); font-family: var(--font-sans); font-size: 0.9375rem; }
+        .filter-bar__search:focus { border-color: var(--color-primary); outline: none; box-shadow: 0 0 0 3px rgba(32,84,147,0.15); }
+        .filter-bar__select { padding: var(--space-2) var(--space-4); border: 1px solid var(--color-gray-lighter); border-radius: var(--border-radius); font-family: var(--font-sans); font-size: 0.9375rem; background: var(--color-white); cursor: pointer; }
+
+        /* Data Table */
+        .data-table-wrapper { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+        .data-table th { text-align: left; padding: var(--space-3) var(--space-4); background: var(--color-gray-lightest); font-weight: 600; color: var(--color-gray-dark); border-bottom: 2px solid var(--color-gray-lighter); white-space: nowrap; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; }
+        .data-table th:hover { background: #e8e8e8; }
+        .data-table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-gray-lighter); vertical-align: middle; }
+        .data-table tr:hover { background-color: #f8f9fb; }
+        .data-table__sortable::after { content: ' ↕'; font-size: 0.75rem; opacity: 0.4; }
+
+        /* Badge */
+        .badge { display: inline-block; padding: var(--space-1) var(--space-2); border-radius: var(--border-radius); font-size: 0.75rem; font-weight: 600; }
+        .badge--green { background: var(--color-status-available-bg); color: var(--color-accent-green); }
+        .badge--blue { background: var(--color-status-info-bg); color: #0277bd; }
+        .badge--gold { background: var(--color-status-degraded-bg); color: var(--color-status-degraded); }
+        .badge--red { background: var(--color-status-down-bg); color: var(--color-accent-red); }
+        .badge--purple { background: #f3e8fd; color: #6a1b9a; }
+
+        /* Support Bar */
+        .support-bar { display: flex; align-items: center; gap: var(--space-2); }
+        .support-bar__track { flex: 1; height: 8px; background: var(--color-gray-lighter); border-radius: 4px; overflow: hidden; }
+        .support-bar__fill { height: 100%; border-radius: 4px; }
+        .support-bar__fill--high { background: var(--color-accent-green); }
+        .support-bar__fill--medium { background: var(--color-secondary); }
+        .support-bar__fill--low { background: var(--color-accent-gold); }
+        .support-bar__fill--critical { background: var(--color-accent-red); }
+        .support-bar__value { font-size: 0.875rem; font-weight: 700; color: var(--color-primary-dark); min-width: 45px; text-align: right; }
+
+        /* Callout */
+        .callout { display: flex; gap: var(--space-4); padding: var(--space-5); border-left: 4px solid var(--color-secondary); border-radius: var(--border-radius); margin-bottom: var(--space-6); }
+        .callout--info { background: var(--color-status-info-bg); }
+        .callout--warning { background: var(--color-status-degraded-bg); border-left-color: var(--color-accent-gold); }
+        .callout__icon { font-size: 1.5rem; flex-shrink: 0; }
+        .callout__text { font-size: 0.9375rem; color: var(--color-gray-dark); }
+        .callout__text strong { color: var(--color-primary-dark); }
+
+        /* Validation Rule Cards */
+        .rule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--space-4); }
+        .rule-card { border: 1px solid var(--color-gray-lighter); border-radius: var(--border-radius-lg); padding: var(--space-5); transition: all var(--transition-base); cursor: pointer; }
+        .rule-card:hover { border-color: var(--color-primary-light); box-shadow: var(--shadow-md); }
+        .rule-card__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3); }
+        .rule-card__name { font-weight: 700; font-size: 0.9375rem; color: var(--color-primary-dark); font-family: var(--font-mono); }
+        .rule-card__desc { font-size: 0.875rem; color: var(--color-gray); margin-bottom: var(--space-4); line-height: 1.5; }
+        .rule-card__stats { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+        .rule-card__stat-box { text-align: center; padding: var(--space-3); background: var(--color-gray-lightest); border-radius: var(--border-radius); }
+        .rule-card__stat-value { font-size: 1.25rem; font-weight: 700; line-height: 1.1; }
+        .rule-card__stat-value--pass { color: var(--color-accent-green); }
+        .rule-card__stat-value--fail { color: var(--color-accent-red); }
+        .rule-card__stat-label { font-size: 0.75rem; color: var(--color-gray); margin-top: var(--space-1); }
+
+        /* Field Inclusion Grid */
+        .field-group { margin-bottom: var(--space-6); }
+        .field-group__title { font-family: var(--font-serif); font-size: 1.125rem; font-weight: 700; color: var(--color-primary-dark); margin-bottom: var(--space-2); padding-bottom: var(--space-2); border-bottom: 2px solid var(--color-primary); display: inline-block; }
+        .field-group__subtitle { color: var(--color-gray); font-size: 0.875rem; margin-bottom: var(--space-4); }
+
+        /* Pagination */
+        .pagination { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); border-top: 1px solid var(--color-gray-lighter); }
+        .pagination__info { font-size: 0.875rem; color: var(--color-gray); }
+        .pagination__controls { display: flex; gap: var(--space-2); }
+        .pagination__btn { padding: var(--space-2) var(--space-3); border: 1px solid var(--color-gray-lighter); border-radius: var(--border-radius); background: var(--color-white); font-family: var(--font-sans); font-size: 0.875rem; cursor: pointer; color: var(--color-primary); font-weight: 600; transition: all var(--transition-fast); }
+        .pagination__btn:hover { background: var(--color-primary); color: var(--color-white); }
+        .pagination__btn--active { background: var(--color-primary); color: var(--color-white); }
+        .pagination__btn--disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Footer */
+        .footer { background: var(--color-primary-darkest); color: var(--color-white); padding: var(--space-7) var(--space-4); margin-top: var(--space-8); }
+        .footer__inner { max-width: var(--max-width); margin: 0 auto; }
+        .footer__top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-6); }
+        .footer__brand { display: flex; align-items: center; gap: var(--space-3); }
+        .footer__logo { font-size: 1.5rem; }
+        .footer__title { font-family: var(--font-serif); font-size: 1.25rem; font-weight: 700; }
+        .footer__links { display: flex; gap: var(--space-5); flex-wrap: wrap; }
+        .footer__link { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.9375rem; transition: color var(--transition-fast); }
+        .footer__link:hover { color: var(--color-white); }
+        .footer__bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: var(--space-5); font-size: 0.875rem; color: rgba(255,255,255,0.5); text-align: center; }
+        .footer__bottom p + p { margin-top: var(--space-1); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav { display: none; flex-direction: column; width: 100%; gap: 0; }
+            .nav--open { display: flex; }
+            .nav-toggle { display: block; }
+            .header__inner { flex-wrap: wrap; }
+            .page-header { flex-direction: column; }
+            .page-header__title { font-size: 1.5rem; }
+            .sub-nav { gap: 0; overflow-x: auto; }
+            .sub-nav__tab { padding: var(--space-2) var(--space-3); font-size: 0.8125rem; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .rule-grid { grid-template-columns: 1fr; }
+            .filter-bar { flex-direction: column; }
+            .filter-bar__search { min-width: 100%; }
+            .callout { flex-direction: column; gap: var(--space-2); }
+            .footer__top { flex-direction: column; align-items: flex-start; }
+            .footer__links { flex-direction: column; gap: var(--space-3); }
+        }
+
+        @media print {
+            .header, .breadcrumb, .footer, .nav-toggle, .sub-nav { display: none; }
+            .container { max-width: 100%; padding: 0; }
+            .section-card { break-inside: avoid; box-shadow: none; border: 1px solid var(--color-gray-lighter); }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header class="header">
+        <div class="header__inner">
+            <a href="index.html" class="header__brand" aria-label="Lantern Home">
+                <div class="header__logo" aria-hidden="true">&#x1F526;</div>
+                <div>
+                    <div class="header__title">Lantern</div>
+                    <div class="header__subtitle">FHIR Endpoint Monitor</div>
+                </div>
+            </a>
+            <button class="nav-toggle" aria-expanded="false" aria-controls="main-nav">Menu</button>
+            <nav class="nav" id="main-nav" aria-label="Main navigation">
+                <a href="index.html" class="nav__link">Home</a>
+                <a href="endpoints-dashboard.html" class="nav__link">Dashboard</a>
+                <a href="endpoints.html" class="nav__link">Endpoints</a>
+                <a href="organizations.html" class="nav__link">Organizations</a>
+                <a href="developers.html" class="nav__link">Developers</a>
+                <div class="nav__dropdown">
+                    <button class="nav__dropdown-trigger nav__dropdown-trigger--active" aria-expanded="false" aria-haspopup="true">
+                        Capabilities <span class="nav__dropdown-arrow" aria-hidden="true">&#x25BC;</span>
+                    </button>
+                    <div class="nav__dropdown-menu" role="menu">
+                        <a href="capabilities.html" class="nav__dropdown-item" role="menuitem">
+                            <div class="nav__dropdown-item-title">&#x1F4CB; Overview</div>
+                            <div class="nav__dropdown-item-desc">Capability statement health check at a glance</div>
+                        </a>
+                        <div class="nav__dropdown-divider"></div>
+                        <div class="nav__dropdown-header">Explore</div>
+                        <a href="capabilities-resources.html" class="nav__dropdown-item" role="menuitem">
+                            <div class="nav__dropdown-item-title">&#x1F4E6; Capabilities &amp; Resources</div>
+                            <div class="nav__dropdown-item-desc">Resources, IGs, profiles, and capability sizes</div>
+                        </a>
+                        <a href="security-smart.html" class="nav__dropdown-item" role="menuitem">
+                            <div class="nav__dropdown-item-title">&#x1F512; Security &amp; SMART</div>
+                            <div class="nav__dropdown-item-desc">Authorization types and SMART-on-FHIR support</div>
+                        </a>
+                        <a href="conformance-validation.html" class="nav__dropdown-item nav__dropdown-item--active" role="menuitem">
+                            <div class="nav__dropdown-item-title">&#x2705; Conformance &amp; Validation</div>
+                            <div class="nav__dropdown-item-desc">Field inclusion, values, and validation results</div>
+                        </a>
+                    </div>
+                </div>
+                <a href="about.html" class="nav__link">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="breadcrumb">
+        <div class="breadcrumb__inner">
+            <a href="index.html" class="breadcrumb__link">Home</a>
+            <span class="breadcrumb__separator">&rsaquo;</span>
+            <a href="capabilities.html" class="breadcrumb__link">Capabilities</a>
+            <span class="breadcrumb__separator">&rsaquo;</span>
+            <span class="breadcrumb__current">Conformance &amp; Validation</span>
+        </div>
+    </div>
+
+    <main id="main-content">
+        <div class="container">
+
+            <header class="page-header">
+                <div>
+                    <h1 class="page-header__title">Conformance &amp; Validation</h1>
+                    <p class="page-header__description">How well do endpoints conform to the FHIR specification? Explore capability statement fields, their values, and validation results.</p>
+                </div>
+                <a href="#" class="page-header__link" id="export-btn">
+                    <span aria-hidden="true">&#x2B73;</span> Export Data
+                </a>
+            </header>
+
+            <!-- Sub-Navigation -->
+            <div class="sub-nav" role="tablist" aria-label="Conformance sections">
+                <button class="sub-nav__tab sub-nav__tab--active" role="tab" aria-selected="true" aria-controls="panel-fields" data-tab="fields">CapStat Fields</button>
+                <button class="sub-nav__tab" role="tab" aria-selected="false" aria-controls="panel-values" data-tab="values">Field Values</button>
+                <button class="sub-nav__tab" role="tab" aria-selected="false" aria-controls="panel-validation" data-tab="validation">Validation Results</button>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 1: CAPABILITY STATEMENT FIELDS           -->
+            <!-- ============================================ -->
+            <div class="tab-panel tab-panel--active" id="panel-fields" role="tabpanel">
+
+                <div class="callout callout--info">
+                    <div class="callout__icon" aria-hidden="true">&#x1F6C8;</div>
+                    <div class="callout__text">
+                        <strong>What's included?</strong> This tab shows which fields are present in endpoint FHIR Capability Statements. The FHIR specification defines both required and optional fields. High field inclusion indicates better-documented, more interoperable endpoints.
+                    </div>
+                </div>
+
+                <div class="kpi-grid">
+                    <article class="kpi-card kpi-card--green">
+                        <div class="kpi-card__label">Required Fields</div>
+                        <div class="kpi-card__value">18</div>
+                        <p class="kpi-card__subtitle">Fields required by FHIR spec</p>
+                    </article>
+                    <article class="kpi-card kpi-card--blue">
+                        <div class="kpi-card__label">Optional Fields</div>
+                        <div class="kpi-card__value">47</div>
+                        <p class="kpi-card__subtitle">Additional fields observed</p>
+                    </article>
+                    <article class="kpi-card">
+                        <div class="kpi-card__label">Avg Fields per CapStat</div>
+                        <div class="kpi-card__value">34</div>
+                        <p class="kpi-card__subtitle">Mean across all endpoints</p>
+                    </article>
+                    <article class="kpi-card kpi-card--gold">
+                        <div class="kpi-card__label">Extensions Observed</div>
+                        <div class="kpi-card__value">23</div>
+                        <p class="kpi-card__subtitle">Distinct extension URLs</p>
+                    </article>
+                </div>
+
+                <!-- Required Fields -->
+                <section class="section-card" aria-labelledby="required-fields-heading">
+                    <header class="section-card__header">
+                        <div>
+                            <h2 class="section-card__title" id="required-fields-heading">Required Fields</h2>
+                            <p class="section-card__subtitle">Fields that the FHIR specification requires in every Capability Statement</p>
+                        </div>
+                    </header>
+                    <div class="filter-bar">
+                        <input type="search" class="filter-bar__search" placeholder="Search fields..." aria-label="Search fields">
+                        <select class="filter-bar__select" aria-label="Filter by FHIR version">
+                            <option>All FHIR Versions</option>
+                            <option>FHIR R4 (4.0.1)</option>
+                            <option>FHIR STU3 (3.0.2)</option>
+                            <option>FHIR DSTU2 (1.0.2)</option>
+                        </select>
+                    </div>
+                    <div class="data-table-wrapper">
+                        <table class="data-table" aria-label="Required capability statement fields">
+                            <thead>
+                                <tr>
+                                    <th class="data-table__sortable">Field Name</th>
+                                    <th class="data-table__sortable">FHIR Path</th>
+                                    <th class="data-table__sortable">Endpoints Including</th>
+                                    <th>Inclusion Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>status</strong></td>
+                                    <td style="font-family:var(--font-mono);font-size:0.8125rem;color:var(--color-gray);">CapabilityStatement.status</td>
+                                    <td><strong>68,890</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--high" style="width:98.1%"></div></div>
+                                            <span class="support-bar__value">98.1%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>kind</strong></td>
+                                    <td style="font-family:var(--font-mono);font-size:0.8125rem;color:var(--color-gray);">CapabilityStatement.kind</td>
+                                    <td><strong>68,750</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--high" style="width:97.9%"></div></div>
+                                            <span class="support-bar__value">97.9%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>fhirVersion</strong></td>
+                                    <td style="font-family:var(--font-mono);font-size:0.8125rem;color:var(--color-gray);">CapabilityStatement.fhirVersion</td>
+                                    <td><strong>68,600</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--high" style="width:97.7%"></div></div>
+                                            <span class="support-bar__value">97.7%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>format</strong></td>
+                                    <td style="font-family:var(--font-mono);font-size:0.8125rem;color:var(--color-gray);">CapabilityStatement.format</td>
+                                    <td><strong>67,200</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--high" style="width:95.7%"></div></div>
+                                            <span class="support-bar__value">95.7%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>date</strong></td>
+                                    <td style="font-family:var(--font-mono);font-size:0.8125rem;color:var(--color-gray);">CapabilityStatement.date</td>
+                                    <td><strong>65,100</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--high" style="width:92.7%"></div></div>
+                                            <span class="support-bar__value">92.7%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Optional Fields -->
+                <section class="section-card" aria-labelledby="optional-fields-heading">
+                    <header class="section-card__header">
+                        <div>
+                            <h2 class="section-card__title" id="optional-fields-heading">Optional Fields &amp; Extensions</h2>
+                            <p class="section-card__subtitle">Additional fields and extensions endpoints choose to include</p>
+                        </div>
+                    </header>
+                    <div class="data-table-wrapper">
+                        <table class="data-table" aria-label="Optional capability statement fields">
+                            <thead>
+                                <tr>
+                                    <th class="data-table__sortable">Field / Extension</th>
+                                    <th class="data-table__sortable">Type</th>
+                                    <th class="data-table__sortable">Endpoints Including</th>
+                                    <th>Inclusion Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>rest.security</strong></td>
+                                    <td><span class="badge badge--blue">Optional</span></td>
+                                    <td><strong>66,920</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--high" style="width:95.3%"></div></div>
+                                            <span class="support-bar__value">95.3%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>software.name</strong></td>
+                                    <td><span class="badge badge--blue">Optional</span></td>
+                                    <td><strong>62,100</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--medium" style="width:88.4%"></div></div>
+                                            <span class="support-bar__value">88.4%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>implementation.url</strong></td>
+                                    <td><span class="badge badge--blue">Optional</span></td>
+                                    <td><strong>58,200</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--medium" style="width:82.9%"></div></div>
+                                            <span class="support-bar__value">82.9%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>oauth-uris (extension)</strong></td>
+                                    <td><span class="badge badge--purple">Extension</span></td>
+                                    <td><strong>55,400</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--medium" style="width:78.9%"></div></div>
+                                            <span class="support-bar__value">78.9%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>contact</strong></td>
+                                    <td><span class="badge badge--blue">Optional</span></td>
+                                    <td><strong>42,300</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--low" style="width:60.2%"></div></div>
+                                            <span class="support-bar__value">60.2%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination">
+                        <span class="pagination__info">Showing 5 of 47 optional fields and 23 extensions</span>
+                        <div class="pagination__controls">
+                            <button class="pagination__btn pagination__btn--disabled" disabled>&laquo; Prev</button>
+                            <button class="pagination__btn pagination__btn--active">1</button>
+                            <button class="pagination__btn">2</button>
+                            <button class="pagination__btn">...</button>
+                            <button class="pagination__btn">14</button>
+                            <button class="pagination__btn">Next &raquo;</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 2: FIELD VALUES                          -->
+            <!-- ============================================ -->
+            <div class="tab-panel" id="panel-values" role="tabpanel">
+
+                <div class="callout callout--info">
+                    <div class="callout__icon" aria-hidden="true">&#x1F6C8;</div>
+                    <div class="callout__text">
+                        <strong>About field values:</strong> Select a Capability Statement field to see the set of values endpoints actually populate for that field. This helps identify common patterns, unexpected values, and areas where endpoints deviate from the specification.
+                    </div>
+                </div>
+
+                <div class="kpi-grid">
+                    <article class="kpi-card kpi-card--blue">
+                        <div class="kpi-card__label">Fields with Values</div>
+                        <div class="kpi-card__value">52</div>
+                        <p class="kpi-card__subtitle">Distinct fields with observable values</p>
+                    </article>
+                    <article class="kpi-card kpi-card--green">
+                        <div class="kpi-card__label">Unique Values</div>
+                        <div class="kpi-card__value">1,847</div>
+                        <p class="kpi-card__subtitle">Distinct values across all fields</p>
+                    </article>
+                    <article class="kpi-card">
+                        <div class="kpi-card__label">Most Uniform</div>
+                        <div class="kpi-card__value" style="font-size:1rem;font-family:var(--font-mono);">kind</div>
+                        <p class="kpi-card__subtitle">99.8% report "instance"</p>
+                    </article>
+                    <article class="kpi-card kpi-card--gold">
+                        <div class="kpi-card__label">Most Varied</div>
+                        <div class="kpi-card__value" style="font-size:1rem;font-family:var(--font-mono);">publisher</div>
+                        <p class="kpi-card__subtitle">890+ distinct values</p>
+                    </article>
+                </div>
+
+                <!-- Field Value Explorer -->
+                <section class="section-card" aria-labelledby="field-explorer-heading">
+                    <header class="section-card__header">
+                        <div>
+                            <h2 class="section-card__title" id="field-explorer-heading">Field Value Explorer</h2>
+                            <p class="section-card__subtitle">Select a field to see the values reported by endpoints</p>
+                        </div>
+                    </header>
+                    <div class="filter-bar">
+                        <select class="filter-bar__select" style="min-width:300px;" aria-label="Select field" id="field-selector">
+                            <option value="status">CapabilityStatement.status</option>
+                            <option value="kind">CapabilityStatement.kind</option>
+                            <option value="fhirVersion">CapabilityStatement.fhirVersion</option>
+                            <option value="format">CapabilityStatement.format</option>
+                            <option value="publisher">CapabilityStatement.publisher</option>
+                            <option value="software.name">CapabilityStatement.software.name</option>
+                            <option value="software.version">CapabilityStatement.software.version</option>
+                        </select>
+                        <input type="search" class="filter-bar__search" placeholder="Search within values..." aria-label="Search values">
+                    </div>
+
+                    <!-- Showing values for CapabilityStatement.status (default) -->
+                    <div class="section-card__body">
+                        <div class="field-group">
+                            <h3 class="field-group__title">Values for: CapabilityStatement.status</h3>
+                            <p class="field-group__subtitle">4 distinct values observed across 68,890 endpoints that include this field</p>
+                        </div>
+                    </div>
+                    <div class="data-table-wrapper">
+                        <table class="data-table" aria-label="Field values for CapabilityStatement.status">
+                            <thead>
+                                <tr>
+                                    <th class="data-table__sortable">Value</th>
+                                    <th class="data-table__sortable">Endpoints</th>
+                                    <th>Percentage</th>
+                                    <th>Expected?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong style="font-family:var(--font-mono);">active</strong></td>
+                                    <td><strong>66,200</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--high" style="width:96.1%"></div></div>
+                                            <span class="support-bar__value">96.1%</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge badge--green">&#x2713; Valid</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong style="font-family:var(--font-mono);">draft</strong></td>
+                                    <td><strong>2,100</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--low" style="width:3.0%"></div></div>
+                                            <span class="support-bar__value">3.0%</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge badge--green">&#x2713; Valid</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong style="font-family:var(--font-mono);">retired</strong></td>
+                                    <td><strong>480</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--critical" style="width:0.7%"></div></div>
+                                            <span class="support-bar__value">0.7%</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge badge--green">&#x2713; Valid</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong style="font-family:var(--font-mono);">unknown</strong></td>
+                                    <td><strong>110</strong></td>
+                                    <td>
+                                        <div class="support-bar">
+                                            <div class="support-bar__track"><div class="support-bar__fill support-bar__fill--critical" style="width:0.2%"></div></div>
+                                            <span class="support-bar__value">0.2%</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge badge--green">&#x2713; Valid</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Endpoints with value chart -->
+                <section class="section-card" aria-labelledby="value-chart-heading">
+                    <header class="section-card__header">
+                        <div>
+                            <h2 class="section-card__title" id="value-chart-heading">Value Distribution</h2>
+                            <p class="section-card__subtitle">Visual breakdown of values for the selected field</p>
+                        </div>
+                    </header>
+                    <div class="chart-container">
+                        <div class="chart-placeholder">
+                            <div class="chart-placeholder__icon" aria-hidden="true">&#x1F4CA;</div>
+                            <div class="chart-placeholder__title">Donut / Bar Chart: Value Distribution for Selected Field</div>
+                            <div class="chart-placeholder__stats">
+                                For <strong>status</strong>: active (96.1%) | draft (3.0%) | retired (0.7%) | unknown (0.2%)
+                            </div>
+                            <div class="chart-placeholder__note">In production, this chart updates dynamically when a different field is selected above</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 3: VALIDATION RESULTS                    -->
+            <!-- ============================================ -->
+            <div class="tab-panel" id="panel-validation" role="tabpanel">
+
+                <div class="callout callout--warning">
+                    <div class="callout__icon" aria-hidden="true">&#x26A0;</div>
+                    <div class="callout__text">
+                        <strong>About validations:</strong> Lantern evaluates endpoint capability statements against a set of validation rules derived from the FHIR specification and ONC requirements. The ONC Final Rule requires endpoints to support FHIR version 4.0.1, but all endpoints are included here for reference. <a href="#" style="color:var(--color-primary);">View validation rule documentation &rarr;</a>
+                    </div>
+                </div>
+
+                <div class="kpi-grid">
+                    <article class="kpi-card kpi-card--green">
+                        <div class="kpi-card__label">Passing All Rules</div>
+                        <div class="kpi-card__value">52,180</div>
+                        <p class="kpi-card__subtitle">74.3% of endpoints pass all validations</p>
+                    </article>
+                    <article class="kpi-card kpi-card--red">
+                        <div class="kpi-card__label">With Failures</div>
+                        <div class="kpi-card__value">18,054</div>
+                        <p class="kpi-card__subtitle">25.7% have at least one failure</p>
+                    </article>
+                    <article class="kpi-card kpi-card--blue">
+                        <div class="kpi-card__label">Validation Rules</div>
+                        <div class="kpi-card__value">24</div>
+                        <p class="kpi-card__subtitle">Rules evaluated per endpoint</p>
+                    </article>
+                    <article class="kpi-card kpi-card--gold">
+                        <div class="kpi-card__label">Most Failed Rule</div>
+                        <div class="kpi-card__value" style="font-size:0.85rem;font-family:var(--font-mono);">cpb-3</div>
+                        <p class="kpi-card__subtitle">8,230 endpoints affected</p>
+                    </article>
+                </div>
+
+                <!-- Validation Summary Chart -->
+                <section class="section-card" aria-labelledby="validation-chart-heading">
+                    <header class="section-card__header">
+                        <div>
+                            <h2 class="section-card__title" id="validation-chart-heading">Validation Results Summary</h2>
+                            <p class="section-card__subtitle">Pass/fail rates across all validation rules</p>
+                        </div>
+                        <div>
+                            <select class="filter-bar__select" aria-label="Filter by FHIR version">
+                                <option>All FHIR Versions</option>
+                                <option>FHIR R4 (4.0.1) Only</option>
+                                <option>FHIR STU3 (3.0.2) Only</option>
+                            </select>
+                        </div>
+                    </header>
+                    <div class="chart-container">
+                        <div class="chart-placeholder">
+                            <div class="chart-placeholder__icon" aria-hidden="true">&#x1F4CA;</div>
+                            <div class="chart-placeholder__title">Horizontal Stacked Bar: Pass/Fail per Validation Rule</div>
+                            <div class="chart-placeholder__stats">
+                                Overall pass rate: <strong>74.3%</strong> &nbsp;|&nbsp; Rules with >95% pass: <strong>18 of 24</strong>
+                            </div>
+                            <div class="chart-placeholder__note">In production, click a rule bar to filter the failure details table below</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Validation Rules Grid -->
+                <section class="section-card" aria-labelledby="rules-heading">
+                    <header class="section-card__header">
+                        <div>
+                            <h2 class="section-card__title" id="rules-heading">Validation Rules</h2>
+                            <p class="section-card__subtitle">Click a rule to see detailed failure information in the table below</p>
+                        </div>
+                    </header>
+                    <div class="filter-bar">
+                        <input type="search" class="filter-bar__search" placeholder="Search rules by name or description..." aria-label="Search rules">
+                        <select class="filter-bar__select" aria-label="Filter by result">
+                            <option>All Rules</option>
+                            <option>Rules with Failures</option>
+                            <option>Rules at 100% Pass</option>
+                        </select>
+                    </div>
+                    <div class="section-card__body">
+                        <div class="rule-grid">
+                            <article class="rule-card" onclick="alert('Filter failure details table below for: kindIsInstance\n\nShows endpoints where kind != instance')">
+                                <div class="rule-card__header">
+                                    <span class="rule-card__name">kindIsInstance</span>
+                                    <span class="badge badge--green">97.2% pass</span>
+                                </div>
+                                <div class="rule-card__desc">The CapabilityStatement.kind field should have the value "instance" for operational endpoints.</div>
+                                <div class="rule-card__stats">
+                                    <div class="rule-card__stat-box">
+                                        <div class="rule-card__stat-value rule-card__stat-value--pass">66,860</div>
+                                        <div class="rule-card__stat-label">Pass</div>
+                                    </div>
+                                    <div class="rule-card__stat-box">
+                                        <div class="rule-card__stat-value rule-card__stat-value--fail">1,890</div>
+                                        <div class="rule-card__stat-label">Fail</div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="rule-card" onclick="alert('Filter failure details table below for: statusIsActive')">
+                                <div class="rule-card__header">
+                                    <span class="rule-card__name">statusIsActive</span>
+                                    <span class="badge badge--green">96.1% pass</span>
+                                </div>
+                                <div class="rule-card__desc">The CapabilityStatement.status field should have the value "active" for operational endpoints.</div>
+                                <div class="rule-card__stats">
+                                    <div class="rule-card__stat-box">
+                                        <div class="rule-card__stat-value rule-card__stat-value--pass">66,200</div>
+                                        <div class="rule-card__stat-label">Pass</div>
+                                    </div>
+                                    <div class="rule-card__stat-box">
+                                        <div class="rule-card__stat-value rule-card__stat-value--fail">2,690</div>
+                                        <div class="rule-card__stat-label">Fail</div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="rule-card" onclick="alert('Filter failure details table below for: cpb-3 (messagingEndptRule)\n\nNote: There is a known issue with this FHIR invariant.')">
+                                <div class="rule-card__header">
+                                    <span class="rule-card__name">cpb-3 (messagingEndptRule)</span>
+                                    <span class="badge badge--red">88.3% pass</span>
+                                </div>
+                                <div class="rule-card__desc">Messaging endpoint must be present when kind is "instance", and absent when kind is not "instance". Note: this invariant has a known FHIRPath expression issue.</div>
+                                <div class="rule-card__stats">
+                                    <div class="rule-card__stat-box">
+                                        <div class="rule-card__stat-value rule-card__stat-value--pass">60,890</div>
+                                        <div class="rule-card__stat-label">Pass</div>
+                                    </div>
+                                    <div class="rule-card__stat-box">
+                                        <div class="rule-card__stat-value rule-card__stat-value--fail">8,230</div>
+                                        <div class="rule-card__stat-label">Fail</div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="rule-card" onclick="alert('Filter failure details table below for: fhirVersionIsValid')">
+                                <div class="rule-card__header">
+                                    <span class="rule-card__name">fhirVersionIsValid</span>
+                                    <span class="badge badge--green">97.7% pass</span>
+                                </div>
+                                <div class="rule-card__desc">The fhirVersion field must contain a valid FHIR version string (e.g., 4.0.1, 3.0.2, 1.0.2).</div>
+                                <div class="rule-card__stats">
+                                    <div class="rule-card__stat-box">
+                                        <div class="rule-card__stat-value rule-card__stat-value--pass">67,500</div>
+                                        <div class="rule-card__stat-label">Pass</div>
+                                    </div>
+                                    <div class="rule-card__stat-box">
+                                        <div class="rule-card__stat-value rule-card__stat-value--fail">1,600</div>
+                                        <div class="rule-card__stat-label">Fail</div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="rule-card" onclick="alert('Filter failure details table below for: tlsVersionRule')">
+                                <div class="rule-card__header">
+                                    <span class="rule-card__name">tlsVersionRule</span>
+                                    <span class="badge badge--green">99.1% pass</span>
+                                </div>
+                                <div class="rule-card__desc">The endpoint must support TLS 1.2 or higher for secure communication.</div>
+                                <div class="rule-card__stats">
+                                    <div class="rule-card__stat-box">
+                                        <div class="rule-card__stat-value rule-card__stat-value--pass">68,580</div>
+                                        <div class="rule-card__stat-label">Pass</div>
+                                    </div>
+                                    <div class="rule-card__stat-box">
+                                        <div class="rule-card__stat-value rule-card__stat-value--fail">620</div>
+                                        <div class="rule-card__stat-label">Fail</div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="rule-card" onclick="alert('Filter failure details table below for: formatIncludesJson')">
+                                <div class="rule-card__header">
+                                    <span class="rule-card__name">formatIncludesJson</span>
+                                    <span class="badge badge--green">95.8% pass</span>
+                                </div>
+                                <div class="rule-card__desc">The format field must include application/fhir+json to support JSON FHIR interactions.</div>
+                                <div class="rule-card__stats">
+                                    <div class="rule-card__stat-box">
+                                        <div class="rule-card__stat-value rule-card__stat-value--pass">66,280</div>
+                                        <div class="rule-card__stat-label">Pass</div>
+                                    </div>
+                                    <div class="rule-card__stat-box">
+                                        <div class="rule-card__stat-value rule-card__stat-value--fail">2,900</div>
+                                        <div class="rule-card__stat-label">Fail</div>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="pagination">
+                        <span class="pagination__info">Showing 6 of 24 validation rules</span>
+                        <div class="pagination__controls">
+                            <button class="pagination__btn pagination__btn--disabled" disabled>&laquo; Prev</button>
+                            <button class="pagination__btn pagination__btn--active">1</button>
+                            <button class="pagination__btn">2</button>
+                            <button class="pagination__btn">3</button>
+                            <button class="pagination__btn">4</button>
+                            <button class="pagination__btn">Next &raquo;</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Validation Failure Details -->
+                <section class="section-card" aria-labelledby="failure-details-heading">
+                    <header class="section-card__header">
+                        <div>
+                            <h2 class="section-card__title" id="failure-details-heading">Validation Failure Details</h2>
+                            <p class="section-card__subtitle">Individual endpoints with validation failures — click a rule above to filter</p>
+                        </div>
+                    </header>
+                    <div class="filter-bar">
+                        <input type="search" class="filter-bar__search" placeholder="Search by endpoint URL, developer, or organization..." aria-label="Search failures">
+                        <select class="filter-bar__select" aria-label="Filter by rule">
+                            <option>All Rules</option>
+                            <option>kindIsInstance</option>
+                            <option>statusIsActive</option>
+                            <option>cpb-3 (messagingEndptRule)</option>
+                            <option>fhirVersionIsValid</option>
+                            <option>tlsVersionRule</option>
+                            <option>formatIncludesJson</option>
+                        </select>
+                        <select class="filter-bar__select" aria-label="Filter by developer">
+                            <option>All Developers</option>
+                            <option>Epic Systems</option>
+                            <option>Cerner Corporation</option>
+                            <option>MEDITECH</option>
+                            <option>Allscripts</option>
+                        </select>
+                    </div>
+                    <div class="data-table-wrapper">
+                        <table class="data-table" aria-label="Validation failure details">
+                            <thead>
+                                <tr>
+                                    <th>Cap Stat</th>
+                                    <th class="data-table__sortable">Endpoint URL</th>
+                                    <th class="data-table__sortable">Developer</th>
+                                    <th class="data-table__sortable">FHIR Version</th>
+                                    <th class="data-table__sortable">Failed Rule</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge badge--green" title="Capability Statement returned">&#x2713;</span></td>
+                                    <td><a href="#" style="color:var(--color-primary);font-family:var(--font-mono);font-size:0.8125rem;">https://example-ehr1.com/fhir/R4/</a></td>
+                                    <td>eClinicalWorks</td>
+                                    <td>4.0.1</td>
+                                    <td><span class="badge badge--red">cpb-3</span></td>
+                                    <td style="font-size:0.8125rem;color:var(--color-gray);">Messaging endpoint present when kind is "instance"</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge badge--green">&#x2713;</span></td>
+                                    <td><a href="#" style="color:var(--color-primary);font-family:var(--font-mono);font-size:0.8125rem;">https://clinic-portal.example.com/api/fhir/</a></td>
+                                    <td>Allscripts</td>
+                                    <td>4.0.1</td>
+                                    <td><span class="badge badge--red">statusIsActive</span></td>
+                                    <td style="font-size:0.8125rem;color:var(--color-gray);">Status is "draft" instead of "active"</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge badge--green">&#x2713;</span></td>
+                                    <td><a href="#" style="color:var(--color-primary);font-family:var(--font-mono);font-size:0.8125rem;">https://health-system.example.org/fhir/</a></td>
+                                    <td>MEDITECH</td>
+                                    <td>3.0.2</td>
+                                    <td><span class="badge badge--red">fhirVersionIsValid</span></td>
+                                    <td style="font-size:0.8125rem;color:var(--color-gray);">fhirVersion field contains "3.0" instead of "3.0.2"</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge badge--red" title="No Capability Statement returned">&#x2717;</span></td>
+                                    <td><a href="#" style="color:var(--color-primary);font-family:var(--font-mono);font-size:0.8125rem;">https://small-practice.example.net/fhir/</a></td>
+                                    <td>Unknown</td>
+                                    <td>—</td>
+                                    <td><span class="badge badge--red">kindIsInstance</span></td>
+                                    <td style="font-size:0.8125rem;color:var(--color-gray);">kind is "capability" instead of "instance"</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge badge--green">&#x2713;</span></td>
+                                    <td><a href="#" style="color:var(--color-primary);font-family:var(--font-mono);font-size:0.8125rem;">https://regional-hospital.example.com/api/FHIR/R4/</a></td>
+                                    <td>Cerner Corporation</td>
+                                    <td>4.0.1</td>
+                                    <td><span class="badge badge--red">formatIncludesJson</span></td>
+                                    <td style="font-size:0.8125rem;color:var(--color-gray);">format only includes "application/xml"</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination">
+                        <span class="pagination__info">Showing 5 of 18,054 endpoints with failures</span>
+                        <div class="pagination__controls">
+                            <button class="pagination__btn pagination__btn--disabled" disabled>&laquo; Prev</button>
+                            <button class="pagination__btn pagination__btn--active">1</button>
+                            <button class="pagination__btn">2</button>
+                            <button class="pagination__btn">...</button>
+                            <button class="pagination__btn">3,611</button>
+                            <button class="pagination__btn">Next &raquo;</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer__inner">
+            <div class="footer__top">
+                <div class="footer__brand">
+                    <div class="footer__logo" aria-hidden="true">&#x1F526;</div>
+                    <span class="footer__title">Lantern</span>
+                </div>
+                <nav class="footer__links" aria-label="Footer navigation">
+                    <a href="privacy.html" class="footer__link">Privacy Policy</a>
+                    <a href="terms.html" class="footer__link">Terms of Use</a>
+                    <a href="api.html" class="footer__link">API Documentation</a>
+                    <a href="about.html" class="footer__link">About</a>
+                    <a href="contact.html" class="footer__link">Contact</a>
+                    <a href="sources.html" class="footer__link">Data Sources</a>
+                </nav>
+            </div>
+            <div class="footer__bottom">
+                <p>&copy; 2025 Lantern. Data refreshed daily at 8:00 PM ET.</p>
+                <p>Supporting healthcare interoperability and transparency.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile nav toggle
+        const navToggle = document.querySelector('.nav-toggle');
+        const nav = document.querySelector('.nav');
+        if (navToggle && nav) {
+            navToggle.addEventListener('click', () => {
+                const isOpen = nav.classList.toggle('nav--open');
+                navToggle.setAttribute('aria-expanded', isOpen);
+            });
+        }
+
+        // Tab switching
+        const tabs = document.querySelectorAll('.sub-nav__tab');
+        const panels = document.querySelectorAll('.tab-panel');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => { t.classList.remove('sub-nav__tab--active'); t.setAttribute('aria-selected', 'false'); });
+                panels.forEach(p => p.classList.remove('tab-panel--active'));
+                tab.classList.add('sub-nav__tab--active');
+                tab.setAttribute('aria-selected', 'true');
+                document.getElementById('panel-' + tab.dataset.tab).classList.add('tab-panel--active');
+            });
+        });
+
+        // Field selector
+        document.getElementById('field-selector')?.addEventListener('change', function() {
+            alert(`Loading values for: ${this.value}\n\nIn production, this dynamically updates the value table and chart below.`);
+        });
+
+        // Export
+        document.getElementById('export-btn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Export Conformance & Validation Data\n\nOptions:\n• Field Inclusion Rates (CSV)\n• Field Values (CSV)\n• Validation Results (CSV)\n• Failure Details (CSV)\n\nAll data is publicly available.');
+        });
+
+        console.log('Conformance & Validation page loaded');
+    </script>
+</body>
+</html>

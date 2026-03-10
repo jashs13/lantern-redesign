@@ -25,6 +25,7 @@ const ContactsPage = lazy(() => import('@/features/contacts/ContactsPage'));
 const DownloadsPage = lazy(() => import('@/features/downloads/DownloadsPage'));
 const AboutPage = lazy(() => import('@/features/about/AboutPage'));
 const SearchPage = lazy(() => import('@/features/search/SearchPage'));
+const ConformanceValidationPage = lazy(() => import('@/features/conformance/ConformanceValidationPage'));
 
 export default function App() {
   return (
@@ -55,6 +56,7 @@ export default function App() {
               <Route path="profiles" element={<Suspense fallback={<LoadingState />}><ProfilesPage /></Suspense>} />
               <Route path="capstat-size" element={<Suspense fallback={<LoadingState />}><CapStatSizePage /></Suspense>} />
               <Route path="validations" element={<Suspense fallback={<LoadingState />}><ValidationsPage /></Suspense>} />
+              <Route path="conformance-validation" element={<Suspense fallback={<LoadingState />}><ConformanceValidationPage /></Suspense>} />
               <Route path="security" element={<Suspense fallback={<LoadingState />}><SecurityPage /></Suspense>} />
               <Route path="smart-response" element={<Suspense fallback={<LoadingState />}><SmartResponsePage /></Suspense>} />
               <Route path="contacts" element={<Suspense fallback={<LoadingState />}><ContactsPage /></Suspense>} />
