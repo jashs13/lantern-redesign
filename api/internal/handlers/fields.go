@@ -253,3 +253,34 @@ func (h *Handler) FieldMetrics(w http.ResponseWriter, r *http.Request) {
 
 	models.WriteJSON(w, http.StatusOK, metrics)
 }
+
+// FieldValueMetrics returns static aggregate KPI counts for capability statement field values.
+func (h *Handler) FieldValueMetrics(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var metrics models.FieldValueMetrics
+
+	query := `SELECT fields_with_values, total_unique_values, most_uniform_field, most_uniform_score, most_varied_field, most_varied_score 
+	          FROM field_values_kpi_metrics_mv LIMIT 1`
+	
+	err := h.db.QueryRowContext(ctx, query).Scan(
+		&metrics.FieldsWithValues,
+		&metrics.TotalUniqueValues,
+		&metrics.MostUniformField,
+		&metrics.MostUniformScore,
+		&metrics.MostVariedField,
+		&metrics.MostVariedScore,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// If view is empty or unpopulated, leave them as nil pointers.
+			// The frontend will receive JSON nulls and can display "N/A"
+		} else {
+			log.WithError(err).Error("querying field_values_kpi_metrics_mv")
+			models.WriteError(w, http.StatusInternalServerError, "failed to fetch field value metrics")
+			return
+		}
+	}
+
+	models.WriteJSON(w, http.StatusOK, metrics)
+}

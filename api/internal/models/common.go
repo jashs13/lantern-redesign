@@ -88,3 +88,13 @@ type FieldMetrics struct {
 	AveragePerCapStat *int `json:"average_per_cap_stat"`
 	ExtensionCount    *int `json:"extension_count"`
 }
+
+// FieldValueMetrics aggregates average KPIs for the Field Values tab.
+type FieldValueMetrics struct {
+	FieldsWithValues  *int     `json:"fields_with_values"`
+	TotalUniqueValues *int     `json:"total_unique_values"`
+	MostUniformField  *string  `json:"most_uniform_field"`
+	MostUniformScore  *float64 `json:"most_uniform_score"`
+	MostVariedField   *string  `json:"most_varied_field"`
+	MostVariedScore   *int     `json:"most_varied_score"`
+}

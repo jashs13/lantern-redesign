@@ -7,7 +7,8 @@ import type {
   FieldValueSummary,
   FieldValueSummaryQueryParams,
   PaginatedResponse,
-  FieldMetrics
+  FieldMetrics,
+  FieldValueMetrics
 } from './types';
 
 export async function fetchFields(
@@ -23,6 +24,10 @@ export async function fetchFields(
 
 export async function fetchFieldMetrics(): Promise<FieldMetrics> {
   return apiClient<FieldMetrics>('/api/v1/fields/metrics');
+}
+
+export async function fetchFieldValueMetrics(): Promise<FieldValueMetrics> {
+  return apiClient<FieldValueMetrics>('/api/v1/field-values/metrics');
 }
 
 export async function fetchFieldValues(

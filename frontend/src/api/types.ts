@@ -224,6 +224,15 @@ export interface FieldMetrics {
   extension_count: number | null;
 }
 
+export interface FieldValueMetrics {
+  fields_with_values: number | null;
+  total_unique_values: number | null;
+  most_uniform_field: string | null;
+  most_uniform_score: number | null;
+  most_varied_field: string | null;
+  most_varied_score: number | null;
+}
+
 export interface FieldValue {
   field_name: string;
   field_value: string;

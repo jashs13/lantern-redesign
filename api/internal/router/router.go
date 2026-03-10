@@ -70,6 +70,7 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 		r.Get("/fields", h.ListFields)
 		r.Get("/fields/metrics", h.FieldMetrics)
 		r.Get("/field-values", h.FieldValues)
+		r.Get("/field-values/metrics", h.FieldValueMetrics)
 		r.Get("/field-value-summary", h.FieldValueSummary)
 
 		// Profiles

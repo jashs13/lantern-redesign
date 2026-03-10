@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
-import { fetchFieldValues, fetchFieldValueSummary } from '@/api/fields';
+import { fetchFieldValues, fetchFieldValueSummary, fetchFieldValueMetrics } from '@/api/fields';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { formatNumber } from '@/lib/formatters';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -25,7 +25,11 @@ export function FieldValuesTab() {
   const pageSize = 10;
   const [sorting, setSorting] = useState<SortingState>([{ id: 'endpoint_count', desc: true }]);
 
-
+  const { data: metricsData, isLoading: metricsLoading } = useQuery({
+    queryKey: ['fieldValuesMetrics'],
+    queryFn: fetchFieldValueMetrics,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data: valuesData, isLoading: valuesLoading, error: valuesError } = useQuery({
     queryKey: ['fieldValues', selectedField, page, pageSize, filters.fhirVersions, filters.vendor, debouncedSearch],
@@ -128,23 +132,35 @@ export function FieldValuesTab() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-primary">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Fields with Values</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">52</div>
+          <div className="text-3xl font-bold text-navy-900 leading-tight">
+            {metricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (metricsData?.fields_with_values !== null && metricsData?.fields_with_values !== undefined ? formatNumber(metricsData.fields_with_values) : 'N/A')}
+          </div>
           <p className="text-sm text-gray-500 mt-1">Distinct fields with observable values</p>
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-success">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Unique Values</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">1,847</div>
+          <div className="text-3xl font-bold text-navy-900 leading-tight">
+            {metricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (metricsData?.total_unique_values !== null && metricsData?.total_unique_values !== undefined ? formatNumber(metricsData.total_unique_values) : 'N/A')}
+          </div>
           <p className="text-sm text-gray-500 mt-1">Distinct values across all fields</p>
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border border-neutral-200">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Most Uniform</div>
-          <div className="text-xl font-bold text-navy-900 font-mono mt-1 mb-2">kind</div>
-          <p className="text-sm text-gray-500 mt-1">99.8% report "instance"</p>
+          <div className="text-xl font-bold text-navy-900 font-mono mt-1 mb-2">
+            {metricsLoading ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" /> : (metricsData?.most_uniform_field ?? 'N/A')}
+          </div>
+          <p className="text-sm text-gray-500 mt-1">
+            {metricsLoading ? <span className="opacity-0">Loading...</span> : (metricsData?.most_uniform_score !== null && metricsData?.most_uniform_score !== undefined ? `${metricsData.most_uniform_score.toFixed(1)}% report top value` : 'N/A')}
+          </p>
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-warning">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Most Varied</div>
-          <div className="text-xl font-bold text-navy-900 font-mono mt-1 mb-2">publisher</div>
-          <p className="text-sm text-gray-500 mt-1">890+ distinct values</p>
+          <div className="text-xl font-bold text-navy-900 font-mono mt-1 mb-2">
+            {metricsLoading ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" /> : (metricsData?.most_varied_field ?? 'N/A')}
+          </div>
+          <p className="text-sm text-gray-500 mt-1">
+            {metricsLoading ? <span className="opacity-0">Loading...</span> : (metricsData?.most_varied_score !== null && metricsData?.most_varied_score !== undefined ? `${formatNumber(metricsData.most_varied_score)} distinct values` : 'N/A')}
+          </p>
         </article>
       </div>
 
