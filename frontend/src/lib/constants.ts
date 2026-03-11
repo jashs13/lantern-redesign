@@ -14,22 +14,19 @@ export interface NavItem {
 export const TOP_NAV_ITEMS: NavItem[] = [
   { label: 'Home', path: '/' },
   { label: 'Dashboard', path: '/dashboard' },
-  { label: 'Endpoints', path: '/endpoints' },
   { label: 'Organizations', path: '/organizations' },
+  { label: 'Capabilities', path: '/capabilities' },
   { label: 'Resources', path: '/resources' },
   { label: 'Security', path: '/security' },
-  { label: 'SMART Response', path: '/smart-response' },
 ];
 
-/**
- * Overflow navigation — shown in a "More" dropdown.
- */
 export const MORE_NAV_ITEMS: NavItem[] = [
   { label: 'Implementation Guides', path: '/implementation-guides' },
   { label: 'Fields', path: '/fields' },
   { label: 'Profiles', path: '/profiles' },
   { label: 'CapStat Size', path: '/capstat-size' },
   { label: 'Validations', path: '/validations' },
+  { label: 'SMART Response', path: '/smart-response' },
   { label: 'Contacts', path: '/contacts' },
   { label: 'Downloads/API', path: '/downloads' },
 ];

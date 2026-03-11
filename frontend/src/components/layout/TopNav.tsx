@@ -36,21 +36,106 @@ export function TopNav() {
           {/* Desktop Navigation */}
           <nav className="hidden items-center gap-1 lg:flex" aria-label="Main navigation">
             {TOP_NAV_ITEMS.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.path === '/'}
-                style={{ fontSize: '0.9375rem' }}
-                className={({ isActive }) =>
-                  `rounded px-4 py-2 font-semibold transition-colors no-underline ${isActive
-                    ? 'bg-white/15 text-white'
-                    : 'text-white/80 hover:bg-white/10 hover:text-white'
-                  }`
-                }
-              >
-                {item.label}
-              </NavLink>
+              item.label === 'Capabilities' ? null : (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/'}
+                  style={{ fontSize: '0.9375rem' }}
+                  className={({ isActive }) =>
+                    `rounded px-4 py-2 font-semibold transition-colors no-underline ${isActive
+                      ? 'bg-white/15 text-white'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    }`
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              )
             ))}
+
+            {/* Capabilities dropdown */}
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <button style={{ fontSize: '0.9375rem' }} className="flex items-center gap-1 rounded px-4 py-2 font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white data-[state=open]:bg-white/15 data-[state=open]:text-white">
+                  Capabilities
+                  <ChevronDown size={14} />
+                </button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content
+                  className="z-50 min-w-[280px] rounded-md bg-white p-2 shadow-elevated"
+                  sideOffset={8}
+                  align="start"
+                >
+                  <DropdownMenu.Item asChild>
+                    <NavLink
+                      to="/capabilities"
+                      end
+                      className={({ isActive }) =>
+                        `block rounded-md px-4 py-3 text-sm outline-none no-underline transition-colors ${isActive
+                          ? 'bg-neutral-100 text-primary'
+                          : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary'
+                        }`
+                      }
+                    >
+                      <div className="mb-0.5 font-bold text-[0.9375rem]">📋 Overview</div>
+                      <div className="text-[0.8125rem] font-normal text-neutral-500">Capability statement health check at a glance</div>
+                    </NavLink>
+                  </DropdownMenu.Item>
+
+                  <DropdownMenu.Separator className="my-2 h-px bg-neutral-200 mx-4" />
+                  <DropdownMenu.Label className="px-4 py-1 flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-wider text-neutral-400">
+                    Explore
+                  </DropdownMenu.Label>
+
+                  <DropdownMenu.Item asChild>
+                    <NavLink
+                      to="/capabilities/resources"
+                      className={({ isActive }) =>
+                        `block rounded-md px-4 py-3 text-sm outline-none no-underline transition-colors ${isActive
+                          ? 'bg-neutral-100 text-primary'
+                          : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary'
+                        }`
+                      }
+                    >
+                      <div className="mb-0.5 font-bold text-[0.9375rem]">📦 Capabilities & Resources</div>
+                      <div className="text-[0.8125rem] font-normal text-neutral-500">Resources, IGs, profiles, and capability sizes</div>
+                    </NavLink>
+                  </DropdownMenu.Item>
+
+                  <DropdownMenu.Item asChild>
+                    <NavLink
+                      to="/capabilities/security"
+                      className={({ isActive }) =>
+                        `block rounded-md px-4 py-3 text-sm outline-none no-underline transition-colors ${isActive
+                          ? 'bg-neutral-100 text-primary'
+                          : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary'
+                        }`
+                      }
+                    >
+                      <div className="mb-0.5 font-bold text-[0.9375rem]">🔒 Security & SMART</div>
+                      <div className="text-[0.8125rem] font-normal text-neutral-500">Authorization types and SMART-on-FHIR support</div>
+                    </NavLink>
+                  </DropdownMenu.Item>
+
+                  <DropdownMenu.Item asChild>
+                    <NavLink
+                      to="/conformance-validation"
+                      className={({ isActive }) =>
+                        `block rounded-md px-4 py-3 text-sm outline-none no-underline transition-colors ${isActive
+                          ? 'bg-neutral-100 text-primary'
+                          : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary'
+                        }`
+                      }
+                    >
+                      <div className="mb-0.5 font-bold text-[0.9375rem]">✅ Conformance & Validation</div>
+                      <div className="text-[0.8125rem] font-normal text-neutral-500">Field inclusion, values, and validation results</div>
+                    </NavLink>
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
 
             {/* More dropdown */}
             <DropdownMenu.Root>

@@ -27,6 +27,11 @@ const AboutPage = lazy(() => import('@/features/about/AboutPage'));
 const SearchPage = lazy(() => import('@/features/search/SearchPage'));
 const ConformanceValidationPage = lazy(() => import('@/features/conformance/ConformanceValidationPage'));
 
+// Capabilities Hub Pages
+const CapabilitiesHubPage = lazy(() => import('@/features/capabilities/CapabilitiesHubPage'));
+const CapabilitiesResourcesPlaceholder = lazy(() => import('@/features/capabilities/CapabilitiesResourcesPlaceholder'));
+const SecuritySmartPlaceholder = lazy(() => import('@/features/capabilities/SecuritySmartPlaceholder'));
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -57,6 +62,11 @@ export default function App() {
               <Route path="capstat-size" element={<Suspense fallback={<LoadingState />}><CapStatSizePage /></Suspense>} />
               <Route path="validations" element={<Suspense fallback={<LoadingState />}><ValidationsPage /></Suspense>} />
               <Route path="conformance-validation" element={<Suspense fallback={<LoadingState />}><ConformanceValidationPage /></Suspense>} />
+              
+              <Route path="capabilities" element={<Suspense fallback={<LoadingState />}><CapabilitiesHubPage /></Suspense>} />
+              <Route path="capabilities/resources" element={<Suspense fallback={<LoadingState />}><CapabilitiesResourcesPlaceholder /></Suspense>} />
+              <Route path="capabilities/security" element={<Suspense fallback={<LoadingState />}><SecuritySmartPlaceholder /></Suspense>} />
+
               <Route path="security" element={<Suspense fallback={<LoadingState />}><SecurityPage /></Suspense>} />
               <Route path="smart-response" element={<Suspense fallback={<LoadingState />}><SmartResponsePage /></Suspense>} />
               <Route path="contacts" element={<Suspense fallback={<LoadingState />}><ContactsPage /></Suspense>} />
