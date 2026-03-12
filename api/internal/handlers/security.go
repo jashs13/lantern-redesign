@@ -100,13 +100,15 @@ func (h *Handler) ListSecurity(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var ep models.SecurityEndpoint
 		var orgNames sql.NullString
-		if err := rows.Scan(&ep.URL, &orgNames, &ep.HasMoreOrgs, &ep.VendorName,
+		var hasMoreOrgs sql.NullBool
+		if err := rows.Scan(&ep.URL, &orgNames, &hasMoreOrgs, &ep.VendorName,
 			&ep.FHIRVersion, &ep.TLSVersion, &ep.SecurityCode); err != nil {
 			continue
 		}
 		if orgNames.Valid {
 			ep.OrgNames = &orgNames.String
 		}
+		ep.HasMoreOrgs = hasMoreOrgs.Valid && hasMoreOrgs.Bool
 		endpoints = append(endpoints, ep)
 	}
 	if endpoints == nil {

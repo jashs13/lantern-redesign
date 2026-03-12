@@ -434,6 +434,7 @@ export interface SecurityQueryParams {
   page?: number;
   page_size?: number;
   fhir_versions?: string[];
+  vendor?: string;
   auth_type?: string;
   search?: string;
 }

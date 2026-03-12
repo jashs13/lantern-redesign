@@ -4,10 +4,12 @@ import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
 import { fetchSmartResponse, fetchSmartSummary } from '@/api/smart';
+import { fetchSecurityOrgs } from '@/api/security';
 import { DataTable } from '@/components/ui/DataTable';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { Modal } from '@/components/ui/Modal';
 import { fetchFHIRVersions, fetchVendors } from '@/api/filters';
 import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
@@ -16,50 +18,74 @@ import { Database, CheckCircle, XCircle, FileJson } from 'lucide-react';
 import type { SmartEndpoint, SmartCapability } from '@/api/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
-const columns: ColumnDef<SmartEndpoint, unknown>[] = [
-  {
-    accessorKey: 'url',
-    header: 'URL',
-    size: 250,
-    cell: ({ getValue }) => (
-      <span className="font-mono text-sm text-navy-700 block truncate max-w-[250px]" title={getValue() as string}>
-        {(getValue() as string) || '—'}
-      </span>
-    ),
-  },
-  {
-    accessorKey: 'organization_names',
-    header: 'Organization',
-    size: 200,
-    cell: ({ getValue }) => {
-      const org = getValue() as string | null;
-      return <span className="text-sm truncate block max-w-[200px]" title={org || ''}>{org || '—'}</span>;
+function parseOrgNames(raw: string | null): string[] {
+  if (!raw) return [];
+  return raw.split(';').map((s) => s.trim()).filter(Boolean);
+}
+
+function buildColumns(
+  onShowOrgs: (url: string) => void
+): ColumnDef<SmartEndpoint, unknown>[] {
+  return [
+    {
+      accessorKey: 'url',
+      header: 'URL',
+      size: 250,
+      cell: ({ getValue }) => (
+        <span className="font-mono text-sm text-navy-700 block truncate max-w-[250px]" title={getValue() as string}>
+          {(getValue() as string) || '—'}
+        </span>
+      ),
     },
-  },
-  {
-    accessorKey: 'vendor_name',
-    header: 'Developer',
-    size: 100,
-    cell: ({ getValue }) => {
-      const vendor = getValue() as string | null;
-      return vendor ? (
-        <Badge variant="navy">{vendor}</Badge>
-      ) : (
-        <span className="text-neutral-400">—</span>
-      );
+    {
+      accessorKey: 'organization_names',
+      header: 'Organization',
+      size: 200,
+      cell: ({ getValue, row }) => {
+        const names = parseOrgNames(getValue() as string | null);
+        if (names.length === 0) return <span className="text-neutral-400 text-xs">—</span>;
+        const visible = names.slice(0, 3);
+        return (
+          <div className="min-w-0 max-w-[200px]">
+            <p className="truncate text-xs text-neutral-600">{visible.join('; ')}</p>
+            {names.length > 3 && (
+              <button
+                className="mt-0.5 text-xs font-semibold text-navy-700 hover:underline"
+                onClick={() => onShowOrgs(row.original.url)}
+              >
+                Show all
+              </button>
+            )}
+          </div>
+        );
+      },
     },
-  },
-  {
-    accessorKey: 'fhir_version',
-    header: 'FHIR Version',
-    size: 100,
-    cell: ({ getValue }) => {
-      const ver = getValue() as string | null;
-      if (!ver) return '—';
-      return <Badge variant={ver.startsWith('4.0') ? 'fhir-r4' : 'fhir'}>{ver}</Badge>;
+    {
+      accessorKey: 'vendor_name',
+      header: 'Developer',
+      size: 100,
+      cell: ({ getValue }) => {
+        const vendor = getValue() as string | null;
+        return vendor ? (
+          <Badge variant="navy">{vendor}</Badge>
+        ) : (
+          <span className="text-neutral-400">—</span>
+        );
+      },
     },
-  },
-];
+    {
+      accessorKey: 'fhir_version',
+      header: 'FHIR Version',
+      size: 100,
+      cell: ({ getValue }) => {
+        const ver = getValue() as string | null;
+        if (!ver) return '—';
+        return <Badge variant={ver.startsWith('4.0') ? 'fhir-r4' : 'fhir'}>{ver}</Badge>;
+      },
+    },
+  ];
+}
+
 const capabilityColumns: ColumnDef<SmartCapability, unknown>[] = [
   {
     accessorKey: 'capability',
@@ -78,6 +104,16 @@ export default function SmartResponsePage() {
   const { page, pageSize, setPage } = usePagination(10);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search);
+  const [orgNamesUrl, setOrgNamesUrl] = useState<string | null>(null);
+
+  const { data: orgNames = [], isLoading: orgsLoading } = useQuery({
+    queryKey: ['smart-orgs', orgNamesUrl],
+    queryFn: () => fetchSecurityOrgs(orgNamesUrl!),
+    enabled: !!orgNamesUrl,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const columns = buildColumns((url) => setOrgNamesUrl(url));
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['smart-response', page, pageSize, filters, debouncedSearch],
@@ -218,6 +254,29 @@ export default function SmartResponsePage() {
           />
         </div>
       </div>
+
+      {/* Org Names Modal */}
+      {orgNamesUrl && (
+        <Modal
+          open={!!orgNamesUrl}
+          onOpenChange={(open) => { if (!open) setOrgNamesUrl(null); }}
+          title="Organizations"
+          maxWidth="max-w-lg"
+        >
+          <p className="mb-3 text-sm text-neutral-500">{orgNamesUrl}</p>
+          {orgsLoading ? (
+            <p className="text-sm text-neutral-400">Loading...</p>
+          ) : (
+            <ul className="space-y-1">
+              {orgNames.map((name, i) => (
+                <li key={i} className="border-b border-neutral-100 pb-1 text-sm text-neutral-800 last:border-0">
+                  {name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Modal>
+      )}
     </div>
   );
 }

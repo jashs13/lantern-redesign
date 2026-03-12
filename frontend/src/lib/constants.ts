@@ -14,6 +14,7 @@ export interface NavItem {
 export const TOP_NAV_ITEMS: NavItem[] = [
   { label: 'Home', path: '/' },
   { label: 'Dashboard', path: '/dashboard' },
+  { label: 'Endpoints', path: '/endpoints' },
   { label: 'Organizations', path: '/organizations' },
   { label: 'Capabilities', path: '/capabilities' },
   { label: 'Resources', path: '/resources' },
@@ -113,7 +114,7 @@ export const CHART_COLORS = [
 
 /** Default page sizes for paginated tables. */
 export const PAGE_SIZES = [10, 25, 50, 100] as const;
-export const DEFAULT_PAGE_SIZE = 25;
+export const DEFAULT_PAGE_SIZE = 10;
 
 /* ========================================================================== */
 /* Quick filter presets (Endpoints page)                                        */

@@ -26,7 +26,7 @@ const ALL = '__all__';
 
 export default function CapStatSizePage() {
   const { filters } = useFilters();
-  const { page, pageSize, setPage } = usePagination(25);
+  const { page, pageSize, setPage } = usePagination();
 
   const [fhirVersions, setFhirVersions] = useState<string[]>(filters.fhirVersions ?? []);
   const [vendor, setVendor] = useState<string | null>(null);

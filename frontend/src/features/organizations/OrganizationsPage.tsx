@@ -12,102 +12,120 @@ import { Select } from '@/components/ui/Select';
 import { FilterTag } from '@/components/ui/FilterTag';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { Modal } from '@/components/ui/Modal';
 import { DownloadButton } from '@/components/ui/DownloadButton';
 import { getOrganizationsCsvUrl } from '@/api/downloads';
 import type { Organization } from '@/api/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
-const columns: ColumnDef<Organization, unknown>[] = [
-  {
-    accessorKey: 'organization_name',
-    header: 'Organization Name',
-    size: 250,
-    cell: ({ getValue }) => (
-      <span
-        className="font-semibold"
-        style={{ color: 'var(--color-primary)', fontWeight: 600 }}
-      >
-        {(getValue() as string) || '—'}
-      </span>
-    ),
-  },
-  {
-    accessorKey: 'address',
-    header: 'Location',
-    cell: ({ getValue }) => {
-      const val = getValue() as string | null;
-      return val ? (
+function parseAddresses(raw: string | null): string[] {
+  if (!raw) return [];
+  return raw.split('<br/>').map((s) => s.replace(/<[^>]*>/g, '').trim()).filter(Boolean);
+}
+
+function buildColumns(
+  onShowLocations: (addresses: string[], orgName: string) => void
+): ColumnDef<Organization, unknown>[] {
+  return [
+    {
+      accessorKey: 'organization_name',
+      header: 'Organization Name',
+      size: 250,
+      cell: ({ getValue }) => (
         <span
-          style={{ color: 'var(--color-gray-dark)' }}
-          dangerouslySetInnerHTML={{ __html: val }}
-        />
-      ) : (
-        '—'
-      );
+          className="font-semibold"
+          style={{ color: 'var(--color-primary)', fontWeight: 600 }}
+        >
+          {(getValue() as string) || '—'}
+        </span>
+      ),
     },
-  },
-  {
-    accessorKey: 'identifier_value',
-    header: 'NPI',
-    cell: ({ getValue }) => {
-      const val = getValue() as string | null;
-      return val ? (
-        <span
-          className="font-mono"
-          style={{ fontSize: '0.875rem', color: 'var(--color-gray)' }}
-          dangerouslySetInnerHTML={{ __html: val }}
-        />
-      ) : (
-        <span style={{ color: 'var(--color-gray-light)' }}>—</span>
-      );
+    {
+      accessorKey: 'address',
+      header: 'Location',
+      cell: ({ getValue, row }) => {
+        const val = getValue() as string | null;
+        const addresses = parseAddresses(val);
+        if (addresses.length === 0) return '—';
+        const visible = addresses.slice(0, 2);
+        return (
+          <div className="min-w-0">
+            <p className="text-sm text-neutral-600">{visible.join('; ')}</p>
+            {addresses.length > 2 && (
+              <button
+                className="mt-0.5 text-xs font-semibold text-navy-700 hover:underline"
+                onClick={() => onShowLocations(addresses, row.original.organization_name)}
+              >
+                Show all
+              </button>
+            )}
+          </div>
+        );
+      },
     },
-  },
-  {
-    accessorKey: 'fhir_version',
-    header: 'FHIR Version',
-    cell: ({ getValue }) => {
-      const ver = getValue() as string | null;
-      if (!ver) return <span style={{ color: 'var(--color-gray-light)' }}>—</span>;
-      return (
-        <span
-          style={{
-            display: 'inline-block',
-            padding: '0.25rem 0.5rem',
-            background: 'var(--color-gray-lightest)',
-            color: 'var(--color-gray-dark)',
-            borderRadius: 'var(--border-radius)',
-            fontSize: '0.8125rem',
-            fontWeight: 500,
-          }}
-          dangerouslySetInnerHTML={{ __html: ver }}
-        />
-      );
+    {
+      accessorKey: 'identifier_value',
+      header: 'NPI',
+      cell: ({ getValue }) => {
+        const val = getValue() as string | null;
+        return val ? (
+          <span
+            className="font-mono"
+            style={{ fontSize: '0.875rem', color: 'var(--color-gray)' }}
+            dangerouslySetInnerHTML={{ __html: val }}
+          />
+        ) : (
+          <span style={{ color: 'var(--color-gray-light)' }}>—</span>
+        );
+      },
     },
-  },
-  {
-    accessorKey: 'vendor_name',
-    header: 'EHR Developer',
-    cell: ({ getValue }) => {
-      const vendor = getValue() as string | null;
-      return vendor ? (
-        <span
-          style={{
-            display: 'inline-block',
-            padding: '0.25rem 0.5rem',
-            background: 'var(--color-gray-lightest)',
-            color: 'var(--color-gray-dark)',
-            borderRadius: 'var(--border-radius)',
-            fontSize: '0.8125rem',
-            fontWeight: 500,
-          }}
-          dangerouslySetInnerHTML={{ __html: vendor }}
-        />
-      ) : (
-        <span style={{ color: 'var(--color-gray-light)' }}>—</span>
-      );
+    {
+      accessorKey: 'fhir_version',
+      header: 'FHIR Version',
+      cell: ({ getValue }) => {
+        const ver = getValue() as string | null;
+        if (!ver) return <span style={{ color: 'var(--color-gray-light)' }}>—</span>;
+        return (
+          <span
+            style={{
+              display: 'inline-block',
+              padding: '0.25rem 0.5rem',
+              background: 'var(--color-gray-lightest)',
+              color: 'var(--color-gray-dark)',
+              borderRadius: 'var(--border-radius)',
+              fontSize: '0.8125rem',
+              fontWeight: 500,
+            }}
+            dangerouslySetInnerHTML={{ __html: ver }}
+          />
+        );
+      },
     },
-  },
-];
+    {
+      accessorKey: 'vendor_name',
+      header: 'EHR Developer',
+      cell: ({ getValue }) => {
+        const vendor = getValue() as string | null;
+        return vendor ? (
+          <span
+            style={{
+              display: 'inline-block',
+              padding: '0.25rem 0.5rem',
+              background: 'var(--color-gray-lightest)',
+              color: 'var(--color-gray-dark)',
+              borderRadius: 'var(--border-radius)',
+              fontSize: '0.8125rem',
+              fontWeight: 500,
+            }}
+            dangerouslySetInnerHTML={{ __html: vendor }}
+          />
+        ) : (
+          <span style={{ color: 'var(--color-gray-light)' }}>—</span>
+        );
+      },
+    },
+  ];
+}
 
 export default function OrganizationsPage() {
   const { filters } = useFilters();
@@ -119,6 +137,10 @@ export default function OrganizationsPage() {
   const [fhirVersion, setFhirVersion] = useState<string | null>(searchParams.get('fhir_version') || null);
   const [vendor, setVendor] = useState<string | null>(searchParams.get('vendor') || null);
   const debouncedSearch = useDebounce(search);
+
+  const [locationModal, setLocationModal] = useState<{ addresses: string[]; orgName: string } | null>(null);
+
+  const columns = buildColumns((addresses, orgName) => setLocationModal({ addresses, orgName }));
 
   const { data: stateOptions = [] } = useQuery({
     queryKey: ['filters', 'states'],
@@ -297,6 +319,25 @@ export default function OrganizationsPage() {
         onPageChange={setPage}
         isLoading={isLoading}
       />
+
+      {/* Location Modal */}
+      {locationModal && (
+        <Modal
+          open={!!locationModal}
+          onOpenChange={(open) => { if (!open) setLocationModal(null); }}
+          title="All Locations"
+          maxWidth="max-w-lg"
+        >
+          <p className="mb-3 text-sm font-semibold text-neutral-700">{locationModal.orgName}</p>
+          <ul className="space-y-1">
+            {locationModal.addresses.map((addr, i) => (
+              <li key={i} className="border-b border-neutral-100 pb-1 text-sm text-neutral-800 last:border-0">
+                {addr}
+              </li>
+            ))}
+          </ul>
+        </Modal>
+      )}
     </div>
   );
 }

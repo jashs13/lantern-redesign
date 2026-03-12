@@ -104,7 +104,7 @@ func (h *Handler) ListOrganizations(w http.ResponseWriter, r *http.Request) {
 			vendor_names_html AS vendor_name
 		FROM mv_organizations_final
 		%s
-		ORDER BY organization_name ASC
+		ORDER BY (organization_name ~ '^[A-Za-z0-9]') DESC, organization_name ASC
 		LIMIT $%d OFFSET $%d`, whereClause, argIdx, argIdx+1)
 
 	args = append(args, pageSize, models.Offset(page, pageSize))

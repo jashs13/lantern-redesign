@@ -13,6 +13,7 @@ export async function fetchSecurity(
     page: params?.page,
     page_size: params?.page_size,
     fhir_versions: params?.fhir_versions,
+    vendor: params?.vendor,
     auth_type: params?.auth_type,
     search: params?.search,
   });
