@@ -27,13 +27,15 @@ function buildColumns(
     cell: ({ getValue }) => {
       const url = getValue() as string;
       return (
-        <button
-          type="button"
-          className="font-mono text-sm text-navy-700 hover:underline text-left"
-          onClick={() => onOpenDetail(url)}
-        >
-          {url || '—'}
-        </button>
+        <div className="min-w-0 max-w-[300px]">
+          <button
+            type="button"
+            className="truncate block w-full font-mono text-xs text-navy-700 hover:underline text-left"
+            onClick={() => onOpenDetail(url)}
+          >
+            {url || '—'}
+          </button>
+        </div>
       );
     },
   },

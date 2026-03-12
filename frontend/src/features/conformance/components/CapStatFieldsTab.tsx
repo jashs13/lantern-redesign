@@ -296,16 +296,16 @@ export function CapStatFieldsTab() {
             </tbody>
           </table>
         </div>
-        {!isLoading && !extensionsLoading && groupedOptionalAndExt.length > 0 && (
-           <Pagination
-             page={optionalPage}
-             totalPages={Math.ceil(groupedOptionalAndExt.length / optionalPageSize)}
-             onPageChange={setOptionalPage}
-             totalCount={groupedOptionalAndExt.length}
-             pageSize={optionalPageSize}
-           />
-        )}
       </section>
+      {!isLoading && !extensionsLoading && groupedOptionalAndExt.length > 0 && (
+         <Pagination
+           page={optionalPage}
+           totalPages={Math.ceil(groupedOptionalAndExt.length / optionalPageSize)}
+           onPageChange={setOptionalPage}
+           totalCount={groupedOptionalAndExt.length}
+           pageSize={optionalPageSize}
+         />
+      )}
     </div>
   );
 }

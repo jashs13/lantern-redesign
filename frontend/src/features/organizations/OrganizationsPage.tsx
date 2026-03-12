@@ -13,6 +13,7 @@ import { FilterTag } from '@/components/ui/FilterTag';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Modal } from '@/components/ui/Modal';
+import { Badge } from '@/components/ui/Badge';
 import { EndpointDetailModal } from '@/features/endpoints/EndpointDetailModal';
 import { DownloadButton } from '@/components/ui/DownloadButton';
 import { getOrganizationsCsvUrl } from '@/api/downloads';
@@ -106,20 +107,8 @@ function buildColumns(
       cell: ({ getValue }) => {
         const ver = getValue() as string | null;
         if (!ver) return <span style={{ color: 'var(--color-gray-light)' }}>—</span>;
-        return (
-          <span
-            style={{
-              display: 'inline-block',
-              padding: '0.25rem 0.5rem',
-              background: 'var(--color-gray-lightest)',
-              color: 'var(--color-gray-dark)',
-              borderRadius: 'var(--border-radius)',
-              fontSize: '0.8125rem',
-              fontWeight: 500,
-            }}
-            dangerouslySetInnerHTML={{ __html: ver }}
-          />
-        );
+        const plain = ver.replace(/<[^>]*>/g, '').trim();
+        return <Badge variant={plain.startsWith('4.0') ? 'fhir-r4' : 'fhir'}>{plain}</Badge>;
       },
     },
     {
@@ -127,22 +116,9 @@ function buildColumns(
       header: 'EHR Developer',
       cell: ({ getValue }) => {
         const vendor = getValue() as string | null;
-        return vendor ? (
-          <span
-            style={{
-              display: 'inline-block',
-              padding: '0.25rem 0.5rem',
-              background: 'var(--color-gray-lightest)',
-              color: 'var(--color-gray-dark)',
-              borderRadius: 'var(--border-radius)',
-              fontSize: '0.8125rem',
-              fontWeight: 500,
-            }}
-            dangerouslySetInnerHTML={{ __html: vendor }}
-          />
-        ) : (
-          <span style={{ color: 'var(--color-gray-light)' }}>—</span>
-        );
+        if (!vendor) return <span style={{ color: 'var(--color-gray-light)' }}>—</span>;
+        const plain = vendor.replace(/<[^>]*>/g, '').trim();
+        return <Badge variant="navy" className="whitespace-nowrap">{plain}</Badge>;
       },
     },
   ];

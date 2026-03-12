@@ -59,7 +59,7 @@ function buildFailuresColumns(
         <div className="min-w-0 max-w-[200px]">
           <button
             type="button"
-            className="truncate block w-full text-left font-mono text-sm text-neutral-800 hover:text-navy-700 hover:underline"
+            className="truncate block w-full text-left font-mono text-xs text-neutral-800 hover:text-navy-700 hover:underline"
             onClick={() => onOpenDetail(url)}
           >
             {url}
@@ -393,17 +393,15 @@ export function ValidationResultsTab() {
                 {failuresError ? (
                     <ErrorState message={failuresError.message} />
                 ) : (
-                    <div className="bg-white border rounded overflow-hidden">
-                        <DataTable
-                            columns={failuresColumns}
-                            data={failuresData?.data || []}
-                            totalCount={failuresData?.pagination.total_count || 0}
-                            page={failuresPage}
-                            pageSize={failuresPageSize}
-                            onPageChange={setFailuresPage}
-                            isLoading={isFailuresLoading}
-                        />
-                    </div>
+                    <DataTable
+                        columns={failuresColumns}
+                        data={failuresData?.data || []}
+                        totalCount={failuresData?.pagination.total_count || 0}
+                        page={failuresPage}
+                        pageSize={failuresPageSize}
+                        onPageChange={setFailuresPage}
+                        isLoading={isFailuresLoading}
+                    />
                 )}
 
                 <div className="mt-4 flex items-start gap-2 rounded-md bg-white border p-3 text-xs text-neutral-600 shadow-sm">

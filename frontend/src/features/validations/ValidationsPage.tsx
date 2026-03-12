@@ -59,7 +59,7 @@ function buildFailuresColumns(
         <div className="min-w-0 max-w-[200px]">
           <button
             type="button"
-            className="truncate block w-full text-left font-mono text-sm text-neutral-800 hover:text-navy-700 hover:underline"
+            className="truncate block w-full text-left font-mono text-xs text-neutral-800 hover:text-navy-700 hover:underline"
             onClick={() => onOpenDetail(url)}
           >
             {url}

@@ -38,7 +38,7 @@ function buildColumns(
         return (
           <button
             type="button"
-            className="font-mono text-sm text-navy-700 block truncate max-w-[250px] text-left hover:underline"
+            className="font-mono text-xs text-navy-700 block truncate max-w-[250px] text-left hover:underline"
             title={url}
             onClick={() => onOpenDetail(url)}
           >
@@ -77,7 +77,7 @@ function buildColumns(
       cell: ({ getValue }) => {
         const vendor = getValue() as string | null;
         return vendor ? (
-          <Badge variant="navy">{vendor}</Badge>
+          <Badge variant="navy" className="whitespace-nowrap">{vendor}</Badge>
         ) : (
           <span className="text-neutral-400">—</span>
         );

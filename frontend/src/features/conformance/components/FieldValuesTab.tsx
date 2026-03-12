@@ -219,18 +219,19 @@ export function FieldValuesTab() {
             </p>
         </div>
 
-        <DataTable
-            data={sortedData}
-            columns={tableColumns}
-            totalCount={valuesData?.pagination.total_count ?? 0}
-            page={page}
-            pageSize={pageSize}
-            onPageChange={setPage}
-            isLoading={valuesLoading}
-            sorting={sorting}
-            onSortingChange={setSorting}
-        />
       </section>
+
+      <DataTable
+          data={sortedData}
+          columns={tableColumns}
+          totalCount={valuesData?.pagination.total_count ?? 0}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          isLoading={valuesLoading}
+          sorting={sorting}
+          onSortingChange={setSorting}
+      />
 
       <section className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
           <header className="p-5 border-b bg-white">
