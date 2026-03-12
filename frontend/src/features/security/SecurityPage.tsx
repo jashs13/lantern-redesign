@@ -14,6 +14,7 @@ import { QuickFilter } from '@/components/ui/QuickFilter';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Modal } from '@/components/ui/Modal';
+import { EndpointDetailModal } from '@/features/endpoints/EndpointDetailModal';
 import { Shield, ShieldCheck, ShieldOff, Key } from 'lucide-react';
 import type { SecurityEndpoint } from '@/api/types';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
@@ -42,7 +43,8 @@ function parseOrgNames(raw: string | null): string[] {
 }
 
 function buildColumns(
-  onShowOrgs: (url: string) => void
+  onShowOrgs: (url: string) => void,
+  onOpenDetail: (url: string) => void
 ): ColumnDef<SecurityEndpoint, unknown>[] {
   return [
     {
@@ -52,7 +54,13 @@ function buildColumns(
       cell: ({ getValue }) => {
         const url = getValue() as string;
         return (
-          <span className="truncate block font-semibold text-navy-700 text-xs">{url || '—'}</span>
+          <button
+            type="button"
+            className="truncate block w-full text-left font-semibold text-navy-700 text-xs hover:underline"
+            onClick={() => onOpenDetail(url)}
+          >
+            {url || '—'}
+          </button>
         );
       },
     },
@@ -124,6 +132,7 @@ export default function SecurityPage() {
   const [vendor, setVendor] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [orgNamesUrl, setOrgNamesUrl] = useState<string | null>(null);
+  const [selectedEndpointUrl, setSelectedEndpointUrl] = useState<string | null>(null);
 
   const { data: orgNames = [], isLoading: orgsLoading } = useQuery({
     queryKey: ['security-orgs', orgNamesUrl],
@@ -132,7 +141,10 @@ export default function SecurityPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const columns = buildColumns((url) => setOrgNamesUrl(url));
+  const columns = buildColumns(
+    (url) => setOrgNamesUrl(url),
+    (url) => setSelectedEndpointUrl(url)
+  );
 
   const { data: summary } = useQuery({
     queryKey: ['security', 'summary', filters.fhirVersions],
@@ -416,6 +428,11 @@ export default function SecurityPage() {
           )}
         </Modal>
       )}
+
+      <EndpointDetailModal
+        url={selectedEndpointUrl}
+        onClose={() => setSelectedEndpointUrl(null)}
+      />
     </div>
   );
 }

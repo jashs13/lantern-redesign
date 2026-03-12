@@ -10,6 +10,7 @@ import { SearchInput } from '@/components/ui/SearchInput';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Modal } from '@/components/ui/Modal';
+import { EndpointDetailModal } from '@/features/endpoints/EndpointDetailModal';
 import { fetchFHIRVersions, fetchVendors } from '@/api/filters';
 import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
@@ -24,18 +25,27 @@ function parseOrgNames(raw: string | null): string[] {
 }
 
 function buildColumns(
-  onShowOrgs: (url: string) => void
+  onShowOrgs: (url: string) => void,
+  onOpenDetail: (url: string) => void
 ): ColumnDef<SmartEndpoint, unknown>[] {
   return [
     {
       accessorKey: 'url',
       header: 'URL',
       size: 250,
-      cell: ({ getValue }) => (
-        <span className="font-mono text-sm text-navy-700 block truncate max-w-[250px]" title={getValue() as string}>
-          {(getValue() as string) || '—'}
-        </span>
-      ),
+      cell: ({ getValue }) => {
+        const url = getValue() as string;
+        return (
+          <button
+            type="button"
+            className="font-mono text-sm text-navy-700 block truncate max-w-[250px] text-left hover:underline"
+            title={url}
+            onClick={() => onOpenDetail(url)}
+          >
+            {url || '—'}
+          </button>
+        );
+      },
     },
     {
       accessorKey: 'organization_names',
@@ -105,6 +115,7 @@ export default function SmartResponsePage() {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search);
   const [orgNamesUrl, setOrgNamesUrl] = useState<string | null>(null);
+  const [selectedEndpointUrl, setSelectedEndpointUrl] = useState<string | null>(null);
 
   const { data: orgNames = [], isLoading: orgsLoading } = useQuery({
     queryKey: ['smart-orgs', orgNamesUrl],
@@ -113,7 +124,10 @@ export default function SmartResponsePage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const columns = buildColumns((url) => setOrgNamesUrl(url));
+  const columns = buildColumns(
+    (url) => setOrgNamesUrl(url),
+    (url) => setSelectedEndpointUrl(url)
+  );
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['smart-response', page, pageSize, filters, debouncedSearch],
@@ -254,6 +268,11 @@ export default function SmartResponsePage() {
           />
         </div>
       </div>
+
+      <EndpointDetailModal
+        url={selectedEndpointUrl}
+        onClose={() => setSelectedEndpointUrl(null)}
+      />
 
       {/* Org Names Modal */}
       {orgNamesUrl && (

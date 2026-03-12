@@ -13,6 +13,7 @@ import { FilterTag } from '@/components/ui/FilterTag';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Modal } from '@/components/ui/Modal';
+import { EndpointDetailModal } from '@/features/endpoints/EndpointDetailModal';
 import { DownloadButton } from '@/components/ui/DownloadButton';
 import { getOrganizationsCsvUrl } from '@/api/downloads';
 import type { Organization } from '@/api/types';
@@ -23,22 +24,42 @@ function parseAddresses(raw: string | null): string[] {
   return raw.split('<br/>').map((s) => s.replace(/<[^>]*>/g, '').trim()).filter(Boolean);
 }
 
+// Clicking the Organization Name opens the EndpointDetailModal for the associated
+// endpoint_url field. Since endpoint_url may contain multiple <br/>-separated URLs,
+// we extract and use the first one.
 function buildColumns(
-  onShowLocations: (addresses: string[], orgName: string) => void
+  onShowLocations: (addresses: string[], orgName: string) => void,
+  onOpenDetail: (url: string) => void
 ): ColumnDef<Organization, unknown>[] {
   return [
     {
       accessorKey: 'organization_name',
       header: 'Organization Name',
       size: 250,
-      cell: ({ getValue }) => (
-        <span
-          className="font-semibold"
-          style={{ color: 'var(--color-primary)', fontWeight: 600 }}
-        >
-          {(getValue() as string) || '—'}
-        </span>
-      ),
+      cell: ({ getValue, row }) => {
+        const name = (getValue() as string) || '—';
+        const endpointUrl = row.original.endpoint_url;
+        const firstUrl = endpointUrl
+          ? endpointUrl.split('<br/>')[0].replace(/<[^>]*>/g, '').trim()
+          : null;
+        return firstUrl ? (
+          <button
+            type="button"
+            className="font-semibold text-left hover:underline"
+            style={{ color: 'var(--color-primary)', fontWeight: 600 }}
+            onClick={() => onOpenDetail(firstUrl)}
+          >
+            {name}
+          </button>
+        ) : (
+          <span
+            className="font-semibold"
+            style={{ color: 'var(--color-primary)', fontWeight: 600 }}
+          >
+            {name}
+          </span>
+        );
+      },
     },
     {
       accessorKey: 'address',
@@ -139,8 +160,12 @@ export default function OrganizationsPage() {
   const debouncedSearch = useDebounce(search);
 
   const [locationModal, setLocationModal] = useState<{ addresses: string[]; orgName: string } | null>(null);
+  const [selectedEndpointUrl, setSelectedEndpointUrl] = useState<string | null>(null);
 
-  const columns = buildColumns((addresses, orgName) => setLocationModal({ addresses, orgName }));
+  const columns = buildColumns(
+    (addresses, orgName) => setLocationModal({ addresses, orgName }),
+    (url) => setSelectedEndpointUrl(url)
+  );
 
   const { data: stateOptions = [] } = useQuery({
     queryKey: ['filters', 'states'],
@@ -338,6 +363,11 @@ export default function OrganizationsPage() {
           </ul>
         </Modal>
       )}
+
+      <EndpointDetailModal
+        url={selectedEndpointUrl}
+        onClose={() => setSelectedEndpointUrl(null)}
+      />
     </div>
   );
 }

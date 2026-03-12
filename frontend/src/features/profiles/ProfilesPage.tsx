@@ -9,18 +9,31 @@ import { SearchInput } from '@/components/ui/SearchInput';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Badge } from '@/components/ui/Badge';
+import { EndpointDetailModal } from '@/features/endpoints/EndpointDetailModal';
 import { Select } from '@/components/ui/Select';
 import { fetchFHIRVersions, fetchVendors, fetchFilterResources, fetchFilterProfiles } from '@/api/filters';
 import type { Profile } from '@/api/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
-const columns: ColumnDef<Profile, unknown>[] = [
+function buildColumns(
+  onOpenDetail: (url: string) => void
+): ColumnDef<Profile, unknown>[] {
+  return [
   {
     accessorKey: 'url',
     header: 'Endpoint',
-    cell: ({ getValue }) => (
-      <span className="font-mono text-sm text-navy-700">{(getValue() as string) || '—'}</span>
-    ),
+    cell: ({ getValue }) => {
+      const url = getValue() as string;
+      return (
+        <button
+          type="button"
+          className="font-mono text-sm text-navy-700 hover:underline text-left"
+          onClick={() => onOpenDetail(url)}
+        >
+          {url || '—'}
+        </button>
+      );
+    },
   },
   {
     accessorKey: 'profile_name',
@@ -75,12 +88,16 @@ const columns: ColumnDef<Profile, unknown>[] = [
     },
   },
 ];
+}
 
 export default function ProfilesPage() {
   const { filters, setFhirVersions, setVendor } = useFilters();
   const { page, setPage, pageSize } = usePagination(10);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search);
+  const [selectedEndpointUrl, setSelectedEndpointUrl] = useState<string | null>(null);
+
+  const columns = buildColumns((url) => setSelectedEndpointUrl(url));
 
   // Local filters
   const [resource, setResource] = useState<string | null>(null);
@@ -223,6 +240,11 @@ export default function ProfilesPage() {
         pageSize={pageSize}
         onPageChange={setPage}
         isLoading={isLoading}
+      />
+
+      <EndpointDetailModal
+        url={selectedEndpointUrl}
+        onClose={() => setSelectedEndpointUrl(null)}
       />
     </div>
   );

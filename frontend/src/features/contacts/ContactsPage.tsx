@@ -12,17 +12,30 @@ import { FilterTag } from '@/components/ui/FilterTag';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Badge } from '@/components/ui/Badge';
+import { EndpointDetailModal } from '@/features/endpoints/EndpointDetailModal';
 import type { Contact } from '@/api/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
-const columns: ColumnDef<Contact, unknown>[] = [
+function buildColumns(
+  onOpenDetail: (url: string) => void
+): ColumnDef<Contact, unknown>[] {
+  return [
   {
     accessorKey: 'url',
     header: 'Endpoint URL',
     size: 250,
-    cell: ({ getValue }) => (
-      <span className="font-mono text-sm text-navy-700">{(getValue() as string) || '—'}</span>
-    ),
+    cell: ({ getValue }) => {
+      const url = getValue() as string;
+      return (
+        <button
+          type="button"
+          className="font-mono text-sm text-navy-700 hover:underline text-left"
+          onClick={() => onOpenDetail(url)}
+        >
+          {url || '—'}
+        </button>
+      );
+    },
   },
   {
     accessorKey: 'vendor_name',
@@ -72,6 +85,7 @@ const columns: ColumnDef<Contact, unknown>[] = [
     ),
   },
 ];
+}
 
 const ALL = '__all__';
 
@@ -83,6 +97,9 @@ export default function ContactsPage() {
   const [vendor, setVendor] = useState<string | null>(null);
   const [hasContact, setHasContact] = useState<'any' | 'true' | 'false'>('any');
   const debouncedSearch = useDebounce(search);
+  const [selectedEndpointUrl, setSelectedEndpointUrl] = useState<string | null>(null);
+
+  const columns = buildColumns((url) => setSelectedEndpointUrl(url));
 
   const { data: fhirVersionOptions = [] } = useQuery({
     queryKey: ['filters', 'fhir-versions'],
@@ -228,6 +245,11 @@ export default function ContactsPage() {
         pageSize={pageSize}
         onPageChange={setPage}
         isLoading={isLoading}
+      />
+
+      <EndpointDetailModal
+        url={selectedEndpointUrl}
+        onClose={() => setSelectedEndpointUrl(null)}
       />
     </div>
   );

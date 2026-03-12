@@ -21,11 +21,15 @@ import { DataTable } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/Badge';
 import { InfoIcon, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { SearchInput } from '@/components/ui/SearchInput';
+import { EndpointDetailModal } from '@/features/endpoints/EndpointDetailModal';
 import type { ColumnDef } from '@tanstack/react-table';
 import type { ValidationFailure, ValidationMetrics } from '@/api/types';
 import { formatNumber } from '@/lib/formatters';
 
-const failuresColumns: ColumnDef<ValidationFailure, unknown>[] = [
+function buildFailuresColumns(
+  onOpenDetail: (url: string) => void
+): ColumnDef<ValidationFailure, unknown>[] {
+  return [
   {
     accessorKey: 'fhir_version',
     header: 'FHIR Version',
@@ -49,13 +53,20 @@ const failuresColumns: ColumnDef<ValidationFailure, unknown>[] = [
     accessorKey: 'url',
     header: 'Endpoint URL',
     size: 200,
-    cell: ({ getValue }) => (
-      <div className="min-w-0 max-w-[200px]">
-        <p className="truncate font-mono text-sm text-neutral-800">
-          {getValue() as string}
-        </p>
-      </div>
-    ),
+    cell: ({ getValue }) => {
+      const url = getValue() as string;
+      return (
+        <div className="min-w-0 max-w-[200px]">
+          <button
+            type="button"
+            className="truncate block w-full text-left font-mono text-sm text-neutral-800 hover:text-navy-700 hover:underline"
+            onClick={() => onOpenDetail(url)}
+          >
+            {url}
+          </button>
+        </div>
+      );
+    },
   },
   {
     accessorKey: 'expected',
@@ -85,7 +96,8 @@ const failuresColumns: ColumnDef<ValidationFailure, unknown>[] = [
       );
     },
   },
-];
+  ];
+}
 
 export function ValidationResultsTab() {
   const { filters, setFhirVersions } = useFilters();
@@ -96,6 +108,9 @@ export function ValidationResultsTab() {
 
   const [validationGroup, setValidationGroup] = useState<string | null>(null);
   const [vendor, setVendor] = useState<string | null>(null);
+  const [selectedEndpointUrl, setSelectedEndpointUrl] = useState<string | null>(null);
+
+  const failuresColumns = buildFailuresColumns((url) => setSelectedEndpointUrl(url));
 
   const { data: fhirVersionOptions = [] } = useQuery({
     queryKey: ['filters', 'fhir-versions'],
@@ -402,6 +417,11 @@ export function ValidationResultsTab() {
             </div>
         )}
       </section>
+
+      <EndpointDetailModal
+        url={selectedEndpointUrl}
+        onClose={() => setSelectedEndpointUrl(null)}
+      />
     </div>
   );
 }
