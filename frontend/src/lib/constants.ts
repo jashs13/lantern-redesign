@@ -1,7 +1,3 @@
-/* ========================================================================== */
-/* Navigation                                                                  */
-/* ========================================================================== */
-
 export interface NavItem {
   label: string;
   path: string;
@@ -16,18 +12,26 @@ export const TOP_NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', path: '/dashboard' },
   { label: 'Endpoints', path: '/endpoints' },
   { label: 'Organizations', path: '/organizations' },
-  { label: 'Capabilities', path: '/capabilities' },
-  { label: 'Resources', path: '/resources' },
-  { label: 'Security', path: '/security' },
 ];
 
-export const MORE_NAV_ITEMS: NavItem[] = [
+/**
+ * Legacy page links — shown in the "Legacy" dropdown.
+ */
+export const LEGACY_NAV_ITEMS: NavItem[] = [
+  { label: 'Resources', path: '/resources' },
   { label: 'Implementation Guides', path: '/implementation-guides' },
   { label: 'Fields', path: '/fields' },
   { label: 'Profiles', path: '/profiles' },
   { label: 'CapStat Size', path: '/capstat-size' },
   { label: 'Validations', path: '/validations' },
+  { label: 'Security', path: '/security' },
   { label: 'SMART Response', path: '/smart-response' },
+];
+
+/**
+ * Overflow items — shown in the "More" dropdown.
+ */
+export const MORE_NAV_ITEMS: NavItem[] = [
   { label: 'Contacts', path: '/contacts' },
   { label: 'Downloads/API', path: '/downloads' },
 ];
@@ -37,6 +41,8 @@ export const MORE_NAV_ITEMS: NavItem[] = [
  */
 export const ALL_NAV_ITEMS: NavItem[] = [
   ...TOP_NAV_ITEMS,
+  { label: 'Capabilities', path: '/capabilities' },
+  ...LEGACY_NAV_ITEMS,
   ...MORE_NAV_ITEMS,
   { label: 'About', path: '/about' },
 ];
