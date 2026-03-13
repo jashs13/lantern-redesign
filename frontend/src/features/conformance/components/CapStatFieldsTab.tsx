@@ -161,17 +161,15 @@ export function CapStatFieldsTab() {
       </div>
 
       {/* Required Fields Section */}
-      <section className="bg-white rounded-lg shadow-sm overflow-hidden border border-neutral-200">
+      <section className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
         <header className="p-5 border-b flex justify-between items-center flex-wrap gap-4 bg-white">
           <div>
             <h2 className="text-xl font-bold text-navy-900 font-sans">Required Fields</h2>
             <p className="text-gray-500 text-sm mt-1">Fields that the FHIR specification requires in every Capability Statement</p>
           </div>
         </header>
-        
-        <section
-          className="rounded-md bg-white border border-neutral-200 m-5 p-5 shadow-[var(--shadow-sm)] space-y-4"
-        >
+
+        <section className="rounded-md bg-white border border-neutral-200 m-5 p-5 shadow-[var(--shadow-sm)] space-y-4">
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[280px]">
               <SearchInput value={search} onChange={setSearch} placeholder="Search fields..." />
@@ -179,7 +177,7 @@ export function CapStatFieldsTab() {
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="flex flex-col gap-2">
-              <label className="font-sans font-bold uppercase" style={{ fontSize: '0.8125rem', color: 'var(--color-gray-dark)', letterSpacing: '0.03em' }}>
+              <label className="font-sans font-bold uppercase text-[0.8125rem] text-neutral-600 tracking-wide">
                 FHIR Version
               </label>
               <Select
@@ -190,7 +188,7 @@ export function CapStatFieldsTab() {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label className="font-sans font-bold uppercase" style={{ fontSize: '0.8125rem', color: 'var(--color-gray-dark)', letterSpacing: '0.03em' }}>
+              <label className="font-sans font-bold uppercase text-[0.8125rem] text-neutral-600 tracking-wide">
                 EHR Developer
               </label>
               <Select
@@ -203,98 +201,103 @@ export function CapStatFieldsTab() {
           </div>
         </section>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-gray-700 uppercase text-xs tracking-wider border-b-2 border-gray-200">
-              <tr>
-                <th className="px-4 py-3 font-semibold cursor-pointer select-none" onClick={() => setReqSort({key: 'field_name', dir: reqSort.key === 'field_name' && reqSort.dir === 'asc' ? 'desc' : 'asc'})}>
-                    Field Name {reqSort.key === 'field_name' ? (reqSort.dir === 'asc' ? '↑' : '↓') : ''}
-                </th>
-                <th className="px-4 py-3 font-semibold cursor-pointer select-none" onClick={() => setReqSort({key: 'count', dir: reqSort.key === 'count' && reqSort.dir === 'asc' ? 'desc' : 'asc'})}>
-                    Endpoints Including {reqSort.key === 'count' ? (reqSort.dir === 'asc' ? '↑' : '↓') : ''}
-                </th>
-                <th className="px-4 py-3 font-semibold w-1/3 cursor-pointer select-none" onClick={() => setReqSort({key: 'count', dir: reqSort.key === 'count' && reqSort.dir === 'asc' ? 'desc' : 'asc'})}>
-                    Inclusion Rate {reqSort.key === 'count' ? (reqSort.dir === 'asc' ? '↑' : '↓') : ''}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {isLoading ? (
-                <tr><td colSpan={3} className="h-32 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-primary" /></td></tr>
-              ) : groupedRequired.map((item, idx) => {
-                const pct = maxEndpoints > 0 ? (item.count / maxEndpoints) * 100 : 0;
-                return (
-                  <tr key={idx} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-bold text-navy-900">{item.field_name}</td>
-                    <td className="px-4 py-3 font-bold">{formatNumber(item.count)}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 flex-1 bg-gray-100 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${pct >= 90 ? 'bg-status-green' : pct >= 70 ? 'bg-sky-500' : pct >= 10 ? 'bg-status-gold' : 'bg-status-red'}`} style={{ width: `${pct}%` }} />
-                        </div>
-                        <span className="font-bold text-navy-900 min-w-[45px] text-right">{pct.toFixed(1)}%</span>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* Optional Fields Section */}
-      <section className="bg-white rounded-lg shadow-sm overflow-hidden border border-neutral-200">
-         <header className="p-5 border-b bg-white">
-          <h2 className="text-xl font-bold text-navy-900 font-sans">Optional Fields & Extensions</h2>
-          <p className="text-gray-500 text-sm mt-1">Additional fields and extensions endpoints choose to include</p>
-        </header>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-gray-700 uppercase text-xs tracking-wider border-b-2 border-gray-200">
-              <tr>
-                <th className="px-4 py-3 font-semibold cursor-pointer select-none" onClick={() => setOptSort({key: 'field_name', dir: optSort.key === 'field_name' && optSort.dir === 'asc' ? 'desc' : 'asc'})}>
-                    Field / Extension {optSort.key === 'field_name' ? (optSort.dir === 'asc' ? '↑' : '↓') : ''}
-                </th>
-                <th className="px-4 py-3 font-semibold cursor-pointer select-none" onClick={() => setOptSort({key: 'type', dir: optSort.key === 'type' && optSort.dir === 'asc' ? 'desc' : 'asc'})}>
-                    Type {optSort.key === 'type' ? (optSort.dir === 'asc' ? '↑' : '↓') : ''}
-                </th>
-                <th className="px-4 py-3 font-semibold cursor-pointer select-none" onClick={() => setOptSort({key: 'count', dir: optSort.key === 'count' && optSort.dir === 'asc' ? 'desc' : 'asc'})}>
-                    Endpoints Including {optSort.key === 'count' ? (optSort.dir === 'asc' ? '↑' : '↓') : ''}
-                </th>
-                <th className="px-4 py-3 font-semibold w-1/3 cursor-pointer select-none" onClick={() => setOptSort({key: 'count', dir: optSort.key === 'count' && optSort.dir === 'asc' ? 'desc' : 'asc'})}>
-                    Inclusion Rate {optSort.key === 'count' ? (optSort.dir === 'asc' ? '↑' : '↓') : ''}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y relative">
-              {isLoading || extensionsLoading ? (
-                <tr><td colSpan={4} className="h-32 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-primary" /></td></tr>
-              ) : (
-                paginatedOptional.map((item, idx) => {
+        <div className="m-5 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm text-left">
+              <thead className="bg-navy-900 text-white uppercase text-xs tracking-wider">
+                <tr>
+                  <th className="px-4 py-3 font-semibold cursor-pointer select-none" onClick={() => setReqSort({key: 'field_name', dir: reqSort.key === 'field_name' && reqSort.dir === 'asc' ? 'desc' : 'asc'})}>
+                      Field Name {reqSort.key === 'field_name' ? (reqSort.dir === 'asc' ? '↑' : '↓') : ''}
+                  </th>
+                  <th className="px-4 py-3 font-semibold cursor-pointer select-none" onClick={() => setReqSort({key: 'count', dir: reqSort.key === 'count' && reqSort.dir === 'asc' ? 'desc' : 'asc'})}>
+                      Endpoints Including {reqSort.key === 'count' ? (reqSort.dir === 'asc' ? '↑' : '↓') : ''}
+                  </th>
+                  <th className="px-4 py-3 font-semibold w-1/3 cursor-pointer select-none" onClick={() => setReqSort({key: 'count', dir: reqSort.key === 'count' && reqSort.dir === 'asc' ? 'desc' : 'asc'})}>
+                      Inclusion Rate {reqSort.key === 'count' ? (reqSort.dir === 'asc' ? '↑' : '↓') : ''}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y relative bg-white">
+                {isLoading ? (
+                  <tr><td colSpan={3} className="h-32 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-primary" /></td></tr>
+                ) : groupedRequired.map((item, idx) => {
                   const pct = maxEndpoints > 0 ? (item.count / maxEndpoints) * 100 : 0;
-                  const barColor = pct >= 90 ? 'bg-status-green' : pct >= 70 ? 'bg-sky-500' : pct >= 10 ? 'bg-status-gold' : 'bg-status-red';
                   return (
-                    <tr key={idx} className="hover:bg-gray-50">
+                    <tr key={idx} className="hover:bg-neutral-50 transition-colors even:bg-neutral-50/50">
                       <td className="px-4 py-3 font-bold text-navy-900">{item.field_name}</td>
-                      <td className="px-4 py-3">
-                        <Badge variant={item.type === 'Extension' ? 'purple' : 'info'}>{item.type}</Badge>
-                      </td>
                       <td className="px-4 py-3 font-bold">{formatNumber(item.count)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="h-2 flex-1 bg-gray-100 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
+                          <div className="h-2 flex-1 bg-neutral-100 rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full ${pct >= 90 ? 'bg-status-green' : pct >= 70 ? 'bg-sky-500' : pct >= 10 ? 'bg-status-gold' : 'bg-status-red'}`} style={{ width: `${pct}%` }} />
                           </div>
                           <span className="font-bold text-navy-900 min-w-[45px] text-right">{pct.toFixed(1)}%</span>
                         </div>
                       </td>
                     </tr>
                   );
-                })
-              )}
-            </tbody>
-          </table>
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* Optional Fields Section */}
+      <section className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
+        <header className="p-5 border-b bg-white">
+          <h2 className="text-xl font-bold text-navy-900 font-sans">Optional Fields & Extensions</h2>
+          <p className="text-gray-500 text-sm mt-1">Additional fields and extensions endpoints choose to include</p>
+        </header>
+
+        <div className="m-5 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm text-left">
+              <thead className="bg-navy-900 text-white uppercase text-xs tracking-wider">
+                <tr>
+                  <th className="px-4 py-3 font-semibold cursor-pointer select-none" onClick={() => setOptSort({key: 'field_name', dir: optSort.key === 'field_name' && optSort.dir === 'asc' ? 'desc' : 'asc'})}>
+                      Field / Extension {optSort.key === 'field_name' ? (optSort.dir === 'asc' ? '↑' : '↓') : ''}
+                  </th>
+                  <th className="px-4 py-3 font-semibold cursor-pointer select-none" onClick={() => setOptSort({key: 'type', dir: optSort.key === 'type' && optSort.dir === 'asc' ? 'desc' : 'asc'})}>
+                      Type {optSort.key === 'type' ? (optSort.dir === 'asc' ? '↑' : '↓') : ''}
+                  </th>
+                  <th className="px-4 py-3 font-semibold cursor-pointer select-none" onClick={() => setOptSort({key: 'count', dir: optSort.key === 'count' && optSort.dir === 'asc' ? 'desc' : 'asc'})}>
+                      Endpoints Including {optSort.key === 'count' ? (optSort.dir === 'asc' ? '↑' : '↓') : ''}
+                  </th>
+                  <th className="px-4 py-3 font-semibold w-1/3 cursor-pointer select-none" onClick={() => setOptSort({key: 'count', dir: optSort.key === 'count' && optSort.dir === 'asc' ? 'desc' : 'asc'})}>
+                      Inclusion Rate {optSort.key === 'count' ? (optSort.dir === 'asc' ? '↑' : '↓') : ''}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y relative bg-white">
+                {isLoading || extensionsLoading ? (
+                  <tr><td colSpan={4} className="h-32 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-primary" /></td></tr>
+                ) : (
+                  paginatedOptional.map((item, idx) => {
+                    const pct = maxEndpoints > 0 ? (item.count / maxEndpoints) * 100 : 0;
+                    const barColor = pct >= 90 ? 'bg-status-green' : pct >= 70 ? 'bg-sky-500' : pct >= 10 ? 'bg-status-gold' : 'bg-status-red';
+                    return (
+                      <tr key={idx} className="hover:bg-neutral-50 transition-colors even:bg-neutral-50/50">
+                        <td className="px-4 py-3 font-bold text-navy-900">{item.field_name}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant={item.type === 'Extension' ? 'purple' : 'info'}>{item.type}</Badge>
+                        </td>
+                        <td className="px-4 py-3 font-bold">{formatNumber(item.count)}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 flex-1 bg-neutral-100 rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
+                            </div>
+                            <span className="font-bold text-navy-900 min-w-[45px] text-right">{pct.toFixed(1)}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
       {!isLoading && !extensionsLoading && groupedOptionalAndExt.length > 0 && (
