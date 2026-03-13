@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, HelpCircle } from 'lucide-react';
 import { fetchValidationMetrics } from '@/api/validations';
 import { fetchFieldValueMetrics } from '@/api/fields';
 import { fetchDashboardSummary } from '@/api/dashboard';
+import { fetchSecuritySummary } from '@/api/security';
+import { fetchSmartKPIMetrics } from '@/api/smart';
 import { Breadcrumb } from '@/components/layout/Breadcrumb';
+import { ArrowRight, HelpCircle } from 'lucide-react';
 
 export default function CapabilitiesHubPage() {
   const { data: validationMetrics } = useQuery({
@@ -25,9 +27,33 @@ export default function CapabilitiesHubPage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: securitySummary } = useQuery({
+    queryKey: ['securitySummary'],
+    queryFn: () => fetchSecuritySummary(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: smartKPI } = useQuery({
+    queryKey: ['smartKPIMetrics'],
+    queryFn: () => fetchSmartKPIMetrics(),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const passRateStr = validationMetrics?.pass_rate != null ? `${validationMetrics.pass_rate}%` : '...';
   const totalRules = validationMetrics?.total_rules != null ? Math.round(validationMetrics.total_rules) : '...';
   const trackedFields = fieldMetrics?.fields_with_values != null ? Math.round(fieldMetrics.fields_with_values) : '...';
+  
+  // Calculate Security stats
+  const securityCountRows = securitySummary?.security_counts ?? [];
+  const totalSecured = securityCountRows.find((r) => r.status.toLowerCase().includes('valid security'))?.endpoints ?? null;
+  const totalSecuredStr = totalSecured != null ? totalSecured.toLocaleString() : '...';
+  
+  const totalEndpointsFromSecurity = securityCountRows.find((r) => r.status.toLowerCase().includes('total indexed'))?.endpoints ?? 0;
+  const totalUnsecured = totalSecured != null && totalEndpointsFromSecurity > 0 ? (totalEndpointsFromSecurity - totalSecured).toLocaleString() : '...';
+  
+  // Calculate SMART stats
+  const smartSupportedStr = smartKPI?.well_known_supported != null ? smartKPI.well_known_supported.toLocaleString() : '...';
+
   // Note: the backend returns 'indexed_endpoints' from dashboard api inside the totals object
   const totalEndpointsStr = dashboardSummary?.totals?.indexed_endpoints != null ? dashboardSummary.totals.indexed_endpoints.toLocaleString() : '...';
 
@@ -60,25 +86,25 @@ export default function CapabilitiesHubPage() {
             <div className="text-[2rem] font-bold text-navy-900 leading-tight">{totalEndpointsStr}</div>
             <div className="text-sm text-neutral-500 mt-1">Indexed Endpoints</div>
           </div>
-          <div className="bg-white rounded-lg p-5 text-center shadow-md border-t-4 border-blue-400 flex flex-col justify-between">
+          <div className="bg-white rounded-lg p-5 text-center shadow-md border-t-4 border-purple-500 flex flex-col justify-between">
             <div className="text-[2rem] text-neutral-300 font-bold leading-tight flex justify-center"><HelpCircle size={36}/></div>
-            <div className="text-sm text-neutral-500 mt-1">Distinct Resource Types</div>
-          </div>
-          <div className="bg-white rounded-lg p-5 text-center shadow-md border-t-4 border-green-500 flex flex-col justify-between">
-            <div className="text-[2rem] text-neutral-300 font-bold leading-tight flex justify-center"><HelpCircle size={36}/></div>
-            <div className="text-sm text-neutral-500 mt-1">OAuth / SMART Secured</div>
+            <div className="text-sm text-neutral-500 mt-1">Distinct Profiles</div>
           </div>
           <div className="bg-white rounded-lg p-5 text-center shadow-md border-t-4 border-yellow-500 flex flex-col justify-between">
             <div className="text-[2rem] text-neutral-300 font-bold leading-tight flex justify-center"><HelpCircle size={36}/></div>
             <div className="text-sm text-neutral-500 mt-1">Implementation Guides</div>
           </div>
+          <div className="bg-white rounded-lg p-5 text-center shadow-md border-t-4 border-green-500 flex flex-col justify-between">
+            <div className="text-[2rem] font-bold text-navy-900 leading-tight">{totalSecuredStr}</div>
+            <div className="text-sm text-neutral-500 mt-1">Secured Endpoints</div>
+          </div>
+          <div className="bg-white rounded-lg p-5 text-center shadow-md border-t-4 border-blue-400 flex flex-col justify-between">
+            <div className="text-[2rem] font-bold text-navy-900 leading-tight">{smartSupportedStr}</div>
+            <div className="text-sm text-neutral-500 mt-1">SMART-Response Endpoints</div>
+          </div>
           <div className="bg-white rounded-lg p-5 text-center shadow-md border-t-4 border-orange-500 flex flex-col justify-between">
             <div className="text-[2rem] font-bold text-navy-900 leading-tight">{passRateStr}</div>
             <div className="text-sm text-neutral-500 mt-1">Pass All Validations</div>
-          </div>
-          <div className="bg-white rounded-lg p-5 text-center shadow-md border-t-4 border-purple-500 flex flex-col justify-between">
-            <div className="text-[2rem] text-neutral-300 font-bold leading-tight flex justify-center"><HelpCircle size={36}/></div>
-            <div className="text-sm text-neutral-500 mt-1">Distinct Profiles</div>
           </div>
         </div>
       </div>
@@ -142,17 +168,17 @@ export default function CapabilitiesHubPage() {
               </p>
             </div>
             <div className="grid grid-cols-3 gap-px bg-neutral-200 mt-auto">
-              <div className="bg-neutral-50 p-4 min-h-[100px] flex flex-col items-center justify-between text-center">
-                <div className="text-neutral-300 mt-1"><HelpCircle size={28}/></div>
-                <div className="text-xs text-neutral-500">OAuth/SMART</div>
+              <div className="bg-neutral-50 p-4 min-h-[100px] flex flex-col items-center justify-center text-center">
+                <div className="text-[1.375rem] font-bold text-navy-900 leading-tight">{totalSecuredStr}</div>
+                <div className="text-xs text-neutral-500 mt-1">Secured</div>
               </div>
-              <div className="bg-neutral-50 p-4 min-h-[100px] flex flex-col items-center justify-between text-center">
-                <div className="text-neutral-300 mt-1"><HelpCircle size={28}/></div>
-                <div className="text-xs text-neutral-500">Well-Known</div>
+              <div className="bg-neutral-50 p-4 min-h-[100px] flex flex-col items-center justify-center text-center">
+                <div className="text-[1.375rem] font-bold text-navy-900 leading-tight">{totalUnsecured}</div>
+                <div className="text-xs text-neutral-500 mt-1">Unsecured</div>
               </div>
-              <div className="bg-neutral-50 p-4 min-h-[100px] flex flex-col items-center justify-between text-center">
-                <div className="text-neutral-300 mt-1"><HelpCircle size={28}/></div>
-                <div className="text-xs text-neutral-500">No Auth</div>
+              <div className="bg-neutral-50 p-4 min-h-[100px] flex flex-col items-center justify-center text-center">
+                <div className="text-[1.375rem] font-bold text-navy-900 leading-tight">{smartSupportedStr}</div>
+                <div className="text-xs text-neutral-500 mt-1">SMART</div>
               </div>
             </div>
             <div className="p-4 px-5 border-t border-neutral-200">

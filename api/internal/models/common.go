@@ -117,3 +117,21 @@ type SmartKPIMetrics struct {
 	MostCommonCount      *int     `json:"most_common_count"`
 	AvgCapabilities      *float64 `json:"avg_capabilities"`
 }
+
+// SmartSankeyMetrics holds all counts and percentages for the SMART-on-FHIR Sankey diagram.
+type SmartSankeyMetrics struct {
+	TotalIndexed   *int     `json:"total_indexed"`
+	Http200        *int     `json:"http200"`
+	NoHttp200      *int     `json:"no_http200"`
+	WellKnown      *int     `json:"well_known"`
+	NonWellKnown   *int     `json:"non_well_known"`
+	ValidJson      *int     `json:"valid_json"`
+	NoValidJson    *int     `json:"no_valid_json"`
+	Http200Pct        *float64 `json:"http200_pct"`
+	NoHttp200Pct      *float64 `json:"no_http200_pct"`
+	WellKnownPct      *float64 `json:"well_known_pct"`
+	NonWellKnownPct   *float64 `json:"non_well_known_pct"`
+	ValidJsonPct      *float64 `json:"valid_json_pct"`
+	NoValidJsonPct    *float64 `json:"no_valid_json_pct"`
+}
+

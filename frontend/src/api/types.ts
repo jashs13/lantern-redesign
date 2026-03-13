@@ -379,6 +379,22 @@ export interface SmartKPIMetrics {
   avg_capabilities: number | null;
 }
 
+export interface SmartSankeyMetrics {
+  total_indexed: number | null;
+  http200: number | null;
+  no_http200: number | null;
+  well_known: number | null;
+  non_well_known: number | null;
+  valid_json: number | null;
+  no_valid_json: number | null;
+  http200_pct: number | null;
+  no_http200_pct: number | null;
+  well_known_pct: number | null;
+  non_well_known_pct: number | null;
+  valid_json_pct: number | null;
+  no_valid_json_pct: number | null;
+}
+
 // =============================================================================
 // Contacts
 // =============================================================================

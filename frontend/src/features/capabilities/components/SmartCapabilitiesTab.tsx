@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
-import { fetchSmartResponse, fetchSmartSummary, fetchSmartKPIMetrics } from '@/api/smart';
+import { fetchSmartResponse, fetchSmartSummary, fetchSmartKPIMetrics, fetchSmartSankeyMetrics } from '@/api/smart';
+import { SmartSankeyChart } from './SmartSankeyChart';
 import { fetchSecurityOrgs } from '@/api/security';
 import { fetchFHIRVersions, fetchVendors } from '@/api/filters';
 import { DataTable } from '@/components/ui/DataTable';
@@ -163,6 +164,12 @@ export function SmartCapabilitiesTab() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: sankeyMetrics } = useQuery({
+    queryKey: ['smart-sankey-metrics'],
+    queryFn: fetchSmartSankeyMetrics,
+    staleTime: 5 * 60 * 1000,
+  });
+
   return (
     <>
       {/* Callout */}
@@ -200,6 +207,9 @@ export function SmartCapabilitiesTab() {
           icon={<BarChart3 size={18} />}
         />
       </div>
+
+      {/* Sankey Diagram */}
+      {sankeyMetrics?.total_indexed && <SmartSankeyChart metrics={sankeyMetrics} />}
 
       {/* Search + Filters Card */}
       <section

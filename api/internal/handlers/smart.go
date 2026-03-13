@@ -194,3 +194,40 @@ func (h *Handler) SmartKPIMetrics(w http.ResponseWriter, r *http.Request) {
 
 	models.WriteJSON(w, http.StatusOK, metrics)
 }
+
+// SmartSankeyMetrics returns pre-computed Sankey diagram counts and percentages from smart_sankey_mv.
+func (h *Handler) SmartSankeyMetrics(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var m models.SmartSankeyMetrics
+
+	query := `
+		SELECT
+			total_indexed, http200, no_http200,
+			well_known, non_well_known, valid_json, no_valid_json,
+			http200_pct, no_http200_pct,
+			well_known_pct, non_well_known_pct,
+			valid_json_pct, no_valid_json_pct
+		FROM smart_sankey_mv
+		LIMIT 1`
+
+	err := h.db.QueryRowContext(ctx, query).Scan(
+		&m.TotalIndexed, &m.Http200, &m.NoHttp200,
+		&m.WellKnown, &m.NonWellKnown, &m.ValidJson, &m.NoValidJson,
+		&m.Http200Pct, &m.NoHttp200Pct,
+		&m.WellKnownPct, &m.NonWellKnownPct,
+		&m.ValidJsonPct, &m.NoValidJsonPct,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// View empty or not yet populated — return zeroed struct.
+		} else {
+			log.WithError(err).Error("querying smart_sankey_mv")
+			models.WriteError(w, http.StatusInternalServerError, "failed to fetch SMART sankey metrics")
+			return
+		}
+	}
+
+	models.WriteJSON(w, http.StatusOK, m)
+}
+

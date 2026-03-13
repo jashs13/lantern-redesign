@@ -1,0 +1,5 @@
+BEGIN;
+
+DROP MATERIALIZED VIEW IF EXISTS smart_sankey_mv;
+
+COMMIT;

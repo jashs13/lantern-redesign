@@ -94,6 +94,7 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 		r.Get("/smart-response", h.SmartResponse)
 		r.Get("/smart-response/summary", h.SmartResponseSummary)
 		r.Get("/smart-response/kpi", h.SmartKPIMetrics)
+		r.Get("/smart-response/sankey", h.SmartSankeyMetrics)
 
 		// Contacts
 		r.Get("/contacts", h.ListContacts)

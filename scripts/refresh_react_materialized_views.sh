@@ -280,4 +280,17 @@ docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE UNIQUE INDEX 
     echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to create idx_smart_kpi_metrics_mv." >> $log_file
 }
 
+# Refresh smart_sankey_mv
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "REFRESH MATERIALIZED VIEW CONCURRENTLY smart_sankey_mv;" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to refresh smart_sankey_mv." >> $log_file
+}
+
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "DROP INDEX IF EXISTS idx_smart_sankey_mv;" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to drop idx_smart_sankey_mv." >> $log_file
+}
+
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE UNIQUE INDEX idx_smart_sankey_mv ON smart_sankey_mv ((1));" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to create idx_smart_sankey_mv." >> $log_file
+}
+
 echo "$(date +"%Y-%m-%d %H:%M:%S") - done." >> $log_file

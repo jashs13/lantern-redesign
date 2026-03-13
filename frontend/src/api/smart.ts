@@ -5,6 +5,7 @@ import type {
   SmartQueryParams,
   SmartSummaryData,
   SmartKPIMetrics,
+  SmartSankeyMetrics,
 } from './types';
 
 export async function fetchSmartResponse(
@@ -31,4 +32,8 @@ export async function fetchSmartSummary(params?: {
 
 export async function fetchSmartKPIMetrics(): Promise<SmartKPIMetrics> {
   return apiClient<SmartKPIMetrics>('/api/v1/smart-response/kpi');
+}
+
+export async function fetchSmartSankeyMetrics(): Promise<SmartSankeyMetrics> {
+  return apiClient<SmartSankeyMetrics>('/api/v1/smart-response/sankey');
 }
