@@ -1,0 +1,5 @@
+BEGIN;
+
+DROP MATERIALIZED VIEW IF EXISTS smart_kpi_metrics_mv;
+
+COMMIT;

@@ -4,6 +4,7 @@ import type {
   SmartEndpoint,
   SmartQueryParams,
   SmartSummaryData,
+  SmartKPIMetrics,
 } from './types';
 
 export async function fetchSmartResponse(
@@ -26,4 +27,8 @@ export async function fetchSmartSummary(params?: {
     fhir_versions: params?.fhir_versions,
     vendor: params?.vendor,
   });
+}
+
+export async function fetchSmartKPIMetrics(): Promise<SmartKPIMetrics> {
+  return apiClient<SmartKPIMetrics>('/api/v1/smart-response/kpi');
 }

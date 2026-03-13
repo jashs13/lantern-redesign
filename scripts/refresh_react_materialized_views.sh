@@ -267,4 +267,17 @@ docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE UNIQUE INDEX 
     echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to create idx_validation_kpi_metrics_mv_rule." >> $log_file
 }
 
+# Refresh smart_kpi_metrics_mv
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "REFRESH MATERIALIZED VIEW CONCURRENTLY smart_kpi_metrics_mv;" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to refresh smart_kpi_metrics_mv." >> $log_file
+}
+
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "DROP INDEX IF EXISTS idx_smart_kpi_metrics_mv;" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to drop idx_smart_kpi_metrics_mv." >> $log_file
+}
+
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE UNIQUE INDEX idx_smart_kpi_metrics_mv ON smart_kpi_metrics_mv (most_common_capability);" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to create idx_smart_kpi_metrics_mv." >> $log_file
+}
+
 echo "$(date +"%Y-%m-%d %H:%M:%S") - done." >> $log_file

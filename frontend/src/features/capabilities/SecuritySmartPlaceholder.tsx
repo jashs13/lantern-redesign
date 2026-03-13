@@ -1,22 +1,50 @@
+import { useState } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { AuthorizationTypesTab } from './components/AuthorizationTypesTab';
+import { SmartCapabilitiesTab } from './components/SmartCapabilitiesTab';
 
-export default function SecuritySmartPlaceholder() {
+export default function SecuritySmartPage() {
+  const [activeTab, setActiveTab] = useState<'auth' | 'smart'>('auth');
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Security & SMART"
+        subtitle="How are FHIR endpoints secured? Explore authorization types, SMART-on-FHIR core capabilities, and well-known configuration support."
         breadcrumbs={[
           { label: 'Capabilities', href: '/capabilities' },
-          { label: 'Security & SMART' }
+          { label: 'Security & SMART' },
         ]}
       />
-      
-      <div className="flex h-[400px] flex-col items-center justify-center rounded-lg border border-dashed border-neutral-300 bg-white p-8 text-center text-neutral-500 shadow-sm">
-        <div className="mb-4 text-4xl">🔒</div>
-        <h3 className="mb-2 text-xl font-bold text-navy-900">Under Construction</h3>
-        <p className="max-w-md text-sm">
-          Content regarding authorization types, SMART-on-FHIR support, and security configurations is currently being developed and will be available soon.
-        </p>
+
+      {/* Sub-Navigation */}
+      <div className="flex bg-white rounded-lg p-1 shadow-sm border border-neutral-200 overflow-x-auto w-fit">
+        <button
+          onClick={() => setActiveTab('auth')}
+          className={`px-5 py-2.5 rounded font-semibold text-sm transition-all whitespace-nowrap ${
+            activeTab === 'auth'
+              ? 'bg-navy-700 text-white shadow'
+              : 'text-gray-500 hover:text-navy-700 hover:bg-gray-50'
+          }`}
+        >
+          Authorization Types
+        </button>
+        <button
+          onClick={() => setActiveTab('smart')}
+          className={`px-5 py-2.5 rounded font-semibold text-sm transition-all whitespace-nowrap ${
+            activeTab === 'smart'
+              ? 'bg-navy-700 text-white shadow'
+              : 'text-gray-500 hover:text-navy-700 hover:bg-gray-50'
+          }`}
+        >
+          SMART-on-FHIR Capabilities
+        </button>
+      </div>
+
+      {/* Dynamic Content */}
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+        {activeTab === 'auth' && <AuthorizationTypesTab />}
+        {activeTab === 'smart' && <SmartCapabilitiesTab />}
       </div>
     </div>
   );

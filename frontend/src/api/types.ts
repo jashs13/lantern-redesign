@@ -371,6 +371,14 @@ export interface SmartCapability {
   count: number;
 }
 
+export interface SmartKPIMetrics {
+  well_known_supported: number | null;
+  not_supported: number | null;
+  most_common_capability: string | null;
+  most_common_count: number | null;
+  avg_capabilities: number | null;
+}
+
 // =============================================================================
 // Contacts
 // =============================================================================

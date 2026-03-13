@@ -108,3 +108,12 @@ type ValidationMetrics struct {
 	MostFailedRule *string  `json:"most_failed_rule"`
 	MaxFailures    *int     `json:"max_failures"`
 }
+
+// SmartKPIMetrics aggregates static KPIs for the SMART-on-FHIR Capabilities tab.
+type SmartKPIMetrics struct {
+	WellKnownSupported   *int     `json:"well_known_supported"`
+	NotSupported         *int     `json:"not_supported"`
+	MostCommonCapability *string  `json:"most_common_capability"`
+	MostCommonCount      *int     `json:"most_common_count"`
+	AvgCapabilities      *float64 `json:"avg_capabilities"`
+}

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strings"
@@ -163,4 +164,33 @@ func (h *Handler) SmartResponseSummary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	models.WriteJSON(w, http.StatusOK, summary)
+}
+
+// SmartKPIMetrics returns pre-computed SMART KPI metrics from the materialized view.
+func (h *Handler) SmartKPIMetrics(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var metrics models.SmartKPIMetrics
+
+	query := `SELECT well_known_supported, not_supported, most_common_capability, most_common_count, avg_capabilities
+	          FROM smart_kpi_metrics_mv LIMIT 1`
+
+	err := h.db.QueryRowContext(ctx, query).Scan(
+		&metrics.WellKnownSupported,
+		&metrics.NotSupported,
+		&metrics.MostCommonCapability,
+		&metrics.MostCommonCount,
+		&metrics.AvgCapabilities,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// View empty or unpopulated — leave nil pointers.
+		} else {
+			log.WithError(err).Error("querying smart_kpi_metrics_mv")
+			models.WriteError(w, http.StatusInternalServerError, "failed to fetch SMART KPI metrics")
+			return
+		}
+	}
+
+	models.WriteJSON(w, http.StatusOK, metrics)
 }
