@@ -12,18 +12,12 @@ export function TopNav() {
       <div className="container-page">
         <div className="flex h-16 items-center justify-between">
           {/* Brand */}
-          <Link to="/" className="flex items-center gap-3 no-underline" aria-label="Lantern Home">
+          <Link to="/" className="flex items-center no-underline" aria-label="Lantern Home">
             <img
-              src="/favicon.webp"
+              src="/lantern-logo-white.webp"
               alt="Lantern logo"
-              style={{ width: '44px', height: '44px' }}
+              className="h-14 w-auto"
             />
-            <div>
-              <div className="font-serif font-bold leading-tight text-white" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Lantern</div>
-              <div style={{ fontSize: '0.875rem', opacity: 0.9, fontWeight: 400 }} className="text-white">
-                FHIR Endpoint Monitor
-              </div>
-            </div>
           </Link>
 
           {/* Desktop Navigation */}
