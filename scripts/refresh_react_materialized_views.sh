@@ -281,7 +281,7 @@ docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE UNIQUE INDEX 
 }
 
 # Refresh smart_sankey_mv
-docker exec -t lantern-back-end-main-postgres-1 psql -t -c "REFRESH MATERIALIZED VIEW CONCURRENTLY smart_sankey_mv;" -U lantern -d lantern || {
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "REFRESH MATERIALIZED VIEW smart_sankey_mv;" -U lantern -d lantern || {
     echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to refresh smart_sankey_mv." >> $log_file
 }
 
