@@ -53,7 +53,7 @@ const CATEGORIES = ['Clinical', 'Financial', 'Administrative', 'Foundation', 'Ot
 
 type ViewMode = 'cards' | 'matrix';
 
-export default function ResourcesPage({ asTab = false }: { asTab?: boolean } = {}) {
+export default function ResourcesTabContent({ asTab = false }: { asTab?: boolean } = {}) {
   const { filters } = useFilters();
   const { page, pageSize, setPage } = usePagination(24);
 

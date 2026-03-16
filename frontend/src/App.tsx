@@ -11,14 +11,8 @@ const LandingPage = lazy(() => import('@/features/landing/LandingPage'));
 const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage'));
 const EndpointsPage = lazy(() => import('@/features/endpoints/EndpointsPage'));
 const OrganizationsPage = lazy(() => import('@/features/organizations/OrganizationsPage'));
-const ResourcesPage = lazy(() => import('@/features/resources/ResourcesPage'));
-const ImplementationGuidesPage = lazy(
-  () => import('@/features/implementation-guides/ImplementationGuidesPage'),
-);
 const FieldsPage = lazy(() => import('@/features/fields/FieldsPage'));
-const ProfilesPage = lazy(() => import('@/features/profiles/ProfilesPage'));
-const CapStatSizePage = lazy(() => import('@/features/capstat-size/CapStatSizePage'));
-const CapabilitiesPage = lazy(() => import('@/features/capabilities/CapabilitiesPage'));
+const CapabilitiesResourcesPage = lazy(() => import('@/features/capabilities/CapabilitiesResourcesPage'));
 const ValidationsPage = lazy(() => import('@/features/validations/ValidationsPage'));
 const SecurityPage = lazy(() => import('@/features/security/SecurityPage'));
 const SmartResponsePage = lazy(() => import('@/features/smart-response/SmartResponsePage'));
@@ -50,12 +44,8 @@ export default function App() {
               <Route path="dashboard" element={<Suspense fallback={<LoadingState />}><DashboardPage /></Suspense>} />
               <Route path="endpoints" element={<Suspense fallback={<LoadingState />}><EndpointsPage /></Suspense>} />
               <Route path="organizations" element={<Suspense fallback={<LoadingState />}><OrganizationsPage /></Suspense>} />
-              <Route path="resources" element={<Suspense fallback={<LoadingState />}><ResourcesPage /></Suspense>} />
-              <Route path="implementation-guides" element={<Suspense fallback={<LoadingState />}><ImplementationGuidesPage /></Suspense>} />
               <Route path="fields" element={<Suspense fallback={<LoadingState />}><FieldsPage /></Suspense>} />
-              <Route path="profiles" element={<Suspense fallback={<LoadingState />}><ProfilesPage /></Suspense>} />
-              <Route path="capstat-size" element={<Suspense fallback={<LoadingState />}><CapStatSizePage /></Suspense>} />
-              <Route path="capabilities" element={<Suspense fallback={<LoadingState />}><CapabilitiesPage /></Suspense>} />
+              <Route path="capabilities/resources" element={<Suspense fallback={<LoadingState />}><CapabilitiesResourcesPage /></Suspense>} />
               <Route path="validations" element={<Suspense fallback={<LoadingState />}><ValidationsPage /></Suspense>} />
               <Route path="security" element={<Suspense fallback={<LoadingState />}><SecurityPage /></Suspense>} />
               <Route path="smart-response" element={<Suspense fallback={<LoadingState />}><SmartResponsePage /></Suspense>} />

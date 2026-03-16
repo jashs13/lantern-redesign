@@ -89,7 +89,7 @@ const columns: ColumnDef<ProfileAdoptionItem, unknown>[] = [
   },
 ];
 
-export default function ProfilesPage({ asTab = false }: { asTab?: boolean } = {}) {
+export default function ProfilesTabContent({ asTab = false }: { asTab?: boolean } = {}) {
   const { filters, setFhirVersions, setVendor } = useFilters();
   const { page, setPage, pageSize } = usePagination(10);
   const [search, setSearch] = useState('');

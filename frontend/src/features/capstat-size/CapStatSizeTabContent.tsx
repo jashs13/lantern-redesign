@@ -26,7 +26,7 @@ const LABEL_STYLE: React.CSSProperties = {
 
 const ALL = '__all__';
 
-export default function CapStatSizePage({ asTab = false }: { asTab?: boolean } = {}) {
+export default function CapStatSizeTabContent({ asTab = false }: { asTab?: boolean } = {}) {
   const { filters } = useFilters();
   const { page, pageSize, setPage } = usePagination(25);
 

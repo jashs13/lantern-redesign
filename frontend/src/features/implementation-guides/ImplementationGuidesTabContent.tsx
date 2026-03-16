@@ -54,7 +54,7 @@ const LABEL_STYLE: React.CSSProperties = {
 
 const ALL = '__all__';
 
-export default function ImplementationGuidesPage({ asTab = false }: { asTab?: boolean } = {}) {
+export default function ImplementationGuidesTabContent({ asTab = false }: { asTab?: boolean } = {}) {
   const { filters } = useFilters();
   const { page, pageSize, setPage } = usePagination();
 
