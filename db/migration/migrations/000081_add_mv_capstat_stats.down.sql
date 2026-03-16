@@ -1,0 +1,5 @@
+BEGIN;
+
+DROP MATERIALIZED VIEW IF EXISTS mv_capstat_stats;
+
+COMMIT;

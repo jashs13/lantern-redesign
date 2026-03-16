@@ -61,10 +61,13 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 
 		// Resources
 		r.Get("/resources", h.ListResources)
+		r.Get("/resources/stats", h.GetResourceStats)
 		r.Get("/resources/chart", h.ResourcesChart)
+		r.Get("/resources/matrix", h.ResourceMatrix)
 
 		// Implementation Guides
 		r.Get("/implementation-guides", h.ImplementationGuides)
+		r.Get("/implementation-guides/stats", h.IGStats)
 
 		// Fields
 		r.Get("/fields", h.ListFields)
@@ -73,9 +76,13 @@ func New(db *sql.DB, cfg *config.Config) http.Handler {
 
 		// Profiles
 		r.Get("/profiles", h.ListProfiles)
+		r.Get("/profiles/adoption", h.ListProfileAdoption)
+		r.Get("/profiles/chart", h.ProfilesChart)
+		r.Get("/profiles/stats", h.ProfilesStats)
 
 		// CapStat Sizes
 		r.Get("/capstat-sizes", h.CapStatSizes)
+		r.Get("/capstat-sizes/stats", h.GetCapStatStats)
 
 		// Validations
 		r.Get("/validations/summary", h.ValidationsSummary)

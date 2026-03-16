@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { fetchCapStatSizes } from '@/api/implementation';
+import { CapStatStatsCards } from './CapStatStatsCards';
+import { HorizontalBarChart } from '@/components/charts/HorizontalBarChart';
 import { fetchFHIRVersions, fetchVendors } from '@/api/filters';
 import { Select } from '@/components/ui/Select';
 import { FilterTag } from '@/components/ui/FilterTag';
@@ -24,7 +26,7 @@ const LABEL_STYLE: React.CSSProperties = {
 
 const ALL = '__all__';
 
-export default function CapStatSizePage() {
+export default function CapStatSizePage({ asTab = false }: { asTab?: boolean } = {}) {
   const { filters } = useFilters();
   const { page, pageSize, setPage } = usePagination(25);
 
@@ -52,6 +54,40 @@ export default function CapStatSizePage() {
       }),
   });
 
+  const { data: chartRaw, isLoading: isChartLoading } = useQuery({
+    queryKey: ['capstat-sizes-chart', fhirVersions, vendor],
+    queryFn: () =>
+      fetchCapStatSizes({
+        fhir_versions: fhirVersions.length > 0 ? fhirVersions : undefined,
+        vendor: vendor ?? undefined,
+        page: 1,
+        page_size: 100,
+      }),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const chartData = useMemo(() => {
+    if (!chartRaw) return [];
+    // Aggregate by vendor: weighted average of mean, sum counts
+    const map = new Map<string, { totalWeight: number; weightedSum: number }>();
+    for (const row of chartRaw.data) {
+      if (row.mean == null) continue;
+      const existing = map.get(row.vendor_name) ?? { totalWeight: 0, weightedSum: 0 };
+      existing.totalWeight += row.count;
+      existing.weightedSum += row.mean * row.count;
+      map.set(row.vendor_name, existing);
+    }
+    return [...map.entries()]
+      .map(([name, { totalWeight, weightedSum }]) => ({
+        name,
+        value: Math.round(weightedSum / totalWeight),
+        count: totalWeight,
+      }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5)
+      .map(({ name, value }) => ({ name, value }));
+  }, [chartRaw]);
+
   function handleFhirVersionChange(v: string[]) {
     setFhirVersions(v);
     setPage(1);
@@ -71,11 +107,13 @@ export default function CapStatSizePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Capability Statement Sizes"
-        subtitle="Size statistics for FHIR capability statements by vendor"
-        breadcrumbs={[{ label: 'CapStat Sizes' }]}
-      />
+      {!asTab && (
+        <PageHeader
+          title="Capability Statement Sizes"
+          subtitle="Size statistics for FHIR capability statements by vendor"
+          breadcrumbs={[{ label: 'CapStat Sizes' }]}
+        />
+      )}
 
       <section
         className="rounded-md bg-white"
@@ -91,7 +129,7 @@ export default function CapStatSizePage() {
               options={fhirVersionOptions.map((o) => o.value)}
               selected={fhirVersions}
               onChange={handleFhirVersionChange}
-              placeholder="FHIR Versions"
+              placeholder="All FHIR Versions"
             />
           </div>
 
@@ -123,6 +161,35 @@ export default function CapStatSizePage() {
               onRemove={() => { setVendor(null); setPage(1); }}
             />
           </div>
+        )}
+      </section>
+
+      <CapStatStatsCards />
+
+      {/* Capability statement size chart */}
+      <section
+        className="rounded-md bg-white"
+        style={{ padding: '1.25rem 1.5rem', boxShadow: 'var(--shadow-sm)' }}
+        aria-label="Capability statement size chart"
+      >
+        <div style={{ marginBottom: '1rem' }}>
+          <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-primary-dark)' }}>
+            Average Capability Statement Size by Developer
+          </span>
+          <p style={{ fontSize: '0.875rem', color: 'var(--color-gray)', marginTop: '0.25rem' }}>
+            Top 5 developers by average capability statement size across FHIR versions
+          </p>
+        </div>
+        {isChartLoading ? (
+          <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-gray)', fontSize: '0.875rem' }}>
+            Loading chart…
+          </div>
+        ) : chartData.length === 0 ? (
+          <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-gray)', fontSize: '0.875rem' }}>
+            No data available.
+          </div>
+        ) : (
+          <HorizontalBarChart data={chartData} />
         )}
       </section>
 

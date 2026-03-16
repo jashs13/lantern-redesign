@@ -18,6 +18,7 @@ const ImplementationGuidesPage = lazy(
 const FieldsPage = lazy(() => import('@/features/fields/FieldsPage'));
 const ProfilesPage = lazy(() => import('@/features/profiles/ProfilesPage'));
 const CapStatSizePage = lazy(() => import('@/features/capstat-size/CapStatSizePage'));
+const CapabilitiesPage = lazy(() => import('@/features/capabilities/CapabilitiesPage'));
 const ValidationsPage = lazy(() => import('@/features/validations/ValidationsPage'));
 const SecurityPage = lazy(() => import('@/features/security/SecurityPage'));
 const SmartResponsePage = lazy(() => import('@/features/smart-response/SmartResponsePage'));
@@ -54,6 +55,7 @@ export default function App() {
               <Route path="fields" element={<Suspense fallback={<LoadingState />}><FieldsPage /></Suspense>} />
               <Route path="profiles" element={<Suspense fallback={<LoadingState />}><ProfilesPage /></Suspense>} />
               <Route path="capstat-size" element={<Suspense fallback={<LoadingState />}><CapStatSizePage /></Suspense>} />
+              <Route path="capabilities" element={<Suspense fallback={<LoadingState />}><CapabilitiesPage /></Suspense>} />
               <Route path="validations" element={<Suspense fallback={<LoadingState />}><ValidationsPage /></Suspense>} />
               <Route path="security" element={<Suspense fallback={<LoadingState />}><SecurityPage /></Suspense>} />
               <Route path="smart-response" element={<Suspense fallback={<LoadingState />}><SmartResponsePage /></Suspense>} />

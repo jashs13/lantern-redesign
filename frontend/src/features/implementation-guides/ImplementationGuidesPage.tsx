@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { fetchImplementationGuides } from '@/api/implementation';
+import { IGStatsCards } from './IGStatsCards';
+import { HorizontalBarChart } from '@/components/charts/HorizontalBarChart';
 import { fetchFHIRVersions, fetchVendors } from '@/api/filters';
 import { DataTable } from '@/components/ui/DataTable';
 import { Select } from '@/components/ui/Select';
@@ -52,7 +54,7 @@ const LABEL_STYLE: React.CSSProperties = {
 
 const ALL = '__all__';
 
-export default function ImplementationGuidesPage() {
+export default function ImplementationGuidesPage({ asTab = false }: { asTab?: boolean } = {}) {
   const { filters } = useFilters();
   const { page, pageSize, setPage } = usePagination();
 
@@ -80,6 +82,27 @@ export default function ImplementationGuidesPage() {
       }),
   });
 
+  const { data: chartRaw, isLoading: isChartLoading } = useQuery({
+    queryKey: ['implementation-guides-chart', fhirVersions, vendor],
+    queryFn: () =>
+      fetchImplementationGuides({
+        fhir_versions: fhirVersions.length > 0 ? fhirVersions : undefined,
+        vendor: vendor ?? undefined,
+        page: 1,
+        page_size: 5,
+      }),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const chartData = useMemo(() => {
+    if (!chartRaw) return [];
+    const TRUNCATE = 45;
+    return chartRaw.data.map((ig: ImplementationGuide) => ({
+      name: ig.name.length > TRUNCATE ? ig.name.slice(0, TRUNCATE) + '…' : ig.name,
+      value: ig.count,
+    }));
+  }, [chartRaw]);
+
   function handleFhirVersionChange(v: string[]) {
     setFhirVersions(v);
     setPage(1);
@@ -94,11 +117,14 @@ export default function ImplementationGuidesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Implementation Guides"
-        subtitle="FHIR implementation guides referenced by endpoints"
-        breadcrumbs={[{ label: 'Implementation Guides' }]}
-      />
+      <IGStatsCards />
+      {!asTab && (
+        <PageHeader
+          title="Implementation Guides"
+          subtitle="FHIR implementation guides referenced by endpoints"
+          breadcrumbs={[{ label: 'Implementation Guides' }]}
+        />
+      )}
 
       <section
         className="rounded-md bg-white"
@@ -114,7 +140,7 @@ export default function ImplementationGuidesPage() {
               options={fhirVersionOptions.map((o) => o.value)}
               selected={fhirVersions}
               onChange={handleFhirVersionChange}
-              placeholder="FHIR Versions"
+              placeholder="All FHIR Versions"
             />
           </div>
 
@@ -146,6 +172,33 @@ export default function ImplementationGuidesPage() {
               onRemove={() => { setVendor(null); setPage(1); }}
             />
           </div>
+        )}
+      </section>
+
+      {/* IG adoption chart */}
+      <section
+        className="rounded-md bg-white"
+        style={{ padding: '1.25rem 1.5rem', boxShadow: 'var(--shadow-sm)' }}
+        aria-label="Implementation guide adoption chart"
+      >
+        <div style={{ marginBottom: '1rem' }}>
+          <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-primary-dark)' }}>
+            Implementation Guide Adoption
+          </span>
+          <p style={{ fontSize: '0.875rem', color: 'var(--color-gray)', marginTop: '0.25rem' }}>
+            Top 5 implementation guides by number of endpoints referencing them
+          </p>
+        </div>
+        {isChartLoading ? (
+          <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-gray)', fontSize: '0.875rem' }}>
+            Loading chart…
+          </div>
+        ) : chartData.length === 0 ? (
+          <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-gray)', fontSize: '0.875rem' }}>
+            No data available.
+          </div>
+        ) : (
+          <HorizontalBarChart data={chartData} />
         )}
       </section>
 
