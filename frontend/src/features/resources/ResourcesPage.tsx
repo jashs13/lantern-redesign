@@ -27,12 +27,20 @@ const columns: ColumnDef<Resource, unknown>[] = [
     ),
   },
   {
-    accessorKey: 'fhir_version',
+    accessorKey: 'fhir_versions',
     header: 'FHIR Version',
     cell: ({ getValue }) => {
-      const ver = getValue() as string | null;
-      if (!ver) return <span style={{ color: 'var(--color-gray-light)' }}>—</span>;
-      return <Badge variant={ver.startsWith('4.0') ? 'fhir-r4' : 'fhir'}>{ver}</Badge>;
+      const versions = getValue() as string[] | null;
+      if (!versions || versions.length === 0) return <span style={{ color: 'var(--color-gray-light)' }}>—</span>;
+      return (
+        <div className="flex flex-wrap gap-1">
+          {versions.map((ver) => (
+            <Badge key={ver} variant={ver.startsWith('4.0') ? 'fhir-r4' : 'fhir'}>
+              {ver}
+            </Badge>
+          ))}
+        </div>
+      );
     },
   },
   {
