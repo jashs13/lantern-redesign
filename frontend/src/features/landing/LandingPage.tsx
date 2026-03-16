@@ -100,12 +100,12 @@ function HeroSection({ totalEndpoints }: { totalEndpoints: number }) {
         <h1
           className="font-serif font-bold"
           style={{
-            fontSize: 'clamp(2rem, 5vw, 3rem)',
+            fontSize: 'clamp(1.5rem, 3.5vw, 2rem)',
             lineHeight: 1.2,
             marginBottom: '1rem',
           }}
         >
-          Healthcare Data Exchange Transparency
+          National FHIR Endpoint <br /> Monitoring & Analytics
         </h1>
         <p
           className="mx-auto"
@@ -116,8 +116,8 @@ function HeroSection({ totalEndpoints }: { totalEndpoints: number }) {
             maxWidth: '650px',
           }}
         >
-          Explore performance, availability, and compliance data for FHIR endpoints across the
-          United States healthcare ecosystem.
+          Explore nationwide data on the availability, capabilities, and standardization of
+          FHIR API endpoints across the U.S. healthcare system.
         </p>
         <div
           className="inline-flex items-center gap-2 font-semibold"
