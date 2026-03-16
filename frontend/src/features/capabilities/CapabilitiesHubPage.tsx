@@ -5,8 +5,11 @@ import { fetchFieldValueMetrics } from '@/api/fields';
 import { fetchDashboardSummary } from '@/api/dashboard';
 import { fetchSecuritySummary } from '@/api/security';
 import { fetchSmartKPIMetrics } from '@/api/smart';
+import { fetchResourceStats } from '@/api/resources';
+import { fetchProfileStats } from '@/api/profiles';
+import { fetchIGStats } from '@/api/implementation';
 import { Breadcrumb } from '@/components/layout/Breadcrumb';
-import { ArrowRight, HelpCircle } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function CapabilitiesHubPage() {
   const { data: validationMetrics } = useQuery({
@@ -39,6 +42,24 @@ export default function CapabilitiesHubPage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: resourceStats } = useQuery({
+    queryKey: ['resourceStats'],
+    queryFn: () => fetchResourceStats(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: profileStats } = useQuery({
+    queryKey: ['profileStats'],
+    queryFn: () => fetchProfileStats(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: igStats } = useQuery({
+    queryKey: ['igStats'],
+    queryFn: () => fetchIGStats(),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const passRateStr = validationMetrics?.pass_rate != null ? `${validationMetrics.pass_rate}%` : '...';
   const totalRules = validationMetrics?.total_rules != null ? Math.round(validationMetrics.total_rules) : '...';
   const trackedFields = fieldMetrics?.fields_with_values != null ? Math.round(fieldMetrics.fields_with_values) : '...';
@@ -53,6 +74,11 @@ export default function CapabilitiesHubPage() {
   
   // Calculate SMART stats
   const smartSupportedStr = smartKPI?.well_known_supported != null ? smartKPI.well_known_supported.toLocaleString() : '...';
+
+  // Calculate distinct counts
+  const distinctResourcesStr = resourceStats?.distinct_resources != null ? resourceStats.distinct_resources.toLocaleString() : '...';
+  const distinctProfilesStr = profileStats?.distinct_profiles != null ? profileStats.distinct_profiles.toLocaleString() : '...';
+  const distinctIGsStr = igStats?.distinct_igs != null ? igStats.distinct_igs.toLocaleString() : '...';
 
   // Note: the backend returns 'indexed_endpoints' from dashboard api inside the totals object
   const totalEndpointsStr = dashboardSummary?.totals?.indexed_endpoints != null ? dashboardSummary.totals.indexed_endpoints.toLocaleString() : '...';
@@ -87,11 +113,11 @@ export default function CapabilitiesHubPage() {
             <div className="text-sm text-neutral-500 mt-1">Indexed Endpoints</div>
           </div>
           <div className="bg-white rounded-lg p-5 text-center shadow-md border-t-4 border-purple-500 flex flex-col justify-between">
-            <div className="text-[2rem] text-neutral-300 font-bold leading-tight flex justify-center"><HelpCircle size={36}/></div>
+            <div className="text-[2rem] font-bold text-navy-900 leading-tight">{distinctProfilesStr}</div>
             <div className="text-sm text-neutral-500 mt-1">Distinct Profiles</div>
           </div>
           <div className="bg-white rounded-lg p-5 text-center shadow-md border-t-4 border-yellow-500 flex flex-col justify-between">
-            <div className="text-[2rem] text-neutral-300 font-bold leading-tight flex justify-center"><HelpCircle size={36}/></div>
+            <div className="text-[2rem] font-bold text-navy-900 leading-tight">{distinctIGsStr}</div>
             <div className="text-sm text-neutral-500 mt-1">Implementation Guides</div>
           </div>
           <div className="bg-white rounded-lg p-5 text-center shadow-md border-t-4 border-green-500 flex flex-col justify-between">
@@ -132,15 +158,15 @@ export default function CapabilitiesHubPage() {
             </div>
             <div className="grid grid-cols-3 gap-px bg-neutral-200 mt-auto">
               <div className="bg-neutral-50 p-4 min-h-[100px] flex flex-col items-center justify-between text-center">
-                <div className="text-neutral-300 mt-1"><HelpCircle size={28}/></div>
+                <div className="text-[1.375rem] font-bold text-navy-900 leading-tight">{distinctResourcesStr}</div>
                 <div className="text-xs text-neutral-500">Resource Types</div>
               </div>
               <div className="bg-neutral-50 p-4 min-h-[100px] flex flex-col items-center justify-between text-center">
-                <div className="text-neutral-300 mt-1"><HelpCircle size={28}/></div>
+                <div className="text-[1.375rem] font-bold text-navy-900 leading-tight">{distinctIGsStr}</div>
                 <div className="text-xs text-neutral-500">IGs Reported</div>
               </div>
               <div className="bg-neutral-50 p-4 min-h-[100px] flex flex-col items-center justify-between text-center">
-                <div className="text-neutral-300 mt-1"><HelpCircle size={28}/></div>
+                <div className="text-[1.375rem] font-bold text-navy-900 leading-tight">{distinctProfilesStr}</div>
                 <div className="text-xs text-neutral-500">Profiles</div>
               </div>
             </div>

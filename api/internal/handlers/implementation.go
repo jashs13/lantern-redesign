@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strings"
@@ -101,6 +102,10 @@ func (h *Handler) IGStats(w http.ResponseWriter, r *http.Request) {
 		&stats.MostAdoptedPct,
 	)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			models.WriteJSON(w, http.StatusOK, stats)
+			return
+		}
 		log.Errorf("IGStats: %v", err)
 		models.WriteError(w, http.StatusInternalServerError, "internal server error")
 		return
@@ -115,6 +120,10 @@ func (h *Handler) GetCapStatStats(w http.ResponseWriter, r *http.Request) {
 		`SELECT avg_size, median_size, largest_size, smallest_size FROM mv_capstat_stats`).
 		Scan(&stats.AvgSize, &stats.MedianSize, &stats.LargestSize, &stats.SmallestSize)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			models.WriteJSON(w, http.StatusOK, stats)
+			return
+		}
 		log.Errorf("GetCapStatStats: %v", err)
 		models.WriteError(w, http.StatusInternalServerError, "failed to fetch capstat stats")
 		return
