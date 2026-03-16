@@ -11,13 +11,10 @@ const LandingPage = lazy(() => import('@/features/landing/LandingPage'));
 const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage'));
 const EndpointsPage = lazy(() => import('@/features/endpoints/EndpointsPage'));
 const OrganizationsPage = lazy(() => import('@/features/organizations/OrganizationsPage'));
-const ResourcesPage = lazy(() => import('@/features/resources/ResourcesPage'));
-const ImplementationGuidesPage = lazy(
-  () => import('@/features/implementation-guides/ImplementationGuidesPage'),
-);
 const FieldsPage = lazy(() => import('@/features/fields/FieldsPage'));
 const ProfilesPage = lazy(() => import('@/features/profiles/ProfilesPage'));
 const CapStatSizePage = lazy(() => import('@/features/capstat-size/CapStatSizePage'));
+const CapabilitiesResourcesPage = lazy(() => import('@/features/capabilities/CapabilitiesResourcesPage'));
 const ValidationsPage = lazy(() => import('@/features/validations/ValidationsPage'));
 const SecurityPage = lazy(() => import('@/features/security/SecurityPage'));
 const SmartResponsePage = lazy(() => import('@/features/smart-response/SmartResponsePage'));
@@ -29,7 +26,6 @@ const ConformanceValidationPage = lazy(() => import('@/features/conformance/Conf
 
 // Capabilities Hub Pages
 const CapabilitiesHubPage = lazy(() => import('@/features/capabilities/CapabilitiesHubPage'));
-const CapabilitiesResourcesPlaceholder = lazy(() => import('@/features/capabilities/CapabilitiesResourcesPlaceholder'));
 const SecuritySmartPlaceholder = lazy(() => import('@/features/capabilities/SecuritySmartPlaceholder'));
 
 export default function App() {
@@ -55,8 +51,6 @@ export default function App() {
               <Route path="dashboard" element={<Suspense fallback={<LoadingState />}><DashboardPage /></Suspense>} />
               <Route path="endpoints" element={<Suspense fallback={<LoadingState />}><EndpointsPage /></Suspense>} />
               <Route path="organizations" element={<Suspense fallback={<LoadingState />}><OrganizationsPage /></Suspense>} />
-              <Route path="resources" element={<Suspense fallback={<LoadingState />}><ResourcesPage /></Suspense>} />
-              <Route path="implementation-guides" element={<Suspense fallback={<LoadingState />}><ImplementationGuidesPage /></Suspense>} />
               <Route path="fields" element={<Suspense fallback={<LoadingState />}><FieldsPage /></Suspense>} />
               <Route path="profiles" element={<Suspense fallback={<LoadingState />}><ProfilesPage /></Suspense>} />
               <Route path="capstat-size" element={<Suspense fallback={<LoadingState />}><CapStatSizePage /></Suspense>} />
@@ -64,7 +58,7 @@ export default function App() {
               <Route path="conformance-validation" element={<Suspense fallback={<LoadingState />}><ConformanceValidationPage /></Suspense>} />
               
               <Route path="capabilities" element={<Suspense fallback={<LoadingState />}><CapabilitiesHubPage /></Suspense>} />
-              <Route path="capabilities/resources" element={<Suspense fallback={<LoadingState />}><CapabilitiesResourcesPlaceholder /></Suspense>} />
+              <Route path="capabilities/resources" element={<Suspense fallback={<LoadingState />}><CapabilitiesResourcesPage /></Suspense>} />
               <Route path="capabilities/security" element={<Suspense fallback={<LoadingState />}><SecuritySmartPlaceholder /></Suspense>} />
 
               <Route path="security" element={<Suspense fallback={<LoadingState />}><SecurityPage /></Suspense>} />

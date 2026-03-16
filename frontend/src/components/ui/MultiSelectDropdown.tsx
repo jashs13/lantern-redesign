@@ -39,7 +39,7 @@ export function MultiSelectDropdown({
   }
 
   const triggerLabel =
-    selected.length === 0 ? `All ${placeholder}` : `${selected.length} selected`;
+    selected.length === 0 ? placeholder : `${selected.length} selected`;
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>

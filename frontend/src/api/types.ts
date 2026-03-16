@@ -202,8 +202,27 @@ export interface SearchResult {
 
 export interface Resource {
   resource_type: string;
-  fhir_version: string;
+  fhir_versions: string[];
   endpoint_count: number;
+  read_search_count: number;
+  support_percent: number;
+  read_search_percent: number;
+  category: string;
+}
+
+export interface ResourceStats {
+  distinct_resources: number;
+  avg_per_endpoint: number;
+  most_supported_resource: string;
+  most_supported_percent: number;
+  uscdi_coverage_percent: number;
+}
+
+export interface ResourceOperationSupport {
+  resource_type: string;
+  operation: string;
+  endpoint_count: number;
+  support_percent: number;
 }
 
 // =============================================================================
@@ -267,6 +286,26 @@ export interface Profile {
   fhir_version: string | null;
 }
 
+export interface ProfileChartItem {
+  name: string;
+  profile_url: string;
+  endpoint_count: number;
+}
+
+export interface ProfileStats {
+  distinct_profiles: number;
+  us_core_profiles: number;
+  endpoints_with_profiles: number;
+  avg_profiles_per_endpoint: number;
+}
+
+export interface ProfileAdoptionItem {
+  profile_url: string;
+  profile_name: string;
+  endpoint_count: number;
+  adoption_pct: number;
+}
+
 // =============================================================================
 // CapStat Size
 // =============================================================================
@@ -281,6 +320,13 @@ export interface CapStatSize {
   count: number;
 }
 
+export interface CapStatStats {
+  avg_size: number;
+  median_size: number;
+  largest_size: number;
+  smallest_size: number;
+}
+
 // =============================================================================
 // Implementation Guides
 // =============================================================================
@@ -289,6 +335,16 @@ export interface ImplementationGuide {
   name: string;
   fhir_version: string;
   count: number;
+}
+
+export interface IGStats {
+  distinct_igs: number;
+  endpoints_with_igs: number;
+  endpoints_with_igs_pct: number;
+  avg_igs_per_endpoint: number;
+  most_adopted_name: string;
+  most_adopted_count: number;
+  most_adopted_pct: number;
 }
 
 // =============================================================================

@@ -2,6 +2,8 @@ import { apiClient } from './client';
 import type {
   CapStatSize,
   CapStatSizeQueryParams,
+  CapStatStats,
+  IGStats,
   ImplementationGuide,
   ImplementationGuideQueryParams,
   PaginatedResponse,
@@ -16,6 +18,14 @@ export async function fetchImplementationGuides(
     page: params?.page,
     page_size: params?.page_size,
   });
+}
+
+export async function fetchIGStats(): Promise<IGStats> {
+  return apiClient<IGStats>('/api/v1/implementation-guides/stats');
+}
+
+export async function fetchCapStatStats(): Promise<CapStatStats> {
+  return apiClient<CapStatStats>('/api/v1/capstat-sizes/stats');
 }
 
 export async function fetchCapStatSizes(

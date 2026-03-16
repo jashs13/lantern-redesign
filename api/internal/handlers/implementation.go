@@ -88,6 +88,40 @@ func (h *Handler) ImplementationGuides(w http.ResponseWriter, r *http.Request) {
 	models.WriteJSON(w, http.StatusOK, resp)
 }
 
+// IGStats returns aggregate statistics from mv_implementation_guide_stats.
+func (h *Handler) IGStats(w http.ResponseWriter, r *http.Request) {
+	var stats models.IGStats
+	err := h.db.QueryRow(`
+		SELECT distinct_igs, endpoints_with_igs, endpoints_with_igs_pct,
+		       avg_igs_per_endpoint, most_adopted_name, most_adopted_count, most_adopted_pct
+		FROM mv_implementation_guide_stats
+	`).Scan(
+		&stats.DistinctIGs, &stats.EndpointsWithIGs, &stats.EndpointsWithIGsPct,
+		&stats.AvgIGsPerEndpoint, &stats.MostAdoptedName, &stats.MostAdoptedCount,
+		&stats.MostAdoptedPct,
+	)
+	if err != nil {
+		log.Errorf("IGStats: %v", err)
+		models.WriteError(w, http.StatusInternalServerError, "internal server error")
+		return
+	}
+	models.WriteJSON(w, http.StatusOK, stats)
+}
+
+// GetCapStatStats returns aggregate statistics from mv_capstat_stats.
+func (h *Handler) GetCapStatStats(w http.ResponseWriter, r *http.Request) {
+	var stats models.CapStatStats
+	err := h.db.QueryRowContext(r.Context(),
+		`SELECT avg_size, median_size, largest_size, smallest_size FROM mv_capstat_stats`).
+		Scan(&stats.AvgSize, &stats.MedianSize, &stats.LargestSize, &stats.SmallestSize)
+	if err != nil {
+		log.Errorf("GetCapStatStats: %v", err)
+		models.WriteError(w, http.StatusInternalServerError, "failed to fetch capstat stats")
+		return
+	}
+	models.WriteJSON(w, http.StatusOK, stats)
+}
+
 // CapStatSizes returns capability statement size statistics.
 func (h *Handler) CapStatSizes(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
