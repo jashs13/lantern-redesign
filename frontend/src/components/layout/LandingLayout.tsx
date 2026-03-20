@@ -1,16 +1,18 @@
 import { Outlet } from 'react-router-dom';
-import { TopNav } from './TopNav';
+import { HeaderBar } from './HeaderBar';
+import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 
 /**
  * Layout for the landing page — full-width content area (hero spans edge to edge).
- * No breadcrumbs or page header.
+ * Sidebar is available via toggle but content is always full-width.
  */
 export function LandingLayout() {
   return (
     <div className="flex min-h-screen flex-col">
-      <TopNav />
-      <main className="flex-1">
+      <HeaderBar />
+      <Sidebar />
+      <main className="flex-1 pt-14">
         <Outlet />
       </main>
       <Footer />

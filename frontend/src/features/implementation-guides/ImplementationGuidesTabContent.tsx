@@ -117,7 +117,6 @@ export default function ImplementationGuidesTabContent({ asTab = false }: { asTa
 
   return (
     <div className="space-y-6">
-      <IGStatsCards />
       {!asTab && (
         <PageHeader
           title="Implementation Guides"
@@ -125,6 +124,7 @@ export default function ImplementationGuidesTabContent({ asTab = false }: { asTa
           breadcrumbs={[{ label: 'Implementation Guides' }]}
         />
       )}
+      <IGStatsCards />
 
       <section
         className="rounded-md bg-white"

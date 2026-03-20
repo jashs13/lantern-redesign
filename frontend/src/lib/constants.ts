@@ -4,47 +4,64 @@ export interface NavItem {
   icon?: string;
 }
 
-/**
- * Top navigation bar — primary links always visible.
- */
-export const TOP_NAV_ITEMS: NavItem[] = [
-  { label: 'Home', path: '/' },
-  { label: 'Dashboard', path: '/dashboard' },
-  { label: 'Endpoints', path: '/endpoints' },
-  { label: 'Organizations', path: '/organizations' },
-];
+export interface NavSection {
+  label?: string;
+  items: NavItem[];
+}
 
 /**
- * Legacy page links — shown in the "Legacy" dropdown.
+ * Sidebar navigation sections — grouped links for the left sidebar.
  */
-export const LEGACY_NAV_ITEMS: NavItem[] = [
-  { label: 'Resources', path: '/resources' },
-  { label: 'Implementation Guides', path: '/implementation-guides' },
-  { label: 'Fields', path: '/fields' },
-  { label: 'Profiles', path: '/profiles' },
-  { label: 'CapStat Size', path: '/capstat-size' },
-  { label: 'Validations', path: '/validations' },
-  { label: 'Security', path: '/security' },
-  { label: 'SMART Response', path: '/smart-response' },
-];
-
-/**
- * Overflow items — shown in the "More" dropdown.
- */
-export const MORE_NAV_ITEMS: NavItem[] = [
-  { label: 'Contacts', path: '/contacts' },
-  { label: 'Downloads/API', path: '/downloads' },
+export const SIDEBAR_NAV_SECTIONS: NavSection[] = [
+  {
+    items: [
+      { label: 'Dashboard', path: '/dashboard' },
+      { label: 'Endpoints', path: '/endpoints' },
+      { label: 'Organizations', path: '/organizations' },
+    ],
+  },
+  {
+    label: 'Capabilities',
+    items: [
+      { label: 'Resources', path: '/resources' },
+      { label: 'Implementation Guides', path: '/implementation-guides' },
+      { label: 'Profiles', path: '/profiles' },
+      { label: 'CapStat Size', path: '/capstat-size' },
+    ],
+  },
+  {
+    label: 'Conformance',
+    items: [
+      { label: 'CapStat Fields', path: '/capstat-fields' },
+      { label: 'CapStat Values', path: '/capstat-values' },
+      { label: 'Validations', path: '/validations' },
+    ],
+  },
+  {
+    label: 'Security',
+    items: [
+      { label: 'Security', path: '/security' },
+      { label: 'SMART Response', path: '/smart-response' },
+    ],
+  },
+  {
+    items: [
+      { label: 'Contacts', path: '/contacts' },
+      { label: 'Downloads/API', path: '/downloads' },
+      { label: 'About', path: '/about' },
+    ],
+  },
 ];
 
 /**
  * All navigation items combined (for breadcrumb / title lookups).
  */
 export const ALL_NAV_ITEMS: NavItem[] = [
-  ...TOP_NAV_ITEMS,
+  { label: 'Home', path: '/' },
+  ...SIDEBAR_NAV_SECTIONS.flatMap((section) => section.items),
   { label: 'Capabilities', path: '/capabilities' },
-  ...LEGACY_NAV_ITEMS,
-  ...MORE_NAV_ITEMS,
-  { label: 'About', path: '/about' },
+  { label: 'Conformance & Validation', path: '/conformance-validation' },
+  { label: 'Search', path: '/search' },
 ];
 
 /* ========================================================================== */
