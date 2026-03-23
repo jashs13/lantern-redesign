@@ -24,6 +24,7 @@ export interface DashboardSummary {
   vendor_counts: VendorFHIRCount[];
   http_codes: HTTPCodeCount[];
   top_organizations?: string[];
+  dev_summary?: DevSummary[];
 }
 
 export interface EndpointTotals {
@@ -52,6 +53,20 @@ export interface HTTPCodeCount {
   http_code: number;
   code_label: string;
   count_endpoints: number;
+}
+
+export interface DevSummary {
+  vendor_name: string;
+  endpoint_count: number;
+  org_count: number;
+  available_count: number;
+  degraded_count: number;
+  down_count: number;
+  available_pct: number;
+  degraded_pct: number;
+  down_pct: number;
+  avg_response_time_ms: number;
+  sort_order: number;
 }
 
 // =============================================================================

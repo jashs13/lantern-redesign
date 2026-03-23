@@ -293,4 +293,25 @@ docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE UNIQUE INDEX 
     echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to create idx_smart_sankey_mv." >> $log_file
 }
 
+# Refresh mv_dashboard_dev_summary
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "REFRESH MATERIALIZED VIEW CONCURRENTLY mv_dashboard_dev_summary;" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to refresh mv_dashboard_dev_summary." >> $log_file
+}
+
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "DROP INDEX IF EXISTS idx_mv_dashboard_dev_summary_vendor;" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to drop idx_mv_dashboard_dev_summary_vendor." >> $log_file
+}
+
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE UNIQUE INDEX idx_mv_dashboard_dev_summary_vendor ON mv_dashboard_dev_summary(vendor_name);" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to create idx_mv_dashboard_dev_summary_vendor." >> $log_file
+}
+
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "DROP INDEX IF EXISTS idx_mv_dashboard_dev_summary_sort;" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to drop idx_mv_dashboard_dev_summary_sort." >> $log_file
+}
+
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE INDEX idx_mv_dashboard_dev_summary_sort ON mv_dashboard_dev_summary(sort_order);" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to create idx_mv_dashboard_dev_summary_sort." >> $log_file
+}
+
 echo "$(date +"%Y-%m-%d %H:%M:%S") - done." >> $log_file

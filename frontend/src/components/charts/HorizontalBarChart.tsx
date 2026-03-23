@@ -70,6 +70,7 @@ export function HorizontalBarChart({
           dataKey="name"
           tick={<SuffixYAxisTick />}
           width={170}
+          interval={0}
         />
         <Tooltip
           formatter={

@@ -130,5 +130,35 @@ func (h *Handler) DashboardSummary(w http.ResponseWriter, r *http.Request) {
 		summary.TopOrganizations = []string{}
 	}
 
+	// 6. Developer summary (from mv_dashboard_dev_summary)
+	devRows, err := h.db.QueryContext(ctx,
+		`SELECT vendor_name, endpoint_count, org_count,
+		        available_count, degraded_count, down_count,
+		        available_pct, degraded_pct, down_pct,
+		        avg_response_time_ms, sort_order
+		 FROM mv_dashboard_dev_summary
+		 ORDER BY sort_order, vendor_name`)
+	if err != nil {
+		log.WithError(err).Warn("querying developer summary")
+	} else {
+		defer devRows.Close()
+		for devRows.Next() {
+			var ds models.DevSummary
+			if err := devRows.Scan(
+				&ds.VendorName, &ds.EndpointCount, &ds.OrgCount,
+				&ds.AvailableCount, &ds.DegradedCount, &ds.DownCount,
+				&ds.AvailablePct, &ds.DegradedPct, &ds.DownPct,
+				&ds.AvgResponseTime, &ds.SortOrder,
+			); err != nil {
+				log.WithError(err).Error("scanning dev summary row")
+				continue
+			}
+			summary.DevSummary = append(summary.DevSummary, ds)
+		}
+	}
+	if summary.DevSummary == nil {
+		summary.DevSummary = []models.DevSummary{}
+	}
+
 	models.WriteJSON(w, http.StatusOK, summary)
 }

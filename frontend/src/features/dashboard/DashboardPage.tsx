@@ -62,13 +62,6 @@ const PLACEHOLDER_RESPONSE_TIME_30D = DATES_30.map((date, i) => ({
   ms: 220 + Math.sin(i * 0.5) * 60 + Math.random() * 40,
 }));
 
-const PLACEHOLDER_FHIR_VERSIONS = [
-  { version: 'DSTU2', count: 1200 },
-  { version: 'STU3', count: 3500 },
-  { version: 'R4', count: 58000 },
-  { version: 'R4B', count: 800 },
-  { version: 'R5', count: 200 },
-];
 
 const PLACEHOLDER_CODE_TRENDS = DATES_30.map((date, i) => ({
   date,
@@ -84,25 +77,6 @@ const PLACEHOLDER_VERSION_TRENDS = MONTHS_12.map((month, i) => ({
   STU3: 8500 - i * 200 + Math.round(Math.random() * 300),
 }));
 
-const PLACEHOLDER_DEVELOPERS = [
-  { name: 'Epic Systems', value: 25400 },
-  { name: 'Oracle Health', value: 14200 },
-  { name: 'Veradigm', value: 4100 },
-  { name: 'athenahealth', value: 3800 },
-  { name: 'eClinicalWorks', value: 2950 },
-  { name: 'MEDITECH', value: 2100 },
-  { name: 'NextGen', value: 1400 },
-  { name: 'ModMed', value: 870 },
-];
-
-const PLACEHOLDER_DEV_TABLE = [
-  { name: 'Epic Systems Corporation', endpoints: 37842, orgs: 98412, available: 98.5, degraded: 1.0, down: 0.5, availability: 99.7, status: 'Complete' },
-  { name: 'Oracle Health (Cerner)', endpoints: 14567, orgs: 42318, available: 97, degraded: 2, down: 1, availability: 99.4, status: 'Complete' },
-  { name: 'Veradigm (Allscripts)', endpoints: 4231, orgs: 15847, available: 95, degraded: 3, down: 2, availability: 98.6, status: 'Complete' },
-  { name: 'athenahealth', endpoints: 3856, orgs: 12934, available: 96, degraded: 2.5, down: 1.5, availability: 99.1, status: 'Complete' },
-  { name: 'eClinicalWorks', endpoints: 2987, orgs: 8234, available: 93, degraded: 4, down: 3, availability: 97.8, status: 'Complete' },
-  { name: 'MEDITECH', endpoints: 2134, orgs: 6421, available: 97.5, degraded: 1.5, down: 1, availability: 99.3, status: 'Complete' },
-];
 
 /* ========================================================================== */
 /* Inline helper components                                                    */
@@ -219,6 +193,24 @@ export default function DashboardPage() {
       label: c.http_code === 0 ? 'N/A' : `${c.http_code} ${c.code_label || ''}`.trim(),
       count: c.count_endpoints,
       code: c.http_code,
+    }));
+
+  // Aggregate vendor_counts by fhir_version for the version chart
+  const versionMap = new Map<string, number>();
+  (data.vendor_counts || []).forEach((vc) => {
+    versionMap.set(vc.fhir_version, (versionMap.get(vc.fhir_version) || 0) + vc.count);
+  });
+  const fhirVersionData = Array.from(versionMap.entries())
+    .map(([version, count]) => ({ version, count }))
+    .sort((a, b) => b.count - a.count);
+
+  // Developer bar chart + table data from real API
+  const devSummary = data.dev_summary || [];
+  const devBarData = devSummary
+    .slice(0, 10)
+    .map((d) => ({
+      name: d.vendor_name,
+      value: d.endpoint_count,
     }));
 
   return (
@@ -377,14 +369,13 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Endpoints by FHIR Version — placeholder */}
+        {/* Endpoints by FHIR Version — real data */}
         <ChartCard
           title="Endpoints by FHIR Version"
           subtitle="Specification version distribution"
-          placeholder
         >
           <BarChart
-            data={PLACEHOLDER_FHIR_VERSIONS}
+            data={fhirVersionData}
             xKey="version"
             yKey="count"
             color={NAVY_COLORS.primary}
@@ -442,9 +433,8 @@ export default function DashboardPage() {
       <ChartCard
         title="Endpoints by Certified API Developer"
         subtitle="Top developers by total endpoints indexed"
-        placeholder
       >
-        <HorizontalBarChart data={PLACEHOLDER_DEVELOPERS} height={280} />
+        <HorizontalBarChart data={devBarData} height={280} />
       </ChartCard>
 
       {/* Developer toolbar (non-functional) */}
@@ -478,10 +468,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="text-sm text-neutral-500">
-        Showing <strong className="text-neutral-700">6</strong> of 214 developers
-        <span className="ml-3 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
-          Sample Data
-        </span>
+        Showing <strong className="text-neutral-700">{devSummary.length}</strong> developers
       </div>
 
       {/* Developer comparison table */}
@@ -494,58 +481,41 @@ export default function DashboardPage() {
                 <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider">Endpoints</th>
                 <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider">Organizations</th>
                 <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Endpoint Health</th>
-                <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider">Avg Availability</th>
-                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider">Publication Status</th>
+                <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider">Avg Response Time</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
-              {PLACEHOLDER_DEV_TABLE.map((dev, idx) => (
-                <tr key={dev.name} className={idx % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
-                  <td className="px-4 py-3 font-bold text-navy-700">{dev.name}</td>
+              {devSummary.map((dev, idx) => (
+                <tr key={dev.vendor_name} className={idx % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
+                  <td className="px-4 py-3 font-bold text-navy-700">{dev.vendor_name}</td>
                   <td className="px-4 py-3 text-right font-mono font-semibold text-neutral-700">
-                    {formatNumber(dev.endpoints)}
+                    {formatNumber(dev.endpoint_count)}
                   </td>
                   <td className="px-4 py-3 text-right font-mono font-semibold text-neutral-700">
-                    {formatNumber(dev.orgs)}
+                    {formatNumber(dev.org_count)}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div className="flex h-2.5 w-24 overflow-hidden rounded-full">
                         <div
                           className="h-full"
-                          style={{ width: `${dev.available}%`, backgroundColor: STATUS_COLORS.available }}
+                          style={{ width: `${dev.available_pct}%`, backgroundColor: STATUS_COLORS.available }}
                         />
                         <div
                           className="h-full"
-                          style={{ width: `${dev.degraded}%`, backgroundColor: STATUS_COLORS.degraded }}
+                          style={{ width: `${dev.degraded_pct}%`, backgroundColor: STATUS_COLORS.degraded }}
                         />
                         <div
                           className="h-full"
-                          style={{ width: `${dev.down}%`, backgroundColor: STATUS_COLORS.down }}
+                          style={{ width: `${dev.down_pct}%`, backgroundColor: STATUS_COLORS.down }}
                         />
                       </div>
-                      <span className="text-xs text-neutral-400">{dev.available}%</span>
+                      <span className="text-xs text-neutral-400">{dev.available_pct}%</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span
-                      className="font-mono font-semibold"
-                      style={{
-                        color:
-                          dev.availability >= 99
-                            ? STATUS_COLORS.available
-                            : dev.availability >= 98
-                              ? NAVY_COLORS.primary
-                              : STATUS_COLORS.degraded,
-                      }}
-                    >
-                      {dev.availability}%
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700">
-                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                      {dev.status}
+                    <span className="font-mono font-semibold text-neutral-700">
+                      {formatNumber(dev.avg_response_time_ms)}ms
                     </span>
                   </td>
                 </tr>
