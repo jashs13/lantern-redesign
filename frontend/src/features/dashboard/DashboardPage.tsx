@@ -247,8 +247,12 @@ export default function DashboardPage() {
 
   function exportDevCsv() {
     const headers = ['Developer Name', 'Endpoints', 'Organizations', 'Available %', 'Degraded %', 'Down %', 'Avg Response Time (ms)'];
+    const csvField = (v: string | number) => {
+      const s = String(v);
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
+    };
     const rows = filteredDevs.map((d) =>
-      [d.vendor_name, d.endpoint_count, d.org_count, d.available_pct, d.degraded_pct, d.down_pct, d.avg_response_time_ms].join(',')
+      [d.vendor_name, d.endpoint_count, d.org_count, d.available_pct, d.degraded_pct, d.down_pct, d.avg_response_time_ms].map(csvField).join(',')
     );
     const csv = [headers.join(','), ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
