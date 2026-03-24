@@ -206,9 +206,13 @@ export default function EndpointsPage() {
 
   if (error) return <ErrorState message={error.message} onRetry={() => refetch()} />;
 
-  const totalEndpoints = summary?.totals?.all_endpoints ?? 0;
   const availableCount = summary?.response_tally?.http_200 ?? 0;
-  const unavailableCount = totalEndpoints - availableCount;
+  const httpCodes = summary?.http_codes ?? [];
+  let unavailableCount = 0;
+  httpCodes.forEach((c) => {
+    const code = c.http_code;
+    if (code >= 300 || code === 0) unavailableCount += c.count_endpoints;
+  });
 
   const hasActiveFilters = filters.fhirVersions.length > 0 || highUptimeOnly || !!search || !!vendor || !!filters.source;
 
@@ -232,7 +236,7 @@ export default function EndpointsPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <KpiCard label="Available" value={availableCount} borderColor="#2e8540" icon={<CheckCircle size={18} />} />
-        <KpiCard label="Down" value={unavailableCount} borderColor="#e31c3d" icon={<XCircle size={18} />} />
+        <KpiCard label="Unavailable" value={unavailableCount} borderColor="#e31c3d" icon={<XCircle size={18} />} />
         <KpiCard label="Avg Response" value="342ms" borderColor="#205493" icon={<Clock size={18} />} />
         <KpiCard label="Network Uptime" value="97.4%" borderColor="#02bfe7" icon={<Activity size={18} />} />
       </div>
