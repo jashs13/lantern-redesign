@@ -25,6 +25,7 @@ export interface DashboardSummary {
   http_codes: HTTPCodeCount[];
   top_organizations?: string[];
   dev_summary?: DevSummary[];
+  daily_stats?: DailyStats[];
 }
 
 export interface EndpointTotals {
@@ -67,6 +68,18 @@ export interface DevSummary {
   down_pct: number;
   avg_response_time_ms: number;
   sort_order: number;
+}
+
+export interface DailyStats {
+  stat_date: string;
+  total_queries: number;
+  http_2xx: number;
+  http_3xx: number;
+  http_4xx: number;
+  http_5xx: number;
+  http_timeout: number;
+  available_pct: number;
+  avg_response_time_ms: number;
 }
 
 // =============================================================================

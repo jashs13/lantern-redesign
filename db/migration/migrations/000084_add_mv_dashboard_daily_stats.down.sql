@@ -1,0 +1,5 @@
+BEGIN;
+
+DROP MATERIALIZED VIEW IF EXISTS mv_dashboard_daily_stats;
+
+COMMIT;

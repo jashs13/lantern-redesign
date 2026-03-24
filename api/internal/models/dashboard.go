@@ -8,6 +8,7 @@ type DashboardSummary struct {
 	HTTPCodes        []HTTPCodeCount   `json:"http_codes"`
 	TopOrganizations []string          `json:"top_organizations"`
 	DevSummary       []DevSummary      `json:"dev_summary"`
+	DailyStats       []DailyStats      `json:"daily_stats"`
 }
 
 // EndpointTotals from mv_endpoint_totals.
@@ -55,4 +56,17 @@ type DevSummary struct {
 	DownPct         float64 `json:"down_pct"`
 	AvgResponseTime int     `json:"avg_response_time_ms"`
 	SortOrder       int     `json:"sort_order"`
+}
+
+// DailyStats from mv_dashboard_daily_stats.
+type DailyStats struct {
+	StatDate          string  `json:"stat_date"`
+	TotalQueries      int     `json:"total_queries"`
+	HTTP2xx           int     `json:"http_2xx"`
+	HTTP3xx           int     `json:"http_3xx"`
+	HTTP4xx           int     `json:"http_4xx"`
+	HTTP5xx           int     `json:"http_5xx"`
+	HTTPTimeout       int     `json:"http_timeout"`
+	AvailablePct      float64 `json:"available_pct"`
+	AvgResponseTimeMs float64 `json:"avg_response_time_ms"`
 }

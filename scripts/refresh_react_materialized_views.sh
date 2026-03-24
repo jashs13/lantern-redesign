@@ -314,4 +314,17 @@ docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE INDEX idx_mv_
     echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to create idx_mv_dashboard_dev_summary_sort." >> $log_file
 }
 
+# Refresh mv_dashboard_daily_stats
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "REFRESH MATERIALIZED VIEW CONCURRENTLY mv_dashboard_daily_stats;" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to refresh mv_dashboard_daily_stats." >> $log_file
+}
+
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "DROP INDEX IF EXISTS idx_mv_dashboard_daily_stats_date;" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to drop idx_mv_dashboard_daily_stats_date." >> $log_file
+}
+
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE UNIQUE INDEX idx_mv_dashboard_daily_stats_date ON mv_dashboard_daily_stats(stat_date);" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to create idx_mv_dashboard_daily_stats_date." >> $log_file
+}
+
 echo "$(date +"%Y-%m-%d %H:%M:%S") - done." >> $log_file

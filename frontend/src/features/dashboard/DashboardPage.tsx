@@ -40,48 +40,6 @@ import {
 } from 'recharts';
 import { BarChart } from '@/components/charts/BarChart';
 
-/* ========================================================================== */
-/* Placeholder data constants                                                  */
-/* ========================================================================== */
-
-function generateDates(days: number): string[] {
-  const dates: string[] = [];
-  const now = new Date();
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    dates.push(`${d.getMonth() + 1}/${d.getDate()}`);
-  }
-  return dates;
-}
-
-const DATES_30 = generateDates(30);
-
-const PLACEHOLDER_AVAILABILITY_30D = DATES_30.map((date, i) => ({
-  date,
-  availability: 96.5 + Math.sin(i * 0.4) * 1.2 + Math.random() * 0.8,
-}));
-
-const PLACEHOLDER_RESPONSE_TIME_30D = DATES_30.map((date, i) => ({
-  date,
-  ms: 220 + Math.sin(i * 0.5) * 60 + Math.random() * 40,
-}));
-
-
-const PLACEHOLDER_CODE_TRENDS = DATES_30.map((date, i) => ({
-  date,
-  '2xx': 58000 + Math.sin(i * 0.3) * 1500 + Math.round(Math.random() * 500),
-  '4xx': 2200 + Math.sin(i * 0.5) * 400 + Math.round(Math.random() * 200),
-  '5xx': 800 + Math.sin(i * 0.4) * 200 + Math.round(Math.random() * 100),
-}));
-
-const MONTHS_12 = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
-const PLACEHOLDER_VERSION_TRENDS = MONTHS_12.map((month, i) => ({
-  month,
-  R4: 48000 + i * 900 + Math.round(Math.random() * 500),
-  STU3: 8500 - i * 200 + Math.round(Math.random() * 300),
-}));
-
 
 /* ========================================================================== */
 /* Inline helper components                                                    */
@@ -100,13 +58,11 @@ function ChartCard({
   title,
   subtitle,
   children,
-  placeholder,
   headerRight,
 }: {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
-  placeholder?: boolean;
   headerRight?: React.ReactNode;
 }) {
   return (
@@ -116,14 +72,11 @@ function ChartCard({
           <h3 className="font-serif text-base font-bold text-navy-900">{title}</h3>
           {subtitle && <p className="text-sm text-neutral-500">{subtitle}</p>}
         </div>
-        <div className="flex items-center gap-2">
-          {placeholder && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
-              Sample Data
-            </span>
-          )}
-          {headerRight}
-        </div>
+        {headerRight && (
+          <div className="flex items-center gap-2">
+            {headerRight}
+          </div>
+        )}
       </div>
       {children}
     </div>
@@ -157,6 +110,9 @@ export default function DashboardPage() {
         vendor: filters.vendor ?? undefined,
       }),
   });
+
+  // Availability chart time range toggle
+  const [availabilityRange, setAvailabilityRange] = useState<'30' | '90' | '365'>('30');
 
   // Developer table: search, sort, pagination (all client-side)
   // Hooks must be called before any early returns
@@ -246,6 +202,18 @@ export default function DashboardPage() {
       name: d.vendor_name,
       value: d.endpoint_count,
     }));
+
+  // Daily stats for historical trend charts
+  const allDailyStats = (data.daily_stats || []).map((d) => ({
+    date: d.stat_date.slice(5), // "MM-DD"
+    available_pct: d.available_pct,
+    avg_response_time_ms: d.avg_response_time_ms,
+    http_2xx: d.http_2xx,
+    http_4xx: d.http_4xx,
+    http_5xx: d.http_5xx + d.http_timeout,
+  }));
+  const availabilityData = allDailyStats.slice(-Number(availabilityRange));
+  const trendData = allDailyStats.slice(-30);
 
   // Sort column helpers
   function toggleDevSort(col: string) {
@@ -347,24 +315,24 @@ export default function DashboardPage() {
       <SectionDivider title="Availability & Performance" />
 
       <ChartCard
-        title="Endpoint Availability — Last 30 Days"
+        title={`Endpoint Availability — Last ${availabilityRange === '365' ? '12 Months' : availabilityRange === '90' ? '90 Days' : '30 Days'}`}
         subtitle="Percentage of endpoints returning a successful response each day"
-        placeholder
         headerRight={
           <select
+            value={availabilityRange}
+            onChange={(e) => setAvailabilityRange(e.target.value as '30' | '90' | '365')}
             className="rounded border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-600"
-            disabled
           >
-            <option>Last 30 days</option>
-            <option>Last 90 days</option>
-            <option>Last 12 months</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="365">Last 12 months</option>
           </select>
         }
       >
         <TimeSeriesChart
-          data={PLACEHOLDER_AVAILABILITY_30D}
+          data={availabilityData}
           xKey="date"
-          yKey="availability"
+          yKey="available_pct"
           color={STATUS_COLORS.available}
           height={300}
         />
@@ -374,12 +342,11 @@ export default function DashboardPage() {
         <ChartCard
           title="Avg Response Time — 30 Days"
           subtitle="Milliseconds (lower is better)"
-          placeholder
         >
           <TimeSeriesChart
-            data={PLACEHOLDER_RESPONSE_TIME_30D}
+            data={trendData}
             xKey="date"
-            yKey="ms"
+            yKey="avg_response_time_ms"
             color={NAVY_COLORS.primary}
             height={220}
           />
@@ -463,46 +430,24 @@ export default function DashboardPage() {
         </ChartCard>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Response Code Trends — placeholder */}
-        <ChartCard
-          title="Response Code Trends — 30 Days"
-          subtitle="Daily breakdown of 2xx, 4xx, and 5xx"
-          placeholder
-        >
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={PLACEHOLDER_CODE_TRENDS} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
-              <Tooltip formatter={(value: number) => formatNumber(value)} />
-              <Legend />
-              <Line type="monotone" dataKey="2xx" stroke={HTTP_STATUS_COLORS['2xx'].color} strokeWidth={2} dot={false} name="2xx Success" />
-              <Line type="monotone" dataKey="4xx" stroke={HTTP_STATUS_COLORS['4xx'].color} strokeWidth={2} dot={false} name="4xx Client" />
-              <Line type="monotone" dataKey="5xx" stroke={HTTP_STATUS_COLORS['5xx'].color} strokeWidth={2} dot={false} name="5xx Server" />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        {/* FHIR Version Adoption Over Time — placeholder */}
-        <ChartCard
-          title="FHIR Version Adoption Over Time"
-          subtitle="Monthly R4 vs STU3 endpoint counts"
-          placeholder
-        >
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={PLACEHOLDER_VERSION_TRENDS} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
-              <Tooltip formatter={(value: number) => formatNumber(value)} />
-              <Legend />
-              <Line type="monotone" dataKey="R4" stroke="#02bfe7" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="STU3" stroke="#8b5cf6" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
+      {/* Response Code Trends — real data */}
+      <ChartCard
+        title="Response Code Trends — 30 Days"
+        subtitle="Daily breakdown of 2xx, 4xx, and 5xx"
+      >
+        <ResponsiveContainer width="100%" height={220}>
+          <LineChart data={trendData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+            <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
+            <Tooltip formatter={(value: number) => formatNumber(value)} />
+            <Legend />
+            <Line type="monotone" dataKey="http_2xx" stroke={HTTP_STATUS_COLORS['2xx'].color} strokeWidth={2} dot={false} name="2xx Success" />
+            <Line type="monotone" dataKey="http_4xx" stroke={HTTP_STATUS_COLORS['4xx'].color} strokeWidth={2} dot={false} name="4xx Client" />
+            <Line type="monotone" dataKey="http_5xx" stroke={HTTP_STATUS_COLORS['5xx'].color} strokeWidth={2} dot={false} name="5xx Server / Timeout" />
+          </LineChart>
+        </ResponsiveContainer>
+      </ChartCard>
 
       {/* ================================================================== */}
       {/* Section 3: Developer Comparison                                      */}
