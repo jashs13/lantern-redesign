@@ -149,7 +149,7 @@ export default function DashboardPage() {
   if (!data) return null;
 
   const totalEndpoints = data.totals.all_endpoints;
-  const availableCount = data.response_tally.http_200;
+  const indexedEndpoints = data.totals.indexed_endpoints;
 
   // Build HTTP code distribution from data
   const httpCodes = data.http_codes || [];
@@ -165,6 +165,7 @@ export default function DashboardPage() {
     else codeGroups['timeout'] += c.count_endpoints;
   });
 
+  const availableCount = codeGroups['2xx'];
   const degradedCount = codeGroups['3xx'] + codeGroups['4xx'];
   const downCount = codeGroups['5xx'] + codeGroups['timeout'];
 
@@ -280,12 +281,18 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <KpiCard
           label="Total Endpoints"
           value={totalEndpoints}
           borderColor="#205493"
           icon={<Server size={20} />}
+        />
+        <KpiCard
+          label="Indexed Endpoints"
+          value={indexedEndpoints}
+          borderColor="#02bfe7"
+          icon={<Search size={20} />}
         />
         <KpiCard
           label="Available"

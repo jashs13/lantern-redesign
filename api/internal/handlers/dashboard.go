@@ -37,9 +37,12 @@ func (h *Handler) DashboardSummary(w http.ResponseWriter, r *http.Request) {
 		log.WithError(err).Warn("querying organizations count")
 	}
 
-	// 1b. Average response time — read from precomputed MV (live AVG over 31.5M rows takes 58s)
+	// 1b. Average response time — most recent day from daily stats (same filters as historical chart)
 	err = h.db.QueryRowContext(ctx,
-		`SELECT COALESCE(avg_response_time, 0) FROM mv_avg_response_time LIMIT 1`).Scan(&summary.Totals.AvgResponseTime)
+		`SELECT COALESCE(avg_response_time_ms / 1000.0, 0)
+		 FROM mv_dashboard_daily_stats
+		 ORDER BY stat_date DESC
+		 LIMIT 1`).Scan(&summary.Totals.AvgResponseTime)
 	if err != nil {
 		log.WithError(err).Warn("querying average response time")
 	}
