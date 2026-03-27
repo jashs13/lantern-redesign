@@ -32,6 +32,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  LabelList,
   PieChart,
   Pie,
   LineChart,
@@ -92,7 +93,7 @@ function httpCodeColor(code: number): string {
   if (code >= 300 && code < 400) return HTTP_STATUS_COLORS['3xx'].color;
   if (code >= 400 && code < 500) return HTTP_STATUS_COLORS['4xx'].color;
   if (code >= 500 && code < 600) return HTTP_STATUS_COLORS['5xx'].color;
-  return HTTP_STATUS_COLORS.timeout.color;
+  return HTTP_STATUS_COLORS['5xx'].color;
 }
 
 /* ========================================================================== */
@@ -176,13 +177,12 @@ export default function DashboardPage() {
     { name: 'Down', value: downCount, color: STATUS_COLORS.down },
   ];
 
-  // Prepare HTTP code bar chart data (real data)
-  const httpBarData = httpCodes
-    .filter((c) => c.count_endpoints > 0)
+  // Prepare HTTP error/timeout bar chart data (success covered by KPI + donut)
+  const errorBarData = httpCodes
+    .filter((c) => c.count_endpoints > 0 && (c.http_code < 200 || c.http_code >= 300))
     .sort((a, b) => b.count_endpoints - a.count_endpoints)
-    .slice(0, 8)
     .map((c) => ({
-      label: c.http_code === 0 ? 'N/A' : `${c.http_code} ${c.code_label || ''}`.trim(),
+      label: c.http_code === 0 ? '0 Timeout' : `${c.http_code} ${c.code_label || ''}`.trim(),
       count: c.count_endpoints,
       code: c.http_code,
     }));
@@ -406,27 +406,26 @@ export default function DashboardPage() {
       <SectionDivider title="Response Codes & FHIR Versions" />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* HTTP Response Code Distribution — REAL DATA */}
         <ChartCard
-          title="HTTP Response Code Distribution"
-          subtitle="Current response codes from all endpoints"
+          title="HTTP Error & Timeout Distribution"
+          subtitle="Non-success response codes from all endpoints"
         >
           <ResponsiveContainer width="100%" height={260}>
-            <RechartsBarChart data={httpBarData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+            <RechartsBarChart data={errorBarData} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={0} angle={-20} textAnchor="end" height={50} />
-              <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
+              <YAxis tick={{ fontSize: 12 }} />
               <Tooltip formatter={(value: number) => [formatNumber(value), 'Endpoints']} />
               <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                {httpBarData.map((entry) => (
+                {errorBarData.map((entry) => (
                   <Cell key={entry.label} fill={httpCodeColor(entry.code)} />
                 ))}
+                <LabelList dataKey="count" position="top" fontSize={12} fontWeight={600} />
               </Bar>
             </RechartsBarChart>
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Endpoints by FHIR Version — real data */}
         <ChartCard
           title="Endpoints by FHIR Version"
           subtitle="Specification version distribution"
