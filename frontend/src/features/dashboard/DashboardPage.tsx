@@ -205,14 +205,17 @@ export default function DashboardPage() {
     }));
 
   // Daily stats for historical trend charts
-  const allDailyStats = (data.daily_stats || []).map((d) => ({
-    date: d.stat_date.slice(5), // "MM-DD"
-    available_pct: d.available_pct,
-    avg_response_time_ms: d.avg_response_time_ms,
-    http_2xx: d.http_2xx,
-    http_4xx: d.http_4xx,
-    http_5xx: d.http_5xx + d.http_timeout,
-  }));
+  const allDailyStats = (data.daily_stats || []).map((d) => {
+    const total = d.http_2xx + d.http_3xx + d.http_4xx + d.http_5xx + d.http_timeout;
+    return {
+      date: d.stat_date.slice(5), // "MM-DD"
+      available_pct: d.available_pct,
+      avg_response_time_ms: d.avg_response_time_ms,
+      pct_2xx: total > 0 ? Math.round(d.http_2xx / total * 1000) / 10 : 0,
+      pct_4xx: total > 0 ? Math.round(d.http_4xx / total * 1000) / 10 : 0,
+      pct_5xx: total > 0 ? Math.round((d.http_5xx + d.http_timeout) / total * 1000) / 10 : 0,
+    };
+  });
   const availabilityData = allDailyStats.slice(-Number(availabilityRange));
   const trendData = allDailyStats.slice(-30);
 
@@ -443,18 +446,18 @@ export default function DashboardPage() {
       {/* Response Code Trends — real data */}
       <ChartCard
         title="Response Code Trends — 30 Days"
-        subtitle="Daily breakdown of 2xx, 4xx, and 5xx"
+        subtitle="Percentage of endpoints by response category each day"
       >
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={trendData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
-            <Tooltip formatter={(value: number) => formatNumber(value)} />
+            <YAxis tick={{ fontSize: 12 }} domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} />
+            <Tooltip formatter={(value: number) => `${value}%`} />
             <Legend />
-            <Line type="monotone" dataKey="http_2xx" stroke={HTTP_STATUS_COLORS['2xx'].color} strokeWidth={2} dot={false} name="2xx Success" />
-            <Line type="monotone" dataKey="http_4xx" stroke={HTTP_STATUS_COLORS['4xx'].color} strokeWidth={2} dot={false} name="4xx Client" />
-            <Line type="monotone" dataKey="http_5xx" stroke={HTTP_STATUS_COLORS['5xx'].color} strokeWidth={2} dot={false} name="5xx Server / Timeout" />
+            <Line type="monotone" dataKey="pct_2xx" stroke={HTTP_STATUS_COLORS['2xx'].color} strokeWidth={2} dot={false} name="2xx Success" />
+            <Line type="monotone" dataKey="pct_4xx" stroke={HTTP_STATUS_COLORS['4xx'].color} strokeWidth={2} dot={false} name="4xx Client" />
+            <Line type="monotone" dataKey="pct_5xx" stroke={HTTP_STATUS_COLORS['5xx'].color} strokeWidth={2} dot={false} name="5xx Server / Timeout" />
           </LineChart>
         </ResponsiveContainer>
       </ChartCard>
