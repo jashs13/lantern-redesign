@@ -6,6 +6,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  LabelList,
 } from 'recharts';
 import { NAVY_COLORS } from '@/lib/constants';
 
@@ -26,12 +27,14 @@ export function BarChart({
 }: BarChartProps) {
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <RechartsBarChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+      <RechartsBarChart data={data} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis dataKey={xKey} tick={{ fontSize: 12 }} />
         <YAxis tick={{ fontSize: 12 }} />
         <Tooltip />
-        <Bar dataKey={yKey} fill={color} radius={[4, 4, 0, 0]} />
+        <Bar dataKey={yKey} fill={color} radius={[4, 4, 0, 0]}>
+          <LabelList dataKey={yKey} position="top" fontSize={12} fontWeight={600} fill="#374151" />
+        </Bar>
       </RechartsBarChart>
     </ResponsiveContainer>
   );

@@ -420,7 +420,7 @@ export default function DashboardPage() {
                 {errorBarData.map((entry) => (
                   <Cell key={entry.label} fill={httpCodeColor(entry.code)} />
                 ))}
-                <LabelList dataKey="count" position="top" fontSize={12} fontWeight={600} />
+                <LabelList dataKey="count" position="top" fontSize={12} fontWeight={600} fill="#374151" />
               </Bar>
             </RechartsBarChart>
           </ResponsiveContainer>
