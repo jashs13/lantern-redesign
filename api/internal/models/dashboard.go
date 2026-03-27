@@ -61,7 +61,7 @@ type DevSummary struct {
 // DailyStats from mv_dashboard_daily_stats.
 type DailyStats struct {
 	StatDate          string  `json:"stat_date"`
-	TotalQueries      int     `json:"total_queries"`
+	TotalEndpoints    int     `json:"total_endpoints"`
 	HTTP2xx           int     `json:"http_2xx"`
 	HTTP3xx           int     `json:"http_3xx"`
 	HTTP4xx           int     `json:"http_4xx"`

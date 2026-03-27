@@ -165,7 +165,7 @@ func (h *Handler) DashboardSummary(w http.ResponseWriter, r *http.Request) {
 
 	// 7. Daily stats (historical trends from mv_dashboard_daily_stats)
 	dailyRows, err := h.db.QueryContext(ctx,
-		`SELECT stat_date::text, total_queries, http_2xx, http_3xx, http_4xx, http_5xx,
+		`SELECT stat_date::text, total_endpoints, http_2xx, http_3xx, http_4xx, http_5xx,
 		        http_timeout, available_pct, avg_response_time_ms
 		 FROM mv_dashboard_daily_stats
 		 ORDER BY stat_date`)
@@ -176,7 +176,7 @@ func (h *Handler) DashboardSummary(w http.ResponseWriter, r *http.Request) {
 		for dailyRows.Next() {
 			var ds models.DailyStats
 			if err := dailyRows.Scan(
-				&ds.StatDate, &ds.TotalQueries, &ds.HTTP2xx, &ds.HTTP3xx, &ds.HTTP4xx, &ds.HTTP5xx,
+				&ds.StatDate, &ds.TotalEndpoints, &ds.HTTP2xx, &ds.HTTP3xx, &ds.HTTP4xx, &ds.HTTP5xx,
 				&ds.HTTPTimeout, &ds.AvailablePct, &ds.AvgResponseTimeMs,
 			); err != nil {
 				log.WithError(err).Error("scanning daily stats row")

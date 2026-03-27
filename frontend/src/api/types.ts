@@ -72,7 +72,7 @@ export interface DevSummary {
 
 export interface DailyStats {
   stat_date: string;
-  total_queries: number;
+  total_endpoints: number;
   http_2xx: number;
   http_3xx: number;
   http_4xx: number;
