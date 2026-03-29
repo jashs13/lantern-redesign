@@ -368,7 +368,7 @@ export default function DashboardPage() {
 
         <ChartCard
           title="Current Status Breakdown"
-          subtitle={`All ${formatNumber(totalEndpoints)} indexed endpoints`}
+          subtitle={`All ${formatNumber(indexedEndpoints)} indexed endpoints`}
         >
           <div className="flex flex-wrap justify-center gap-4 mb-2">
             {statusBreakdown.map((s) => (
