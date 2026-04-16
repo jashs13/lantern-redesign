@@ -26,6 +26,18 @@ export interface DashboardSummary {
   top_organizations?: string[];
   dev_summary?: DevSummary[];
   daily_stats?: DailyStats[];
+  resource_adoption?: ResourceAdoption[];
+  security_adoption?: SecurityAdoption[];
+}
+
+export interface ResourceAdoption {
+  resource_type: string;
+  adoption_pct: number;
+}
+
+export interface SecurityAdoption {
+  capability_name: string;
+  adoption_pct: number;
 }
 
 export interface EndpointTotals {

@@ -8,7 +8,6 @@ import { KpiCard } from '@/components/ui/KpiCard';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
 import { TimeSeriesChart } from '@/components/charts/TimeSeriesChart';
-import { HorizontalBarChart } from '@/components/charts/HorizontalBarChart';
 import { HTTP_STATUS_COLORS, STATUS_COLORS, NAVY_COLORS } from '@/lib/constants';
 import { formatNumber } from '@/lib/formatters';
 import {
@@ -33,11 +32,6 @@ import {
   ResponsiveContainer,
   Cell,
   LabelList,
-  PieChart,
-  Pie,
-  LineChart,
-  Line,
-  Legend,
 } from 'recharts';
 import { BarChart } from '@/components/charts/BarChart';
 
@@ -125,6 +119,30 @@ export default function DashboardPage() {
 
   const devSummary = data?.dev_summary || [];
 
+  // Monthly endpoint count for the "Total FHIR Endpoints Over the Past Year" chart
+  const monthlyEndpointData = useMemo(() => {
+    const stats = data?.daily_stats || [];
+    const byMonth = new Map<string, { month: string; sum: number; count: number }>();
+    stats.forEach((d) => {
+      const monthKey = d.stat_date.slice(0, 7); // "YYYY-MM"
+      const existing = byMonth.get(monthKey);
+      if (existing) {
+        existing.sum += d.total_endpoints;
+        existing.count += 1;
+      } else {
+        byMonth.set(monthKey, {
+          month: new Date(d.stat_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+          sum: d.total_endpoints,
+          count: 1,
+        });
+      }
+    });
+    return Array.from(byMonth.values()).map(({ month, sum, count }) => ({
+      month,
+      total_endpoints: Math.round(sum / count),
+    }));
+  }, [data?.daily_stats]);
+
   const filteredDevs = useMemo(() => {
     let result = devSummary;
 
@@ -170,14 +188,7 @@ export default function DashboardPage() {
   const degradedCount = codeGroups['3xx'] + codeGroups['4xx'];
   const downCount = codeGroups['5xx'] + codeGroups['timeout'];
 
-  // Status breakdown for donut chart (real data)
-  const statusBreakdown = [
-    { name: 'Available', value: availableCount, color: STATUS_COLORS.available },
-    { name: 'Degraded', value: degradedCount, color: STATUS_COLORS.degraded },
-    { name: 'Down', value: downCount, color: STATUS_COLORS.down },
-  ];
-
-  // Prepare HTTP error/timeout bar chart data (success covered by KPI + donut)
+  // Prepare HTTP error/timeout bar chart data
   const errorBarData = httpCodes
     .filter((c) => c.count_endpoints > 0 && (c.http_code < 200 || c.http_code >= 300))
     .sort((a, b) => b.count_endpoints - a.count_endpoints)
@@ -196,13 +207,6 @@ export default function DashboardPage() {
     .map(([version, count]) => ({ version, count }))
     .sort((a, b) => b.count - a.count);
 
-  // Developer bar chart data (top 10)
-  const devBarData = devSummary
-    .slice(0, 10)
-    .map((d) => ({
-      name: d.vendor_name,
-      value: d.endpoint_count,
-    }));
 
   // Daily stats for historical trend charts
   const allDailyStats = (data.daily_stats || []).map((d) => {
@@ -272,16 +276,15 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title="FHIR Endpoint Dashboard"
-        subtitle="Nationwide health and availability of FHIR API endpoints"
         breadcrumbs={[{ label: 'Dashboard' }]}
-      />
-
-      {/* Last Updated Banner */}
-      <div className="flex flex-wrap items-center justify-center gap-4 rounded-md bg-navy-700 px-4 py-3 text-sm text-white">
-        <span className="text-white/70">
-          Last updated: {data.totals.last_updated ? data.totals.last_updated.slice(0, 19) : 'Today'}
-        </span>
-      </div>
+      >
+        <p className="text-sm text-neutral-600 max-w-4xl">
+          <strong>Lantern</strong> monitors nationwide FHIR API endpoints for ONC, tracking the availability and
+          standardization of FHIR service base URLs deployed by healthcare organizations.
+          It collects data from FHIR Capability Statements to visualize{' '}
+          <strong>FHIR adoption</strong> and <strong>patient data availability</strong>.
+        </p>
+      </PageHeader>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -316,43 +319,68 @@ export default function DashboardPage() {
           icon={<XCircle size={20} />}
         />
         <KpiCard
-          label="Avg Response Time"
-          value={data.totals.avg_response_time ? `${Math.round(data.totals.avg_response_time * 1000)}ms` : 'N/A'}
-          borderColor="#fdb81e"
+          label="Last Updated"
+          value={data.totals.last_updated ? data.totals.last_updated.slice(0, 10) : 'Today'}
+          borderColor="#205493"
           icon={<Clock size={20} />}
+          smallValue
         />
       </div>
+
+      {/* Total FHIR Endpoints Over the Past Year */}
+      <ChartCard
+        title="Total FHIR Endpoints Over the Past Year"
+        subtitle="Number of unique FHIR endpoints observed each month"
+      >
+        <ResponsiveContainer width="100%" height={260}>
+          <RechartsBarChart data={monthlyEndpointData} margin={{ top: 16, right: 16, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+            <YAxis tick={{ fontSize: 11 }} width={55} tickFormatter={(v) => formatNumber(v)} />
+            <Tooltip formatter={(v: number) => formatNumber(v)} />
+            <Bar dataKey="total_endpoints" name="Total Endpoints" radius={[3, 3, 0, 0]}>
+              {monthlyEndpointData.map((_, i) => (
+                <Cell
+                  key={i}
+                  fill={i === monthlyEndpointData.length - 1 ? NAVY_COLORS.primary : '#93afd4'}
+                />
+              ))}
+              <LabelList dataKey="total_endpoints" position="top" formatter={(v: number) => formatNumber(v)} style={{ fontSize: 10 }} />
+            </Bar>
+          </RechartsBarChart>
+        </ResponsiveContainer>
+      </ChartCard>
 
       {/* ================================================================== */}
       {/* Section 1: Availability & Performance                               */}
       {/* ================================================================== */}
       <SectionDivider title="Availability & Performance" />
 
-      <ChartCard
-        title={`Endpoint Availability — Last ${availabilityRange === '365' ? '12 Months' : availabilityRange === '90' ? '90 Days' : '30 Days'}`}
-        subtitle="Percentage of endpoints returning a successful response each day"
-        headerRight={
-          <select
-            value={availabilityRange}
-            onChange={(e) => setAvailabilityRange(e.target.value as '30' | '90' | '365')}
-            className="rounded border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-600"
-          >
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
-            <option value="365">Last 12 months</option>
-          </select>
-        }
-      >
-        <TimeSeriesChart
-          data={availabilityData}
-          xKey="date"
-          yKey="available_pct"
-          color={STATUS_COLORS.available}
-          height={300}
-        />
-      </ChartCard>
-
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <ChartCard
+          title={`Endpoint Availability — Last ${availabilityRange === '365' ? '12 Months' : availabilityRange === '90' ? '90 Days' : '30 Days'}`}
+          subtitle="Percentage of endpoints returning a successful response each day"
+          headerRight={
+            <select
+              value={availabilityRange}
+              onChange={(e) => setAvailabilityRange(e.target.value as '30' | '90' | '365')}
+              className="rounded border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-600"
+            >
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="365">Last 12 months</option>
+            </select>
+          }
+        >
+          <TimeSeriesChart
+            data={availabilityData}
+            xKey="date"
+            yKey="available_pct"
+            color={STATUS_COLORS.available}
+            height={280}
+          />
+        </ChartCard>
+
         <ChartCard
           title="Avg Response Time — 30 Days"
           subtitle="Milliseconds (lower is better)"
@@ -362,44 +390,8 @@ export default function DashboardPage() {
             xKey="date"
             yKey="avg_response_time_ms"
             color={NAVY_COLORS.primary}
-            height={220}
+            height={280}
           />
-        </ChartCard>
-
-        <ChartCard
-          title="Current Status Breakdown"
-          subtitle={`All ${formatNumber(indexedEndpoints)} indexed endpoints`}
-        >
-          <div className="flex flex-wrap justify-center gap-4 mb-2">
-            {statusBreakdown.map((s) => (
-              <span key={s.name} className="flex items-center gap-1.5 text-sm text-neutral-600">
-                <span
-                  className="inline-block h-2.5 w-2.5 rounded-full"
-                  style={{ backgroundColor: s.color }}
-                />
-                {s.name} ({formatNumber(s.value)})
-              </span>
-            ))}
-          </div>
-          <ResponsiveContainer width="100%" height={180}>
-            <PieChart>
-              <Pie
-                data={statusBreakdown}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                innerRadius={55}
-                outerRadius={85}
-                paddingAngle={2}
-              >
-                {statusBreakdown.map((entry) => (
-                  <Cell key={entry.name} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value: number) => formatNumber(value)} />
-            </PieChart>
-          </ResponsiveContainer>
         </ChartCard>
       </div>
 
@@ -443,36 +435,89 @@ export default function DashboardPage() {
         </ChartCard>
       </div>
 
-      {/* Response Code Trends — real data */}
-      <ChartCard
-        title="Response Code Trends — 30 Days"
-        subtitle="Percentage of endpoints by response category each day"
-      >
-        <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={trendData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 12 }} domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} />
-            <Tooltip formatter={(value: number) => `${value}%`} />
-            <Legend />
-            <Line type="monotone" dataKey="pct_2xx" stroke={HTTP_STATUS_COLORS['2xx'].color} strokeWidth={2} dot={false} name="2xx Success" />
-            <Line type="monotone" dataKey="pct_4xx" stroke={HTTP_STATUS_COLORS['4xx'].color} strokeWidth={2} dot={false} name="4xx Client" />
-            <Line type="monotone" dataKey="pct_5xx" stroke={HTTP_STATUS_COLORS['5xx'].color} strokeWidth={2} dot={false} name="5xx Server / Timeout" />
-          </LineChart>
-        </ResponsiveContainer>
-      </ChartCard>
+      {/* ================================================================== */}
+      {/* Section 3: Adoption & Capabilities                                   */}
+      {/* ================================================================== */}
+      <SectionDivider title="Adoption & Capabilities" />
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* FHIR Resource Adoption */}
+        <ChartCard
+          title="FHIR Resource Adoption"
+          subtitle="Percentage of endpoints declaring support for each resource"
+        >
+          <div className="space-y-2">
+            {(data.resource_adoption || []).map((r) => (
+              <div key={r.resource_type} className="flex items-center gap-3">
+                <span className="w-40 shrink-0 text-sm text-neutral-700">{r.resource_type}</span>
+                <div className="flex-1 h-4 rounded-full bg-neutral-100 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${r.adoption_pct}%`,
+                      backgroundColor: r.adoption_pct >= 90 ? '#205493' : r.adoption_pct >= 80 ? '#4773aa' : '#8ba6ca',
+                    }}
+                  />
+                </div>
+                <span className="w-12 shrink-0 text-right text-sm font-semibold text-neutral-700">
+                  {r.adoption_pct}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </ChartCard>
+
+        {/* Security & SMART on FHIR Adoption */}
+        <ChartCard
+          title="Security & SMART on FHIR Adoption"
+          subtitle="Percentage of endpoints supporting each capability"
+        >
+          {(() => {
+            const SECURITY_COLORS: Record<string, string> = {
+              'TLS 1.2+':       '#2e8540',
+              'OAuth 2.0':      '#205493',
+              'SMART on FHIR':  '#0095c8',
+              'CORS Enabled':   '#4773aa',
+              'OpenID Connect': '#8ba6ca',
+            };
+            const CIRCUMFERENCE = 106.8;
+            return (
+              <div className="space-y-4">
+                {(data.security_adoption || []).map((s) => {
+                  const offset = (1 - s.adoption_pct / 100) * CIRCUMFERENCE;
+                  const color = SECURITY_COLORS[s.capability_name] ?? '#205493';
+                  return (
+                    <div key={s.capability_name} className="flex items-center gap-4">
+                      <div className="relative shrink-0 w-12 h-12">
+                        <svg viewBox="0 0 40 40" className="w-full h-full -rotate-90">
+                          <circle cx="20" cy="20" r="17" fill="none" stroke="#e5e7eb" strokeWidth="4" />
+                          <circle
+                            cx="20" cy="20" r="17" fill="none"
+                            stroke={color} strokeWidth="4"
+                            strokeDasharray={CIRCUMFERENCE}
+                            strokeDashoffset={offset}
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-neutral-800">
+                          {s.adoption_pct}%
+                        </span>
+                      </div>
+                      <div className="text-sm font-semibold text-neutral-800">{s.capability_name}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </ChartCard>
+      </div>
 
       {/* ================================================================== */}
-      {/* Section 3: Developer Comparison                                      */}
+      {/* Section 4: Developer Comparison                                      */}
       {/* ================================================================== */}
       <SectionDivider title="Developer Comparison" />
 
-      <ChartCard
-        title="Endpoints by Certified API Developer"
-        subtitle="Top developers by total endpoints indexed"
-      >
-        <HorizontalBarChart data={devBarData} height={280} />
-      </ChartCard>
 
       {/* Developer toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">

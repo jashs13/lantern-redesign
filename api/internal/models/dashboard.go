@@ -9,6 +9,8 @@ type DashboardSummary struct {
 	TopOrganizations []string          `json:"top_organizations"`
 	DevSummary       []DevSummary      `json:"dev_summary"`
 	DailyStats       []DailyStats      `json:"daily_stats"`
+	ResourceAdoption []ResourceAdoption `json:"resource_adoption"`
+	SecurityAdoption []SecurityAdoption `json:"security_adoption"`
 }
 
 // EndpointTotals from mv_endpoint_totals.
@@ -56,6 +58,18 @@ type DevSummary struct {
 	DownPct         float64 `json:"down_pct"`
 	AvgResponseTime int     `json:"avg_response_time_ms"`
 	SortOrder       int     `json:"sort_order"`
+}
+
+// ResourceAdoption holds per-resource-type adoption percentage.
+type ResourceAdoption struct {
+	ResourceType string  `json:"resource_type"`
+	AdoptionPct  float64 `json:"adoption_pct"`
+}
+
+// SecurityAdoption holds per-capability adoption percentage.
+type SecurityAdoption struct {
+	CapabilityName string  `json:"capability_name"`
+	AdoptionPct    float64 `json:"adoption_pct"`
 }
 
 // DailyStats from mv_dashboard_daily_stats.

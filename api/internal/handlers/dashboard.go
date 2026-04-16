@@ -189,5 +189,70 @@ func (h *Handler) DashboardSummary(w http.ResponseWriter, r *http.Request) {
 		summary.DailyStats = []models.DailyStats{}
 	}
 
+	// 8. Resource adoption (top 15 resources by % of indexed endpoints)
+	resRows, err := h.db.QueryContext(ctx, `
+		SELECT resource_type,
+		       ROUND(SUM(endpoint_count) * 100.0 / NULLIF(
+		           (SELECT indexed_endpoints FROM mv_endpoint_totals), 0
+		       ), 1) AS adoption_pct
+		FROM mv_resource_interactions
+		WHERE resource_type IS NOT NULL
+		GROUP BY resource_type
+		ORDER BY adoption_pct DESC
+		LIMIT 8`)
+	if err != nil {
+		log.WithError(err).Warn("querying resource adoption")
+	} else {
+		defer resRows.Close()
+		for resRows.Next() {
+			var ra models.ResourceAdoption
+			if err := resRows.Scan(&ra.ResourceType, &ra.AdoptionPct); err != nil {
+				log.WithError(err).Error("scanning resource adoption row")
+				continue
+			}
+			summary.ResourceAdoption = append(summary.ResourceAdoption, ra)
+		}
+	}
+	if summary.ResourceAdoption == nil {
+		summary.ResourceAdoption = []models.ResourceAdoption{}
+	}
+
+	// 9. Security & SMART adoption (capabilities as % of indexed endpoints)
+	// tls_version values: 'TLS 1.2', 'TLS 1.3'
+	// code values: 'OAuth', 'SMART-on-FHIR', 'Basic', 'Certificates', 'UDAP'
+	secRows, err := h.db.QueryContext(ctx, `
+		SELECT capability_name,
+		       ROUND(endpoint_count * 100.0 / NULLIF(
+		           (SELECT indexed_endpoints FROM mv_endpoint_totals), 0
+		       ), 1) AS adoption_pct
+		FROM (
+		  SELECT 'TLS 1.2+' AS capability_name, COUNT(DISTINCT url) AS endpoint_count
+		  FROM security_endpoints_react_mv
+		  WHERE tls_version IN ('TLS 1.2', 'TLS 1.3')
+		  UNION ALL
+		  SELECT 'OAuth 2.0', COUNT(DISTINCT url)
+		  FROM security_endpoints_react_mv WHERE code = 'OAuth'
+		  UNION ALL
+		  SELECT 'SMART on FHIR', COUNT(DISTINCT url)
+		  FROM security_endpoints_react_mv WHERE code = 'SMART-on-FHIR'
+		) sub
+		ORDER BY adoption_pct DESC`)
+	if err != nil {
+		log.WithError(err).Warn("querying security adoption")
+	} else {
+		defer secRows.Close()
+		for secRows.Next() {
+			var sa models.SecurityAdoption
+			if err := secRows.Scan(&sa.CapabilityName, &sa.AdoptionPct); err != nil {
+				log.WithError(err).Error("scanning security adoption row")
+				continue
+			}
+			summary.SecurityAdoption = append(summary.SecurityAdoption, sa)
+		}
+	}
+	if summary.SecurityAdoption == nil {
+		summary.SecurityAdoption = []models.SecurityAdoption{}
+	}
+
 	models.WriteJSON(w, http.StatusOK, summary)
 }
