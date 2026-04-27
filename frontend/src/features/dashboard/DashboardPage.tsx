@@ -362,6 +362,7 @@ export default function DashboardPage() {
           subtitle="Percentage of endpoints returning a successful response each day"
           headerRight={
             <select
+              aria-label="Availability chart time range"
               value={availabilityRange}
               onChange={(e) => setAvailabilityRange(e.target.value as '30' | '90' | '365')}
               className="rounded border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-600"
@@ -542,6 +543,7 @@ export default function DashboardPage() {
                 const mapping = dropdownToSortCol[e.target.value];
                 if (mapping) { setDevSortCol(mapping.col); setDevSortDir(mapping.dir); setDevPage(1); }
               }}
+              aria-label="Sort developers by"
               className="rounded border-2 border-neutral-200 bg-white px-3 py-2 text-sm"
             >
               <option value="endpoints">Most Endpoints</option>
@@ -617,7 +619,7 @@ export default function DashboardPage() {
                           style={{ width: `${dev.down_pct}%`, backgroundColor: STATUS_COLORS.down }}
                         />
                       </div>
-                      <span className="text-xs text-neutral-400">{dev.available_pct}%</span>
+                      <span className="text-xs text-neutral-500">{dev.available_pct}%</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -629,7 +631,7 @@ export default function DashboardPage() {
               ))}
               {pagedDevs.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-neutral-400">
+                  <td colSpan={5} className="px-4 py-8 text-center text-neutral-500">
                     No developers match your search.
                   </td>
                 </tr>

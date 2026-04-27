@@ -47,7 +47,7 @@ export function Sidebar() {
 
               {/* Section label */}
               {section.label && (
-                <div className="px-5 pb-2 pt-4 text-[0.6875rem] font-bold uppercase tracking-widest text-white/35">
+                <div className="px-5 pb-2 pt-4 text-[0.6875rem] font-bold uppercase tracking-widest text-white/60">
                   {section.label}
                 </div>
               )}
