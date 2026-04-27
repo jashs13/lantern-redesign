@@ -61,7 +61,7 @@ function ChartCard({
   headerRight?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg bg-white p-5">
+    <div className="rounded-lg bg-white p-5 flex flex-col">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="font-serif text-base font-bold text-navy-900">{title}</h3>
@@ -326,6 +326,8 @@ export default function DashboardPage() {
           smallValue
         />
       </div>
+
+      <SectionDivider title="Endpoint Trends" />
 
       {/* Total FHIR Endpoints Over the Past Year */}
       <ChartCard
