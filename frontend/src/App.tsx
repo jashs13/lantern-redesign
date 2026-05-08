@@ -6,6 +6,7 @@ import { SidebarProvider } from '@/context/SidebarContext';
 import { LandingLayout } from '@/components/layout/LandingLayout';
 import { SidebarLayout } from '@/components/layout/SidebarLayout';
 import { LoadingState } from '@/components/ui/LoadingState';
+import { ThemePicker } from '@/components/ui/ThemePicker';
 
 // Lazy-loaded page components
 const LandingPage = lazy(() => import('@/features/landing/LandingPage'));
@@ -54,6 +55,7 @@ export default function App() {
       <QueryProvider>
         <FilterProvider>
           <SidebarProvider>
+            <ThemePicker />
             <Routes>
               {/* Root redirects to dashboard */}
               <Route index element={<Navigate to="/dashboard" replace />} />
