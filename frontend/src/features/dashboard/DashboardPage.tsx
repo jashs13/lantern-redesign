@@ -11,7 +11,6 @@ import { TimeSeriesChart } from '@/components/charts/TimeSeriesChart';
 import { HTTP_STATUS_COLORS, STATUS_COLORS, NAVY_COLORS } from '@/lib/constants';
 import { formatNumber } from '@/lib/formatters';
 import {
-  Server,
   CheckCircle,
   AlertTriangle,
   XCircle,
@@ -167,7 +166,6 @@ export default function DashboardPage() {
   if (error) return <ErrorState message={error.message} onRetry={() => refetch()} />;
   if (!data) return null;
 
-  const totalEndpoints = data.totals.all_endpoints;
   const indexedEndpoints = data.totals.indexed_endpoints;
 
   // Build HTTP code distribution from data
@@ -287,17 +285,11 @@ export default function DashboardPage() {
       </PageHeader>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <KpiCard
-          label="Total Endpoints"
-          value={totalEndpoints}
-          borderColor="#205493"
-          icon={<Server size={20} />}
-        />
-        <KpiCard
-          label="Indexed Endpoints"
+          label="Queried Endpoints"
           value={indexedEndpoints}
-          borderColor="#02bfe7"
+          borderColor="#0f2f8a"
           icon={<Search size={20} />}
         />
         <KpiCard
@@ -321,7 +313,7 @@ export default function DashboardPage() {
         <KpiCard
           label="Last Updated"
           value={data.totals.last_updated ? data.totals.last_updated.slice(0, 10) : 'Today'}
-          borderColor="#205493"
+          borderColor="#0f2f8a"
           icon={<Clock size={20} />}
           smallValue
         />
@@ -458,7 +450,7 @@ export default function DashboardPage() {
                     className="h-full rounded-full transition-all"
                     style={{
                       width: `${r.adoption_pct}%`,
-                      backgroundColor: r.adoption_pct >= 90 ? '#205493' : r.adoption_pct >= 80 ? '#4773aa' : '#8ba6ca',
+                      backgroundColor: r.adoption_pct >= 90 ? '#0f2f8a' : r.adoption_pct >= 80 ? '#1a45a8' : '#5a82cc',
                     }}
                   />
                 </div>
@@ -478,17 +470,17 @@ export default function DashboardPage() {
           {(() => {
             const SECURITY_COLORS: Record<string, string> = {
               'TLS 1.2+':       '#2e8540',
-              'OAuth 2.0':      '#205493',
+              'OAuth 2.0':      '#0f2f8a',
               'SMART on FHIR':  '#0095c8',
-              'CORS Enabled':   '#4773aa',
-              'OpenID Connect': '#8ba6ca',
+              'CORS Enabled':   '#051359',
+              'OpenID Connect': '#5a82cc',
             };
             const CIRCUMFERENCE = 106.8;
             return (
               <div className="space-y-4">
                 {(data.security_adoption || []).map((s) => {
                   const offset = (1 - s.adoption_pct / 100) * CIRCUMFERENCE;
-                  const color = SECURITY_COLORS[s.capability_name] ?? '#205493';
+                  const color = SECURITY_COLORS[s.capability_name] ?? '#0f2f8a';
                   return (
                     <div key={s.capability_name} className="flex items-center gap-4">
                       <div className="relative shrink-0 w-12 h-12">
