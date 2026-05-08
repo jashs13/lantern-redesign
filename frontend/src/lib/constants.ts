@@ -87,13 +87,13 @@ export const FHIR_VERSION_GROUP_NAMES = ['DSTU2', 'STU3', 'R4', 'R4B', 'R5'] as 
 /* Colors                                                                      */
 /* ========================================================================== */
 
-/** Government Navy brand colors. */
+/** Deep Navy brand colors (#051359 base). */
 export const NAVY_COLORS = {
-  primaryDarkest: '#0a1628',
-  primaryDark: '#112e51',
-  primary: '#205493',
-  primaryLight: '#4773aa',
-  primaryLighter: '#8ba6ca',
+  primaryDarkest: '#030b38',
+  primaryDark: '#051359',
+  primary: '#0f2f8a',
+  primaryLight: '#5a82cc',
+  primaryLighter: '#9bb4e0',
   secondary: '#02bfe7',
   secondaryDark: '#0095c8',
 } as const;
@@ -109,7 +109,7 @@ export const STATUS_COLORS = {
 /** HTTP response code group colors. */
 export const HTTP_STATUS_COLORS = {
   '2xx': { color: '#2e8540', bg: '#e7f4e9', label: 'Success' },
-  '3xx': { color: '#205493', bg: '#e8f0f8', label: 'Redirect' },
+  '3xx': { color: '#0f2f8a', bg: '#e0e8f6', label: 'Redirect' },
   '4xx': { color: '#b56a00', bg: '#fff3e0', label: 'Client Error' },
   '5xx': { color: '#b51b35', bg: '#fbe9ec', label: 'Server Error' },
   timeout: { color: '#5b616b', bg: '#f1f1f1', label: 'Timeout' },
@@ -117,14 +117,14 @@ export const HTTP_STATUS_COLORS = {
 
 /** Chart color palette for vendor/FHIR stacked bars. */
 export const CHART_COLORS = [
-  '#205493',
+  '#0f2f8a',
   '#02bfe7',
   '#2e8540',
   '#fdb81e',
   '#b56a00',
   '#e31c3d',
-  '#4773aa',
-  '#8ba6ca',
+  '#051359',
+  '#5a82cc',
   '#4aa564',
   '#0095c8',
   '#b51b35',

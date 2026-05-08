@@ -30,7 +30,7 @@ export function CapStatStatsCards() {
         label="Largest Size"
         value={formatNumber(data.largest_size)}
         subtitle="Maximum capability statement size (bytes)"
-        borderColor="var(--color-primary, #205493)"
+        borderColor="var(--color-primary, #0f2f8a)"
       />
       <KpiCard
         label="Smallest Size"

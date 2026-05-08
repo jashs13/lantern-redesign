@@ -29,7 +29,7 @@ export function ProfileStatsCards() {
         label="Endpoints w/ Profiles"
         value={data.endpoints_with_profiles}
         subtitle="Declare at least one profile"
-        borderColor="var(--color-primary, #205493)"
+        borderColor="var(--color-primary, #0f2f8a)"
       />
       <KpiCard
         label="Avg Profiles / Endpoint"

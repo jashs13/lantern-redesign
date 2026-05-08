@@ -4,16 +4,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* Primary — Government Navy */
+        /* Primary — Deep Navy (#051359 base) */
         navy: {
-          950: '#0a1628',
-          900: '#112e51',
-          800: '#1a3a63',
-          700: '#205493',
-          600: '#2e6db4',
-          500: '#4a90d9',
-          400: '#4773aa',
-          300: '#8ba6ca',
+          950: '#030b38',
+          900: '#051359',
+          800: '#0a1f6b',
+          700: '#0f2f8a',
+          600: '#1a45a8',
+          500: '#2e5cb8',
+          400: '#5a82cc',
+          300: '#9bb4e0',
         },
         /* Secondary — Lantern Sky */
         sky: {

@@ -28,7 +28,7 @@ export function Sidebar() {
       <aside
         id="sidebar-nav"
         className={clsx(
-          'fixed bottom-0 left-0 top-14 z-[1000] w-[260px] overflow-y-auto overflow-x-hidden border-r border-white/5 bg-navy-950 transition-transform duration-300 ease-in-out',
+          'fixed bottom-0 left-0 top-14 z-[1000] w-[260px] overflow-y-auto overflow-x-hidden border-r border-white/5 bg-navy-900 transition-transform duration-300 ease-in-out',
           // Desktop: collapse via translate
           !isMobileOpen && isCollapsed && 'max-lg:-translate-x-full lg:-translate-x-full',
           // Mobile: hidden by default, shown when open

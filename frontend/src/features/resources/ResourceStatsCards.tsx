@@ -29,7 +29,7 @@ export function ResourceStatsCards() {
         label="Most Supported"
         value={data.most_supported_resource}
         subtitle={`Supported by ${data.most_supported_percent.toFixed(1)}% of endpoints`}
-        borderColor="var(--color-primary, #205493)"
+        borderColor="var(--color-primary, #0f2f8a)"
         smallValue
       />
       <KpiCard

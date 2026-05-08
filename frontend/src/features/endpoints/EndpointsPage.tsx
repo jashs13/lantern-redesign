@@ -241,7 +241,7 @@ export default function EndpointsPage() {
         <KpiCard
           label="Avg Response"
           value={summary?.totals.avg_response_time ? `${Math.round(summary.totals.avg_response_time * 1000)}ms` : '—'}
-          borderColor="#205493"
+          borderColor="#0f2f8a"
           icon={<Clock size={18} />}
         />
         <KpiCard

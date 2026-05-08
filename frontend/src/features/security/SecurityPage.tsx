@@ -253,7 +253,7 @@ export default function SecurityPage() {
         <KpiCard
           label="Security Coverage"
           value={`${coveragePct}%`}
-          borderColor="#205493"
+          borderColor="#0f2f8a"
           icon={<Shield size={18} />}
         />
         <KpiCard
@@ -285,7 +285,7 @@ export default function SecurityPage() {
                 <span className="text-sm font-semibold text-neutral-700">{code}</span>
                 <span
                   className="rounded-full px-1.5 py-0.5 text-xs font-bold"
-                  style={{ background: '#205493', color: '#fff' }}
+                  style={{ background: '#0f2f8a', color: '#fff' }}
                 >
                   {(authTypeTotals[code] ?? 0).toLocaleString()}
                 </span>

@@ -17,7 +17,7 @@ interface KpiCardProps {
 /**
  * KPI card with coloured left border, used on dashboard/endpoints for key metrics.
  */
-export function KpiCard({ label, value, borderColor = '#205493', subtitle, smallValue, change, icon }: KpiCardProps) {
+export function KpiCard({ label, value, borderColor = '#0f2f8a', subtitle, smallValue, change, icon }: KpiCardProps) {
   return (
     <div
       className="kpi-card flex items-start justify-between"

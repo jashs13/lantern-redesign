@@ -175,7 +175,7 @@ export default function SmartResponsePage() {
       </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <KpiCard label="Total Indexed" value={summaryData?.total_indexed ?? 0} borderColor="#205493" icon={<Database size={18} />} />
+        <KpiCard label="Total Indexed" value={summaryData?.total_indexed ?? 0} borderColor="#0f2f8a" icon={<Database size={18} />} />
         <KpiCard label="HTTP 200" value={summaryData?.http_200 ?? 0} borderColor="#2e8540" icon={<CheckCircle size={18} />} />
         <KpiCard label="SMART HTTP 200" value={summaryData?.smart_http_200 ?? 0} borderColor="#2e8540" icon={<CheckCircle size={18} />} />
         <KpiCard label="Valid SMART JSON" value={summaryData?.well_known_valid_doc ?? 0} borderColor="#2e8540" icon={<FileJson size={18} />} />

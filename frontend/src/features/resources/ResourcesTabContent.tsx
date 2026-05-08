@@ -200,7 +200,7 @@ export default function ResourcesTabContent({ asTab = false }: { asTab?: boolean
               style={{
                 padding: '0.375rem 0.875rem',
                 fontSize: '0.875rem',
-                background: view === 'cards' ? 'var(--color-primary, #205493)' : 'transparent',
+                background: view === 'cards' ? 'var(--color-primary, #0f2f8a)' : 'transparent',
                 color: view === 'cards' ? '#fff' : '#6b7280',
                 border: 'none',
                 cursor: 'pointer',
@@ -215,7 +215,7 @@ export default function ResourcesTabContent({ asTab = false }: { asTab?: boolean
               style={{
                 padding: '0.375rem 0.875rem',
                 fontSize: '0.875rem',
-                background: view === 'matrix' ? 'var(--color-primary, #205493)' : 'transparent',
+                background: view === 'matrix' ? 'var(--color-primary, #0f2f8a)' : 'transparent',
                 color: view === 'matrix' ? '#fff' : '#6b7280',
                 border: 'none',
                 cursor: 'pointer',

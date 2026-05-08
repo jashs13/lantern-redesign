@@ -31,7 +31,7 @@ export function IGStatsCards() {
         label="Endpoints w/ IGs"
         value={data.endpoints_with_igs}
         subtitle={`${data.endpoints_with_igs_pct}% declare at least one IG`}
-        borderColor="var(--color-primary, #205493)"
+        borderColor="var(--color-primary, #0f2f8a)"
       />
       <KpiCard
         label="Avg IGs / Endpoint"

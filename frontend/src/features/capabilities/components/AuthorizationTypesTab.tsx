@@ -40,7 +40,7 @@ const AUTH_TYPE_CARDS: {
     label: 'Certificates',
     description: 'Mutual TLS or certificate-based authentication. Used in server-to-server communication scenarios.',
     icon: '\uD83D\uDCDC',
-    barColor: '#4773aa',
+    barColor: '#051359',
     iconBg: '#e8eef6',
   },
   {
@@ -293,7 +293,7 @@ export function AuthorizationTypesTab() {
         <KpiCard
           label="Security Coverage"
           value={`${coveragePct}%`}
-          borderColor="#205493"
+          borderColor="#0f2f8a"
           icon={<Shield size={18} />}
         />
         <KpiCard
