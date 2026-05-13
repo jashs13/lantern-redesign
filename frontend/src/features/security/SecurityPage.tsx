@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
+import { usePrefetchNextPage } from '@/hooks/usePrefetchNextPage';
 import { fetchSecurity, fetchSecuritySummary, fetchSecurityOrgs } from '@/api/security';
 import { fetchVendors, fetchFHIRVersionGroups } from '@/api/filters';
 import { DataTable } from '@/components/ui/DataTable';
@@ -205,6 +206,19 @@ export default function SecurityPage() {
 
   const totalCount = data?.pagination.total_count ?? 0;
   const tableData = data?.data ?? [];
+
+  const nextPageFn = useCallback(
+    () => fetchSecurity({ ...filterParams, page: page + 1, page_size: pageSize }),
+    [filterParams, page, pageSize],
+  );
+
+  usePrefetchNextPage({
+    page,
+    pageSize,
+    totalCount,
+    queryKey: ['security-data', page + 1, pageSize, sorting, ...filterKey],
+    queryFn: nextPageFn,
+  });
 
   const hasActiveFilters = activeFhirVersions.size > 0 || !!authType || !!search || !!vendor;
 

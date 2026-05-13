@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
+import { usePrefetchNextPage } from '@/hooks/usePrefetchNextPage';
 import { fetchImplementationGuides } from '@/api/implementation';
 import { fetchFHIRVersions, fetchVendors } from '@/api/filters';
 import { DataTable } from '@/components/ui/DataTable';
@@ -69,15 +70,27 @@ export default function ImplementationGuidesPage() {
     queryFn: fetchVendors,
   });
 
+  const igParams = {
+    fhir_versions: fhirVersions.length > 0 ? fhirVersions : undefined,
+    vendor: vendor ?? undefined,
+  };
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['implementation-guides', page, pageSize, fhirVersions, vendor],
-    queryFn: () =>
-      fetchImplementationGuides({
-        fhir_versions: fhirVersions.length > 0 ? fhirVersions : undefined,
-        vendor: vendor ?? undefined,
-        page,
-        page_size: pageSize,
-      }),
+    queryFn: () => fetchImplementationGuides({ ...igParams, page, page_size: pageSize }),
+  });
+
+  const nextPageFn = useCallback(
+    () => fetchImplementationGuides({ ...igParams, page: page + 1, page_size: pageSize }),
+    [igParams, page, pageSize],
+  );
+
+  usePrefetchNextPage({
+    page,
+    pageSize,
+    totalCount: data?.pagination.total_count ?? 0,
+    queryKey: ['implementation-guides', page + 1, pageSize, fhirVersions, vendor],
+    queryFn: nextPageFn,
   });
 
   function handleFhirVersionChange(v: string[]) {

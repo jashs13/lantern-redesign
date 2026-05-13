@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
+import { usePrefetchNextPage } from '@/hooks/usePrefetchNextPage';
 import { fetchOrganizations, fetchOrganizationsCount } from '@/api/organizations';
 import { fetchVendors, fetchStates, fetchFHIRVersions } from '@/api/filters';
 import { DataTable } from '@/components/ui/DataTable';
@@ -178,6 +179,19 @@ export default function OrganizationsPage() {
   const { data = [], isLoading, error, refetch } = useQuery({
     queryKey: ['organizations-data', page, pageSize, ...filterKey],
     queryFn: () => fetchOrganizations({ ...filterParams, page, page_size: pageSize }),
+  });
+
+  const nextPageFn = useCallback(
+    () => fetchOrganizations({ ...filterParams, page: page + 1, page_size: pageSize }),
+    [filterParams, page, pageSize],
+  );
+
+  usePrefetchNextPage({
+    page,
+    pageSize,
+    totalCount,
+    queryKey: ['organizations-data', page + 1, pageSize, ...filterKey],
+    queryFn: nextPageFn,
   });
 
   const ALL = '__all__';

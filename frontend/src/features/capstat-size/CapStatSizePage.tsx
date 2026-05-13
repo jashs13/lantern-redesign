@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
+import { usePrefetchNextPage } from '@/hooks/usePrefetchNextPage';
 import { fetchCapStatSizes } from '@/api/implementation';
 import { fetchFHIRVersions, fetchVendors } from '@/api/filters';
 import { Select } from '@/components/ui/Select';
@@ -52,6 +53,26 @@ export default function CapStatSizePage() {
       }),
   });
 
+  const capStatParams = {
+    fhir_versions: fhirVersions.length > 0 ? fhirVersions : undefined,
+    vendor: vendor ?? undefined,
+  };
+
+  const nextPageFn = useCallback(
+    () => fetchCapStatSizes({ ...capStatParams, page: page + 1, page_size: pageSize }),
+    [capStatParams, page, pageSize],
+  );
+
+  const totalCount = data?.pagination.total_count ?? 0;
+
+  usePrefetchNextPage({
+    page,
+    pageSize,
+    totalCount,
+    queryKey: ['capstat-sizes', page + 1, pageSize, fhirVersions, vendor],
+    queryFn: nextPageFn,
+  });
+
   function handleFhirVersionChange(v: string[]) {
     setFhirVersions(v);
     setPage(1);
@@ -66,7 +87,6 @@ export default function CapStatSizePage() {
   if (error) return <ErrorState message={error.message} onRetry={() => refetch()} />;
 
   const rows = data?.data ?? [];
-  const totalCount = data?.pagination.total_count ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   return (

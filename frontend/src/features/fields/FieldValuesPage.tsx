@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
+import { usePrefetchNextPage } from '@/hooks/usePrefetchNextPage';
 import { fetchFieldValues } from '@/api/fields';
 import { DataTable } from '@/components/ui/DataTable';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -54,15 +55,27 @@ export default function FieldValuesPage() {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search);
 
+  const fieldParams = {
+    fhir_versions: filters.fhirVersions,
+    search: debouncedSearch || undefined,
+  };
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['field-values', page, pageSize, filters.fhirVersions, debouncedSearch],
-    queryFn: () =>
-      fetchFieldValues({
-        page,
-        page_size: pageSize,
-        fhir_versions: filters.fhirVersions,
-        search: debouncedSearch || undefined,
-      }),
+    queryFn: () => fetchFieldValues({ ...fieldParams, page, page_size: pageSize }),
+  });
+
+  const nextPageFn = useCallback(
+    () => fetchFieldValues({ ...fieldParams, page: page + 1, page_size: pageSize }),
+    [fieldParams, page, pageSize],
+  );
+
+  usePrefetchNextPage({
+    page,
+    pageSize,
+    totalCount: data?.pagination.total_count ?? 0,
+    queryKey: ['field-values', page + 1, pageSize, filters.fhirVersions, debouncedSearch],
+    queryFn: nextPageFn,
   });
 
   if (error) return <ErrorState message={error.message} onRetry={() => refetch()} />;

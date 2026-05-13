@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
+import { usePrefetchNextPage } from '@/hooks/usePrefetchNextPage';
 import { fetchSmartResponse, fetchSmartSummary } from '@/api/smart';
 import { fetchSecurityOrgs } from '@/api/security';
 import { DataTable } from '@/components/ui/DataTable';
@@ -129,16 +130,28 @@ export default function SmartResponsePage() {
     (url) => setSelectedEndpointUrl(url)
   );
 
+  const smartParams = {
+    fhir_versions: filters.fhirVersions,
+    vendor: filters.vendor || undefined,
+    search: debouncedSearch || undefined,
+  };
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['smart-response', page, pageSize, filters, debouncedSearch],
-    queryFn: () =>
-      fetchSmartResponse({
-        page,
-        page_size: pageSize,
-        fhir_versions: filters.fhirVersions,
-        vendor: filters.vendor || undefined,
-        search: debouncedSearch || undefined,
-      }),
+    queryFn: () => fetchSmartResponse({ ...smartParams, page, page_size: pageSize }),
+  });
+
+  const nextPageFn = useCallback(
+    () => fetchSmartResponse({ ...smartParams, page: page + 1, page_size: pageSize }),
+    [smartParams, page, pageSize],
+  );
+
+  usePrefetchNextPage({
+    page,
+    pageSize,
+    totalCount: data?.pagination.total_count ?? 0,
+    queryKey: ['smart-response', page + 1, pageSize, filters, debouncedSearch],
+    queryFn: nextPageFn,
   });
 
   const { data: summaryData, isLoading: isLoadingSummary } = useQuery({

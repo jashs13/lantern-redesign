@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
+import { usePrefetchNextPage } from '@/hooks/usePrefetchNextPage';
 import { fetchResources } from '@/api/resources';
 import { fetchFHIRVersions, fetchVendors, fetchFilterResources, fetchFilterOperations } from '@/api/filters';
 import { DataTable } from '@/components/ui/DataTable';
@@ -122,6 +123,27 @@ export default function ResourcesPage() {
 
   // When nothing is selected, treat as empty regardless of any cached data
   const data = shouldFetch ? queryData : undefined;
+
+  const nextPageFn = useCallback(
+    () =>
+      fetchResources({
+        page: page + 1,
+        page_size: pageSize,
+        fhir_versions: fhirVersions.length > 0 ? fhirVersions : undefined,
+        vendor: vendor ?? undefined,
+        resources: selectedResources,
+        operations: selectedOperations.length > 0 ? selectedOperations : undefined,
+      }),
+    [page, pageSize, fhirVersions, vendor, selectedResources, selectedOperations],
+  );
+
+  usePrefetchNextPage({
+    page,
+    pageSize,
+    totalCount: data?.pagination.total_count ?? 0,
+    queryKey: ['resources', page + 1, pageSize, fhirVersions, vendor, selectedResources, selectedOperations],
+    queryFn: nextPageFn,
+  });
 
   function handleVendorChange(v: string) {
     setVendor(v === ALL ? null : v);

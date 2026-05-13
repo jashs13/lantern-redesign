@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
+import { usePrefetchNextPage } from '@/hooks/usePrefetchNextPage';
 import { fetchContacts } from '@/api/contacts';
 import { fetchFHIRVersions, fetchVendors } from '@/api/filters';
 import { DataTable } from '@/components/ui/DataTable';
@@ -113,17 +114,29 @@ export default function ContactsPage() {
     queryFn: fetchVendors,
   });
 
+  const contactParams = {
+    fhir_versions: fhirVersion ? [fhirVersion] : filters.fhirVersions,
+    vendor: vendor ?? undefined,
+    has_contact: hasContact !== 'any' ? hasContact : undefined,
+    search: debouncedSearch || undefined,
+  };
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['contacts', page, pageSize, filters, debouncedSearch, fhirVersion, vendor, hasContact],
-    queryFn: () =>
-      fetchContacts({
-        page,
-        page_size: pageSize,
-        fhir_versions: fhirVersion ? [fhirVersion] : filters.fhirVersions,
-        vendor: vendor ?? undefined,
-        has_contact: hasContact !== 'any' ? hasContact : undefined,
-        search: debouncedSearch || undefined,
-      }),
+    queryFn: () => fetchContacts({ ...contactParams, page, page_size: pageSize }),
+  });
+
+  const nextPageFn = useCallback(
+    () => fetchContacts({ ...contactParams, page: page + 1, page_size: pageSize }),
+    [contactParams, page, pageSize],
+  );
+
+  usePrefetchNextPage({
+    page,
+    pageSize,
+    totalCount: data?.pagination.total_count ?? 0,
+    queryKey: ['contacts', page + 1, pageSize, filters, debouncedSearch, fhirVersion, vendor, hasContact],
+    queryFn: nextPageFn,
   });
 
   function handleFhirVersionChange(v: string) {

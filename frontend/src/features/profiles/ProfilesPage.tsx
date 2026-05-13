@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
+import { usePrefetchNextPage } from '@/hooks/usePrefetchNextPage';
 import { fetchProfiles } from '@/api/profiles';
 import { DataTable } from '@/components/ui/DataTable';
 import { SearchInput } from '@/components/ui/SearchInput';
@@ -130,18 +131,30 @@ export default function ProfilesPage() {
     staleTime: 10 * 60 * 1000,
   });
 
+  const profileParams = {
+    fhir_versions: filters.fhirVersions,
+    vendor: filters.vendor || undefined,
+    resource: resource || undefined,
+    profile: profile || undefined,
+    search: debouncedSearch || undefined,
+  };
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['profiles', page, pageSize, filters.fhirVersions, filters.vendor, resource, profile, debouncedSearch],
-    queryFn: () =>
-      fetchProfiles({
-        page,
-        page_size: pageSize,
-        fhir_versions: filters.fhirVersions,
-        vendor: filters.vendor || undefined,
-        resource: resource || undefined,
-        profile: profile || undefined,
-        search: debouncedSearch || undefined,
-      }),
+    queryFn: () => fetchProfiles({ ...profileParams, page, page_size: pageSize }),
+  });
+
+  const nextPageFn = useCallback(
+    () => fetchProfiles({ ...profileParams, page: page + 1, page_size: pageSize }),
+    [profileParams, page, pageSize],
+  );
+
+  usePrefetchNextPage({
+    page,
+    pageSize,
+    totalCount: data?.pagination.total_count ?? 0,
+    queryKey: ['profiles', page + 1, pageSize, filters.fhirVersions, filters.vendor, resource, profile, debouncedSearch],
+    queryFn: nextPageFn,
   });
 
   if (error) return <ErrorState message={error.message} onRetry={() => refetch()} />;

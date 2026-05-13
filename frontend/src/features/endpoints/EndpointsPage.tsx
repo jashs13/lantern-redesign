@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { usePagination } from '@/hooks/usePagination';
 import { useDebounce } from '@/hooks/useDebounce';
+import { usePrefetchNextPage } from '@/hooks/usePrefetchNextPage';
 import { fetchEndpoints, fetchEndpointsCount } from '@/api/endpoints';
 import { fetchDashboardSummary } from '@/api/dashboard';
 import { fetchFHIRVersions, fetchVendors } from '@/api/filters';
@@ -202,6 +203,26 @@ export default function EndpointsPage() {
         sort_by: sorting[0]?.id,
         sort_dir: sorting[0]?.desc ? 'desc' : 'asc',
       }),
+  });
+
+  const nextPageFn = useCallback(
+    () =>
+      fetchEndpoints({
+        ...filterParams,
+        page: page + 1,
+        page_size: pageSize,
+        sort_by: sorting[0]?.id,
+        sort_dir: sorting[0]?.desc ? 'desc' : 'asc',
+      }),
+    [filterParams, page, pageSize, sorting],
+  );
+
+  usePrefetchNextPage({
+    page,
+    pageSize,
+    totalCount,
+    queryKey: ['endpoints-data', page + 1, pageSize, sorting, ...filterKey],
+    queryFn: nextPageFn,
   });
 
   if (error) return <ErrorState message={error.message} onRetry={() => refetch()} />;
