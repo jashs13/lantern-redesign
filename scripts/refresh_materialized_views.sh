@@ -984,7 +984,7 @@ docker exec -t lantern-back-end-main-postgres-1 psql -t -c "DROP INDEX IF EXISTS
     echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to drop mv_validation_results_plot_unique_idx." >> $log_file
 }
 
-docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE UNIQUE INDEX mv_validation_results_plot_unique_idx ON mv_validation_results_plot(url, fhir_version, vendor_name, rule_name, valid, expected, actual);" -U lantern -d lantern || {
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE UNIQUE INDEX mv_validation_results_plot_unique_idx ON mv_validation_results_plot(url, fhir_version, vendor_name, rule_name, valid, expected, actual, comment, reference);" -U lantern -d lantern || {
     echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to create mv_validation_results_plot_unique_idx." >> $log_file
 }
 
@@ -1034,7 +1034,7 @@ docker exec -t lantern-back-end-main-postgres-1 psql -t -c "DROP INDEX IF EXISTS
     echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to drop mv_validation_failures_unique_idx." >> $log_file
 }
 
-docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE UNIQUE INDEX mv_validation_failures_unique_idx ON mv_validation_failures(url, fhir_version, vendor_name, rule_name);" -U lantern -d lantern || {
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE UNIQUE INDEX mv_validation_failures_unique_idx ON mv_validation_failures(url, fhir_version, vendor_name, rule_name, reference);" -U lantern -d lantern || {
     echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to create mv_validation_failures_unique_idx." >> $log_file
 }
 
