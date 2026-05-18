@@ -141,6 +141,14 @@ docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE INDEX idx_mv_
     echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to create idx_mv_orgs_final_urls." >> $log_file
 }
 
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "DROP INDEX IF EXISTS idx_mv_orgs_final_is_chpl;" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to drop idx_mv_orgs_final_is_chpl." >> $log_file
+}
+
+docker exec -t lantern-back-end-main-postgres-1 psql -t -c "CREATE INDEX idx_mv_orgs_final_is_chpl ON mv_organizations_final USING GIN(is_chpl_array);" -U lantern -d lantern || {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to create idx_mv_orgs_final_is_chpl." >> $log_file
+}
+
 docker exec -t lantern-back-end-main-postgres-1 psql -t -c "DROP INDEX IF EXISTS idx_mv_orgs_final_search;" -U lantern -d lantern || {
     echo "$(date +"%Y-%m-%d %H:%M:%S") - Lantern failed to drop idx_mv_orgs_final_search." >> $log_file
 }
