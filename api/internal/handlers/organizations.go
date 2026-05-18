@@ -42,10 +42,12 @@ func buildOrgFilters(q map[string][]string) (whereClause string, args []any, nex
 		argIdx++
 	}
 
-	// State filter — match ", ST " or ", ST<br/>" patterns in addresses_html
-	if state := strings.ToUpper(get("state")); state != "" && utf8.RuneCountInString(state) == 2 {
-		conditions = append(conditions, fmt.Sprintf("addresses_html ILIKE $%d", argIdx))
-		args = append(args, "%, "+state+"%")
+	// State filter — match 2-letter state code preceded by comma and followed by
+	// comma, whitespace, or end-of-string (avoids matching city names like ARLINGTON for "AR").
+	// Only valid US state/territory codes are accepted.
+	if state := strings.ToUpper(get("state")); state != "" && utf8.RuneCountInString(state) == 2 && models.ValidUSStates[state] {
+		conditions = append(conditions, fmt.Sprintf("addresses_html ~ $%d", argIdx))
+		args = append(args, `,\s*`+state+`[,\s]`)
 		argIdx++
 	}
 

@@ -197,6 +197,7 @@ func (h *Handler) FilterProfiles(w http.ResponseWriter, r *http.Request) {
 }
 
 // FilterStates returns distinct 2-letter US state codes from mv_organization_states (precomputed MV).
+// Results are validated against models.ValidUSStates to exclude false positives from regex extraction.
 func (h *Handler) FilterStates(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.db.QueryContext(r.Context(),
 		`SELECT state FROM mv_organization_states WHERE state IS NOT NULL ORDER BY state`)
@@ -214,7 +215,9 @@ func (h *Handler) FilterStates(w http.ResponseWriter, r *http.Request) {
 			log.WithError(err).Error("scanning state row")
 			continue
 		}
-		options = append(options, models.FilterOption{Value: state})
+		if models.ValidUSStates[state] {
+			options = append(options, models.FilterOption{Value: state})
+		}
 	}
 	if options == nil {
 		options = []models.FilterOption{}
