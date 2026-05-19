@@ -40,6 +40,7 @@ export interface OrganizationCsvParams {
   identifier?: string;
   organization_detail?: string;
   state?: string;
+  source?: string;
   search?: string;
 }
 
@@ -64,6 +65,9 @@ export function getOrganizationsCsvUrl(params?: OrganizationCsvParams): string {
   }
   if (params?.state) {
     parts.push(`state=${encodeURIComponent(params.state)}`);
+  }
+  if (params?.source) {
+    parts.push(`source=${encodeURIComponent(params.source)}`);
   }
   if (params?.search) {
     parts.push(`search=${encodeURIComponent(params.search)}`);

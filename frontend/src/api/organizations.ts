@@ -11,6 +11,7 @@ export async function fetchOrganizations(
     vendor: params?.vendor,
     search: params?.search,
     state: params?.state,
+    source: params?.source,
   });
 }
 
@@ -22,6 +23,7 @@ export async function fetchOrganizationsCount(
     vendor: params?.vendor,
     search: params?.search,
     state: params?.state,
+    source: params?.source,
   });
   return result.total_count;
 }

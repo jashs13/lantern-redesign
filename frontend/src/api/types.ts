@@ -538,6 +538,7 @@ export interface OrganizationQueryParams {
   vendor?: string;
   search?: string;
   state?: string;
+  source?: string;
 }
 
 export interface ResourceQueryParams {

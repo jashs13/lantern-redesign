@@ -134,6 +134,7 @@ export default function OrganizationsPage() {
   const [state, setState] = useState<string | null>(searchParams.get('state') || null);
   const [fhirVersion, setFhirVersion] = useState<string | null>(searchParams.get('fhir_version') || null);
   const [vendor, setVendor] = useState<string | null>(searchParams.get('vendor') || null);
+  const [source, setSourceFilter] = useState<string | null>(null);
   const debouncedSearch = useDebounce(search);
 
   const [locationModal, setLocationModal] = useState<{ addresses: string[]; orgName: string } | null>(null);
@@ -164,9 +165,10 @@ export default function OrganizationsPage() {
     vendor: vendor ?? undefined,
     search: debouncedSearch || undefined,
     state: state ?? undefined,
+    source: source ?? undefined,
   };
 
-  const filterKey = [filters, debouncedSearch, state, fhirVersion, vendor];
+  const filterKey = [filters, debouncedSearch, state, fhirVersion, vendor, source];
 
   // Count query — keyed by filters only, cached across page changes
   const { data: totalCount = 0 } = useQuery({
@@ -211,12 +213,18 @@ export default function OrganizationsPage() {
     setPage(1);
   }
 
+  function handleSourceChange(v: string) {
+    setSourceFilter(v === ALL ? null : v);
+    setPage(1);
+  }
+
   if (error) return <ErrorState message={error.message} onRetry={() => refetch()} />;
 
   const activeFilters = [
     state && { key: 'state', label: 'State', value: state, onRemove: () => { setState(null); setPage(1); } },
     fhirVersion && { key: 'fhirVersion', label: 'FHIR Version', value: fhirVersion, onRemove: () => { setFhirVersion(null); setPage(1); } },
     vendor && { key: 'vendor', label: 'Developer', value: vendor, onRemove: () => { setVendor(null); setPage(1); } },
+    source && { key: 'source', label: 'Source', value: source, onRemove: () => { setSourceFilter(null); setPage(1); } },
   ].filter(Boolean) as { key: string; label: string; value: string; onRemove: () => void }[];
 
   return (
@@ -246,6 +254,7 @@ export default function OrganizationsPage() {
               developer: vendor || undefined,
               fhir_version: fhirVersion ? [fhirVersion] : (filters.fhirVersions.length > 0 ? filters.fhirVersions : undefined),
               state: state || undefined,
+              source: source || undefined,
               search: debouncedSearch || undefined,
             })}
             label="Export to CSV"
@@ -253,7 +262,7 @@ export default function OrganizationsPage() {
         </div>
 
         {/* Filter dropdowns grid */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col gap-2">
             <label
               className="font-sans font-bold uppercase"
@@ -296,6 +305,27 @@ export default function OrganizationsPage() {
               onValueChange={handleVendorChange}
               options={[{ value: ALL, label: 'All Developers' }, ...vendorOptions.map((o) => ({ value: o.value, label: o.value }))]}
               placeholder="All Developers"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label
+              className="font-sans font-bold uppercase"
+              style={{ fontSize: '0.8125rem', color: 'var(--color-gray-dark)', letterSpacing: '0.03em' }}
+            >
+              Source
+            </label>
+            <Select
+              value={source ?? ALL}
+              onValueChange={handleSourceChange}
+              options={[
+                { value: ALL, label: 'All Sources' },
+                { value: 'CHPL', label: 'CHPL' },
+                { value: 'State Medicaid', label: 'State Medicaid' },
+                { value: 'Payer', label: 'Payer' },
+                { value: 'Other', label: 'Other' },
+              ]}
+              placeholder="All Sources"
             />
           </div>
         </div>

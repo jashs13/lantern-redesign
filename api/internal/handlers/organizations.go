@@ -42,6 +42,13 @@ func buildOrgFilters(q map[string][]string) (whereClause string, args []any, nex
 		argIdx++
 	}
 
+	// Source filter (is_chpl_array overlap)
+	if source := get("source"); source != "" && source != "All" {
+		conditions = append(conditions, fmt.Sprintf("is_chpl_array && ARRAY[$%d]::text[]", argIdx))
+		args = append(args, source)
+		argIdx++
+	}
+
 	// State filter — match 2-letter state code preceded by comma and followed by
 	// comma, whitespace, or end-of-string (avoids matching city names like ARLINGTON for "AR").
 	// Only valid US state/territory codes are accepted.
