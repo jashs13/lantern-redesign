@@ -229,9 +229,9 @@ func (h *Handler) DownloadOrganizationsCSV(w http.ResponseWriter, r *http.Reques
 	q := r.URL.Query()
 
 	// Reject unknown query parameters
-	allowedParams := map[string]bool{"fhir_version": true, "developer": true, "identifier": true, "organization_detail": true, "state": true, "search": true}
+	allowedParams := map[string]bool{"fhir_version": true, "developer": true, "identifier": true, "organization_detail": true, "state": true, "source": true, "search": true}
 	if bad := validateQueryParams(q, allowedParams); len(bad) > 0 {
-		validList := []string{"fhir_version", "developer", "identifier", "organization_detail", "state", "search"}
+		validList := []string{"fhir_version", "developer", "identifier", "organization_detail", "state", "source", "search"}
 		models.WriteError(w, http.StatusBadRequest,
 			fmt.Sprintf("Unknown query parameter(s): %s. Valid parameters are: %s",
 				strings.Join(bad, ", "), strings.Join(validList, ", ")))
@@ -338,6 +338,13 @@ func (h *Handler) DownloadOrganizationsCSV(w http.ResponseWriter, r *http.Reques
 		argIdx++
 	}
 
+	// Source filter (is_chpl_array overlap)
+	if source := q.Get("source"); source != "" && source != "All" {
+		conditions = append(conditions, fmt.Sprintf("is_chpl_array && ARRAY[$%d]::text[]", argIdx))
+		args = append(args, source)
+		argIdx++
+	}
+
 	// Text search
 	if search := q.Get("search"); search != "" {
 		pattern := "%" + search + "%"
@@ -427,6 +434,9 @@ func (h *Handler) DownloadOrganizationsCSV(w http.ResponseWriter, r *http.Reques
 	}
 	if st := q.Get("state"); st != "" {
 		filenameParts = append(filenameParts, "state_"+sanitizeAlphaNum(st))
+	}
+	if src := q.Get("source"); src != "" {
+		filenameParts = append(filenameParts, "source_"+sanitizeAlphaNum(src))
 	}
 	if search := q.Get("search"); search != "" {
 		filenameParts = append(filenameParts, "search_"+sanitizeAlphaNum(search))
