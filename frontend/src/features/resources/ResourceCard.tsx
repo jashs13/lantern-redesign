@@ -15,7 +15,7 @@ const CATEGORY_VARIANT: Record<string, BadgeVariant> = {
 function barColor(pct: number): string {
   if (pct >= 85) return 'var(--color-success, #2e8540)';
   if (pct >= 50) return 'var(--color-secondary, #02bfe7)';
-  return 'var(--color-warning, #fdb81e)';
+  return 'var(--color-warning, #f7c951)';
 }
 
 interface ResourceCardProps {
@@ -38,7 +38,7 @@ export function ResourceCard({ resource }: ResourceCardProps) {
       }}
       onMouseEnter={(e) => {
         const el = e.currentTarget;
-        el.style.borderColor = 'var(--color-primary-light, #051359)';
+        el.style.borderColor = 'var(--color-primary-light)';
         el.style.boxShadow = '0 4px 6px rgba(0,0,0,0.07)';
         el.style.transform = 'translateY(-1px)';
       }}
@@ -53,7 +53,7 @@ export function ResourceCard({ resource }: ResourceCardProps) {
       <div className="mb-2 flex items-start justify-between gap-2">
         <span
           className="font-mono font-bold"
-          style={{ fontSize: '1rem', color: 'var(--color-primary-dark, #051359)', wordBreak: 'break-word' }}
+          style={{ fontSize: '1rem', color: 'var(--color-primary-dark)', wordBreak: 'break-word' }}
         >
           {resource.resource_type}
         </span>

@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 interface KpiCardProps {
   label: string;
@@ -6,45 +6,33 @@ interface KpiCardProps {
   borderColor?: string;
   subtitle?: string;
   smallValue?: boolean;
-  change?: {
-    value: string;
-    direction: 'up' | 'down';
-    label?: string;
-  };
-  icon?: React.ReactNode;
+  icon?: ReactNode;
 }
 
 /**
- * KPI card with coloured left border, used on dashboard/endpoints for key metrics.
+ * One segment of a KpiStrip — a colour dot + label, value, and optional
+ * subtitle. Render several inside a `.kpi-strip` container so they read as
+ * one grouped metrics component, not floating cards.
  */
-export function KpiCard({ label, value, borderColor = '#0f2f8a', subtitle, smallValue, change, icon }: KpiCardProps) {
+export function KpiCard({ label, value, borderColor = 'var(--blue-700)', subtitle, smallValue, icon }: KpiCardProps) {
+  const displayValue = typeof value === 'number' ? value.toLocaleString() : value;
+
   return (
-    <div
-      className="kpi-card flex items-start justify-between"
-      style={{ borderLeftColor: borderColor }}
-    >
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">{label}</p>
-        <p className={`mt-1 font-sans font-bold text-neutral-800 ${smallValue ? 'text-base whitespace-nowrap' : 'text-2xl break-words'}`}>
-          {typeof value === 'number' ? value.toLocaleString() : value}
-        </p>
-        {subtitle && (
-          <p className="mt-1 text-xs text-neutral-400">{subtitle}</p>
-        )}
-        {change && (
-          <p
-            className={`mt-1 flex items-center gap-1 text-xs font-semibold ${change.direction === 'up' ? 'text-status-green' : 'text-status-red'
-              }`}
-          >
-            {change.direction === 'up' ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-            {change.value}
-            {change.label && (
-              <span className="font-normal text-neutral-400"> {change.label}</span>
-            )}
-          </p>
-        )}
+    <div className="kpi-seg">
+      <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: borderColor }} />
+        {label}
       </div>
-      {icon && <div className="ml-3 text-neutral-300">{icon}</div>}
+      <div className="mt-1 flex min-w-0 items-center gap-2">
+        <p
+          className={`min-w-0 font-sans font-bold text-neutral-800 ${smallValue ? 'truncate text-base' : 'break-words text-2xl'}`}
+          title={smallValue ? String(displayValue) : undefined}
+        >
+          {displayValue}
+        </p>
+        {icon && <span className="shrink-0 text-neutral-300">{icon}</span>}
+      </div>
+      {subtitle && <p className="mt-1 text-xs text-neutral-400">{subtitle}</p>}
     </div>
   );
 }

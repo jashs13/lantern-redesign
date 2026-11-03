@@ -59,7 +59,7 @@ function buildFailuresColumns(
         <div className="min-w-0 max-w-[200px]">
           <button
             type="button"
-            className="truncate block w-full text-left font-mono text-xs text-neutral-800 hover:text-navy-700 hover:underline"
+            className="truncate block w-full text-left font-mono text-xs text-neutral-800 hover:text-blue-700 hover:underline"
             onClick={() => onOpenDetail(url)}
           >
             {url}
@@ -278,7 +278,7 @@ export default function ValidationsPage() {
 
       {/* Chart Section */}
       <section className="rounded-md bg-white p-6 shadow-[var(--shadow-sm)]">
-        <h2 className="mb-6 text-lg font-bold text-navy-900">Validation Results Count</h2>
+        <h2 className="mb-6 text-lg font-bold text-blue-900">Validation Results Count</h2>
         <div className="h-[500px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -311,7 +311,7 @@ export default function ValidationsPage() {
         {/* Left Col: Rules List */}
         <div className="flex flex-col rounded-md bg-white shadow-[var(--shadow-sm)] lg:col-span-4 xl:col-span-3">
           <div className="border-b border-neutral-100 p-4">
-            <h3 className="text-base font-bold text-navy-900">Validation Rules</h3>
+            <h3 className="text-base font-bold text-blue-900">Validation Rules</h3>
             <p className="mt-1 text-xs text-neutral-500">
               Click on a rule below to filter the failures table.
             </p>
@@ -335,7 +335,7 @@ export default function ValidationsPage() {
                           {idx + 1}.
                         </span>
                         <div className="flex flex-col gap-1.5">
-                          <span className="font-semibold text-navy-900">{rule.rule_name}</span>
+                          <span className="font-semibold text-blue-900">{rule.rule_name}</span>
                           <span className="text-xs text-neutral-500">
                             <strong>Versions:</strong> {rule.fhir_version || 'All'}
                           </span>
@@ -356,10 +356,10 @@ export default function ValidationsPage() {
         {/* Right Col: Failures Table */}
         <div className="flex flex-col rounded-md bg-white p-6 shadow-[var(--shadow-sm)] lg:col-span-8 xl:col-span-9 w-full overflow-hidden">
           <div className="mb-4">
-            <h3 className="text-lg font-bold text-navy-900">Validation Failure Details</h3>
+            <h3 className="text-lg font-bold text-blue-900">Validation Failure Details</h3>
             <p className="mt-1 text-sm text-neutral-600">
               Rule:{' '}
-              <span className="font-semibold text-navy-700">
+              <span className="font-semibold text-blue-700">
                 {selectedRule || 'Select a rule'}
               </span>
             </p>

@@ -25,7 +25,7 @@ const columns: ColumnDef<FieldValue, unknown>[] = [
         accessorKey: 'field_value',
         header: 'Field Value',
         cell: ({ getValue }) => (
-            <span className="font-medium text-navy-700 break-all">{getValue() as string}</span>
+            <span className="font-medium text-blue-700 break-all">{getValue() as string}</span>
         ),
     },
     {

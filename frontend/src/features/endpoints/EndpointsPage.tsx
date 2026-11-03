@@ -17,18 +17,22 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Badge } from '@/components/ui/Badge';
 import { QuickFilter } from '@/components/ui/QuickFilter';
 import { ViewToggle } from '@/components/ui/ViewToggle';
+import { FilterTag } from '@/components/ui/FilterTag';
+import { AboutDataNote } from '@/components/ui/AboutDataNote';
+import { SectionDivider } from '@/components/ui/SectionDivider';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { DownloadButton } from '@/components/ui/DownloadButton';
 import { getEndpointsCsvUrl } from '@/api/downloads';
 import { EndpointDetailModal } from './EndpointDetailModal';
 import type { Endpoint } from '@/api/types';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { formatPercent, formatDuration, formatHttpStatus } from '@/lib/formatters';
+import { formatPercent, formatDuration, formatHttpStatus, formatDate } from '@/lib/formatters';
 import {
   CheckCircle,
   XCircle,
   Clock,
   Activity,
+  X,
 } from 'lucide-react';
 
 function getStatusVariant(httpCode: number | null): 'available' | 'degraded' | 'down' | 'unknown' {
@@ -64,7 +68,7 @@ function buildColumns(onOpenDetail: (url: string) => void): ColumnDef<Endpoint, 
       <div className="min-w-0 max-w-[300px]">
         <button
           type="button"
-          className="truncate block w-full text-left font-semibold text-navy-700 text-xs hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700 focus-visible:ring-offset-1 rounded-sm"
+          className="truncate block w-full text-left font-semibold text-blue-700 text-xs hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-1 rounded-sm"
           onClick={() => onOpenDetail(row.original.url)}
         >
           {row.original.endpoint_names || row.original.url}
@@ -253,16 +257,29 @@ export default function EndpointsPage() {
         title="Endpoints"
         subtitle="Browse and search all monitored FHIR endpoints"
         breadcrumbs={[{ label: 'Endpoints' }]}
+        titleExtra={
+          summary?.totals.last_updated && (
+            <span className="flex items-center text-[13px] text-neutral-500">
+              <span className="mr-[5px] inline-block h-[7px] w-[7px] rounded-full bg-status-green" />
+              Data updated {formatDate(summary.totals.last_updated)} · refreshes daily
+            </span>
+          )
+        }
+      />
+
+      <SectionDivider
+        title="Endpoint status at a glance"
+        subtitle="Totals from the latest daily query of all indexed endpoints"
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="kpi-strip">
         <KpiCard label="Available" value={availableCount} borderColor="#2e8540" icon={<CheckCircle size={18} />} />
         <KpiCard label="Unavailable" value={unavailableCount} borderColor="#e31c3d" icon={<XCircle size={18} />} />
         <KpiCard
           label="Avg Response"
           value={summary?.totals.avg_response_time ? `${Math.round(summary.totals.avg_response_time * 1000)}ms` : '—'}
-          borderColor="#0f2f8a"
+          borderColor="var(--blue-700)"
           icon={<Clock size={18} />}
         />
         <KpiCard
@@ -275,20 +292,88 @@ export default function EndpointsPage() {
         />
       </div>
 
-      {/* Search + Filters Card */}
-      <section
-        className="rounded-md bg-white"
-        style={{ padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}
-        aria-label="Search and filter endpoints"
-      >
-        {/* Search row */}
-        <div className="mb-4 flex flex-wrap gap-4">
-          <SearchInput
-            value={search}
-            onChange={(v) => { setSearch(v); setPage(1); }}
-            placeholder="Search by endpoint name, URL, or organization..."
-            className="flex-1 min-w-[280px]"
+      <SectionDivider title="Browse endpoints" subtitle="Search and filter the full monitored endpoint list" />
+
+      {/* Filters bar */}
+      <div className="flex flex-wrap items-center gap-2.5 rounded-md border border-neutral-200 bg-white p-3 shadow-card">
+        <span className="mr-0.5 text-xs font-bold uppercase tracking-wider text-neutral-500">Filters</span>
+        <SearchInput
+          value={search}
+          onChange={(v) => { setSearch(v); setPage(1); }}
+          placeholder="Search by name, URL, or organization..."
+          className="min-w-[220px] flex-1 basis-64"
+        />
+        <div className="w-40">
+          <Select
+            value={filters.fhirVersions[0] ?? '__all__'}
+            onValueChange={(v) => { setFhirVersions(v === '__all__' ? [] : [v]); setPage(1); }}
+            options={[{ value: '__all__', label: 'All Versions' }, ...fhirVersionOptions.map((o) => ({ value: o.value, label: o.value }))]}
+            placeholder="FHIR Version"
           />
+        </div>
+        <div className="w-44">
+          <Select
+            value={vendor ?? '__all__'}
+            onValueChange={(v) => { setVendor(v === '__all__' ? null : v); setPage(1); }}
+            options={[{ value: '__all__', label: 'All Developers' }, ...vendorOptions.map((o) => ({ value: o.value, label: o.value }))]}
+            placeholder="Developer"
+          />
+        </div>
+        <div className="w-36">
+          <Select
+            value={filters.source ?? '__all__'}
+            onValueChange={(v) => { setSource(v === '__all__' ? null : v); setPage(1); }}
+            options={[
+              { value: '__all__', label: 'All Sources' },
+              { value: 'CHPL', label: 'CHPL' },
+              { value: 'State Medicaid', label: 'State Medicaid' },
+              { value: 'Payer', label: 'Payer' },
+              { value: 'Other', label: 'Other' },
+            ]}
+            placeholder="Source"
+          />
+        </div>
+        <QuickFilter
+          label="≥99% Uptime"
+          active={highUptimeOnly}
+          onClick={() => { setHighUptimeOnly((v) => !v); setPage(1); }}
+        />
+
+        {filters.fhirVersions[0] && (
+          <FilterTag
+            label="FHIR Version"
+            value={filters.fhirVersions[0]}
+            onRemove={() => { setFhirVersions([]); setPage(1); }}
+          />
+        )}
+        {vendor && (
+          <FilterTag label="Developer" value={vendor} onRemove={() => { setVendor(null); setPage(1); }} />
+        )}
+        {filters.source && (
+          <FilterTag label="Source" value={filters.source} onRemove={() => { setSource(null); setPage(1); }} />
+        )}
+
+        {hasActiveFilters && (
+          <button
+            onClick={clearAllFilters}
+            className="ml-auto flex items-center gap-1.5 rounded border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-500 transition-colors hover:border-blue-700 hover:text-blue-700"
+          >
+            <X size={12} /> Clear all
+          </button>
+        )}
+      </div>
+
+      {/* Results bar */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-neutral-500">
+          Showing{' '}
+          <span className="font-semibold text-neutral-700">
+            {totalCount.toLocaleString()}
+          </span>{' '}
+          results
+        </p>
+        <div className="flex items-center gap-2.5">
+          <ViewToggle mode={viewMode} onChange={setViewMode} />
           <DownloadButton
             url={getEndpointsCsvUrl({
               fhir_version: filters.fhirVersions.length > 0 ? filters.fhirVersions : undefined,
@@ -300,96 +385,6 @@ export default function EndpointsPage() {
             label="Export CSV"
           />
         </div>
-
-        {/* Filter dropdowns grid */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="flex flex-col gap-2">
-            <label
-              className="font-sans font-bold uppercase"
-              style={{ fontSize: '0.8125rem', color: 'var(--color-gray-dark)', letterSpacing: '0.03em' }}
-            >
-              FHIR Version
-            </label>
-            <Select
-              value={filters.fhirVersions[0] ?? '__all__'}
-              onValueChange={(v) => { setFhirVersions(v === '__all__' ? [] : [v]); setPage(1); }}
-              options={[{ value: '__all__', label: 'All Versions' }, ...fhirVersionOptions.map((o) => ({ value: o.value, label: o.value }))]}
-              placeholder="All Versions"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label
-              className="font-sans font-bold uppercase"
-              style={{ fontSize: '0.8125rem', color: 'var(--color-gray-dark)', letterSpacing: '0.03em' }}
-            >
-              EHR Developer
-            </label>
-            <Select
-              value={vendor ?? '__all__'}
-              onValueChange={(v) => { setVendor(v === '__all__' ? null : v); setPage(1); }}
-              options={[{ value: '__all__', label: 'All Developers' }, ...vendorOptions.map((o) => ({ value: o.value, label: o.value }))]}
-              placeholder="All Developers"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label
-              className="font-sans font-bold uppercase"
-              style={{ fontSize: '0.8125rem', color: 'var(--color-gray-dark)', letterSpacing: '0.03em' }}
-            >
-              Source
-            </label>
-            <Select
-              value={filters.source ?? '__all__'}
-              onValueChange={(v) => { setSource(v === '__all__' ? null : v); setPage(1); }}
-              options={[
-                { value: '__all__', label: 'All Sources' },
-                { value: 'CHPL', label: 'CHPL' },
-                { value: 'State Medicaid', label: 'State Medicaid' },
-                { value: 'Payer', label: 'Payer' },
-                { value: 'Other', label: 'Other' },
-              ]}
-              placeholder="All Sources"
-            />
-          </div>
-        </div>
-
-        {/* Quick filters */}
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <QuickFilter
-            label="≥99% Uptime"
-            active={highUptimeOnly}
-            onClick={() => { setHighUptimeOnly((v) => !v); setPage(1); }}
-          />
-        </div>
-
-        {/* Clear Filters Button */}
-        {hasActiveFilters && (
-          <div
-            className="mt-4 flex justify-end"
-            style={{ paddingTop: '1rem', borderTop: '1px solid var(--color-gray-lighter)' }}
-          >
-            <button
-              onClick={clearAllFilters}
-              className="text-sm font-semibold text-neutral-500 hover:text-navy-700 hover:underline"
-            >
-              Clear All Filters
-            </button>
-          </div>
-        )}
-      </section>
-
-      {/* Results bar */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-neutral-500">
-          Showing{' '}
-          <span className="font-semibold text-neutral-700">
-            {totalCount.toLocaleString()}
-          </span>{' '}
-          results
-        </p>
-        <ViewToggle mode={viewMode} onChange={setViewMode} />
       </div>
 
       {/* Table or Grid */}
@@ -419,7 +414,7 @@ export default function EndpointsPage() {
                   <div className="min-w-0 flex-1">
                     <button
                       type="button"
-                      className="truncate block w-full text-left font-semibold text-navy-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-700 focus-visible:ring-offset-1 rounded-sm"
+                      className="truncate block w-full text-left font-semibold text-blue-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-1 rounded-sm"
                       onClick={() => setSelectedEndpointUrl(ep.url)}
                     >
                       {ep.endpoint_names || ep.url}
@@ -447,6 +442,13 @@ export default function EndpointsPage() {
         url={selectedEndpointUrl}
         onClose={() => setSelectedEndpointUrl(null)}
       />
+
+      <SectionDivider title="About this data" />
+      <AboutDataNote>
+        Lantern queries every published FHIR service base URL daily and records its HTTP response, response time,
+        and Capability Statement. Endpoints that do not respond are shown with a "No response" status —
+        non-response is itself a monitored finding, not missing data.
+      </AboutDataNote>
     </div>
   );
 }

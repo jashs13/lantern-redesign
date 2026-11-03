@@ -38,7 +38,7 @@ function generateScale(base: string) {
   };
 }
 
-/** Inject a <style> tag that overrides Tailwind's compiled navy-* classes. */
+/** Inject a <style> tag that overrides Tailwind's compiled blue-* classes. */
 function applyTailwindOverrides(id: string, scale: Record<number, string>, prefix: string) {
   let el = document.getElementById(id);
   if (!el) {
@@ -80,7 +80,7 @@ function clearOverrides() {
 }
 
 const PRESETS = [
-  { label: 'Current', sidebar: '#051359', header: '#051359' },
+  { label: 'Current', sidebar: '#0e1f75', header: '#0e1f75' },
   { label: 'USWDS', sidebar: '#162e51', header: '#162e51' },
   { label: 'HealthIT Teal', sidebar: '#003947', header: '#003947' },
   { label: 'Deep Indigo', sidebar: '#1a1054', header: '#1a1054' },
@@ -90,8 +90,8 @@ const PRESETS = [
 
 export function ThemePicker() {
   const [isOpen, setIsOpen] = useState(false);
-  const [sidebarColor, setSidebarColor] = useState('#051359');
-  const [headerColor, setHeaderColor] = useState('#051359');
+  const [sidebarColor, setSidebarColor] = useState('#0e1f75');
+  const [headerColor, setHeaderColor] = useState('#0e1f75');
   const [copied, setCopied] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -99,10 +99,10 @@ export function ThemePicker() {
     const sidebarScale = generateScale(sidebar);
     const headerScale = generateScale(header);
 
-    // Sidebar overrides: target bg-navy-950 (sidebar bg) and related shades
-    applyTailwindOverrides('theme-picker-sidebar', sidebarScale, 'bg-navy');
+    // Sidebar overrides: target bg-blue-950 (sidebar bg) and related shades
+    applyTailwindOverrides('theme-picker-sidebar', sidebarScale, 'bg-blue');
 
-    // Header uses bg-navy-900, so override that specifically
+    // Header uses bg-blue-900, so override that specifically
     const headerStyle = document.getElementById('theme-picker-header') || (() => {
       const el = document.createElement('style');
       el.id = 'theme-picker-header';
@@ -110,12 +110,12 @@ export function ThemePicker() {
       return el;
     })();
     headerStyle.textContent = `
-      header.bg-navy-900 { background-color: ${header} !important; }
-      aside.bg-navy-900 { background-color: ${sidebar} !important; }
-      thead.bg-navy-900 { background-color: ${headerScale[900]} !important; }
-      .text-navy-900 { color: ${sidebarScale[900]} !important; }
-      .text-navy-700 { color: ${sidebarScale[700]} !important; }
-      .border-navy-700 { border-color: ${sidebarScale[700]} !important; }
+      header.bg-blue-900 { background-color: ${header} !important; }
+      aside.bg-blue-900 { background-color: ${sidebar} !important; }
+      thead.bg-blue-900 { background-color: ${headerScale[900]} !important; }
+      .text-blue-900 { color: ${sidebarScale[900]} !important; }
+      .text-blue-700 { color: ${sidebarScale[700]} !important; }
+      .border-blue-700 { border-color: ${sidebarScale[700]} !important; }
     `;
 
     applyCssVarOverrides(sidebarScale);
@@ -128,10 +128,10 @@ export function ThemePicker() {
 
   const handleReset = () => {
     clearOverrides();
-    setSidebarColor('#051359');
-    setHeaderColor('#051359');
+    setSidebarColor('#0e1f75');
+    setHeaderColor('#0e1f75');
     // Re-apply defaults after a tick
-    setTimeout(() => applyColors('#051359', '#051359'), 10);
+    setTimeout(() => applyColors('#0e1f75', '#0e1f75'), 10);
   };
 
   const handleCopy = () => {

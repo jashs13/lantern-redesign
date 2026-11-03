@@ -12,7 +12,7 @@ export function ResourceStatsCards() {
   if (!data) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="kpi-strip">
       <KpiCard
         label="Distinct Resources"
         value={data.distinct_resources}
@@ -29,14 +29,14 @@ export function ResourceStatsCards() {
         label="Most Supported"
         value={data.most_supported_resource}
         subtitle={`Supported by ${data.most_supported_percent.toFixed(1)}% of endpoints`}
-        borderColor="var(--color-primary, #0f2f8a)"
+        borderColor="var(--color-primary)"
         smallValue
       />
       <KpiCard
         label="USCDI Coverage"
         value={`${data.uscdi_coverage_percent.toFixed(1)}%`}
         subtitle="Of endpoints support all USCDI v1 resources"
-        borderColor="var(--color-warning, #fdb81e)"
+        borderColor="var(--color-warning, #f7c951)"
       />
     </div>
   );

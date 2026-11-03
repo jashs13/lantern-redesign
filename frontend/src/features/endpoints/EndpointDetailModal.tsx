@@ -9,6 +9,7 @@ import { LoadingState } from '@/components/ui/LoadingState';
 import { TimeSeriesChart } from '@/components/charts/TimeSeriesChart';
 import { fetchEndpointDetails, fetchEndpointResponseTime, fetchEndpointHTTPHistory } from '@/api/endpoints';
 import { formatPercent, formatDuration, formatHttpStatus, formatDate } from '@/lib/formatters';
+import type { CapabilityField } from '@/api/types';
 
 function getStatusVariant(httpCode: number | null): 'available' | 'degraded' | 'down' | 'unknown' {
   if (httpCode === null) return 'unknown';
@@ -51,6 +52,38 @@ function FieldRow({ label, children }: FieldRowProps) {
       <dt className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{label}</dt>
       <dd className="text-sm text-neutral-800 break-words">{children}</dd>
     </>
+  );
+}
+
+function FieldExistsTable({ fields, label }: { fields: CapabilityField[]; label: string }) {
+  return (
+    <div className="mb-4">
+      <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">{label}</p>
+      {fields.length === 0 ? (
+        <p className="text-sm italic text-neutral-400 py-1">None</p>
+      ) : (
+        <table className="min-w-full text-sm">
+          <thead className="bg-neutral-50">
+            <tr>
+              <th className="px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500">Field Name</th>
+              <th className="px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500">Exists</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-neutral-100">
+            {fields.map((field) => (
+              <tr key={`${field.field_name}-${field.is_extension}`} className="hover:bg-neutral-50">
+                <td className="px-3 py-1.5 font-mono text-xs text-neutral-700">{field.field_name}</td>
+                <td className="px-3 py-1.5 text-xs">
+                  {field.exists
+                    ? <span className="text-green-600 font-semibold">✓</span>
+                    : <span className="text-red-400">✗</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
   );
 }
 
@@ -292,7 +325,7 @@ export function EndpointDetailModal({ url, onClose }: EndpointDetailModalProps) 
                 onClick={() => setChartDays(d)}
                 className={`px-2 py-0.5 text-xs rounded transition-colors ${
                   chartDays === d
-                    ? 'bg-navy-700 text-white'
+                    ? 'bg-blue-700 text-white'
                     : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
                 }`}
               >
@@ -351,38 +384,6 @@ export function EndpointDetailModal({ url, onClose }: EndpointDetailModalProps) 
   const extFields = capFields.filter(f => f.is_extension);
   const reqFields = nonExtFields.filter(f => REQUIRED_FIELDS.includes(f.field_name));
   const optFields = nonExtFields.filter(f => !REQUIRED_FIELDS.includes(f.field_name));
-
-  function FieldExistsTable({ fields, label }: { fields: typeof capFields; label: string }) {
-    return (
-      <div className="mb-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">{label}</p>
-        {fields.length === 0 ? (
-          <p className="text-sm italic text-neutral-400 py-1">None</p>
-        ) : (
-          <table className="min-w-full text-sm">
-            <thead className="bg-neutral-50">
-              <tr>
-                <th className="px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500">Field Name</th>
-                <th className="px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500">Exists</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
-              {fields.map((f, i) => (
-                <tr key={i} className="hover:bg-neutral-50">
-                  <td className="px-3 py-1.5 font-mono text-xs text-neutral-700">{f.field_name}</td>
-                  <td className="px-3 py-1.5 text-xs">
-                    {f.exists
-                      ? <span className="text-green-600 font-semibold">✓</span>
-                      : <span className="text-red-400">✗</span>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-    );
-  }
 
   const opResources = detail?.operation_resources ?? [];
   const smartCaps = detail?.smart_capabilities ?? [];
@@ -547,7 +548,7 @@ export function EndpointDetailModal({ url, onClose }: EndpointDetailModalProps) 
                         href={product.api_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-navy-700 hover:text-navy-500"
+                        className="text-blue-700 hover:text-blue-500"
                         aria-label={`Open ${product.name} API URL`}
                       >
                         <ExternalLink size={12} />

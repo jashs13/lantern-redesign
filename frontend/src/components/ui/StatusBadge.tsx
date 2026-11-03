@@ -16,7 +16,7 @@ const VARIANT_STYLES: Record<StatusVariant, { dot: string; text: string; bg: str
   },
   degraded: {
     dot: 'bg-status-gold',
-    text: 'text-yellow-700',
+    text: 'text-status-gold-text',
     bg: 'bg-status-gold-bg',
   },
   down: {

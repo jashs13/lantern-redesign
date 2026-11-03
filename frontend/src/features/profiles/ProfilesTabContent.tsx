@@ -51,7 +51,7 @@ const columns: ColumnDef<ProfileAdoptionItem, unknown>[] = [
     accessorKey: 'endpoint_count',
     header: 'Endpoints',
     cell: ({ getValue }) => (
-      <span className="font-bold text-navy-700">
+      <span className="font-bold text-blue-700">
         {(getValue() as number).toLocaleString()}
       </span>
     ),
@@ -66,7 +66,7 @@ const columns: ColumnDef<ProfileAdoptionItem, unknown>[] = [
           ? 'var(--color-success, #2e8540)'
           : pct >= 25
           ? 'var(--color-secondary, #02bfe7)'
-          : 'var(--color-warning, #fdb81e)';
+          : 'var(--color-warning, #f7c951)';
       return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 130 }}>
           <div

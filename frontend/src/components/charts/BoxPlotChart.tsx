@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   ErrorBar,
 } from 'recharts';
-import { NAVY_COLORS, STATUS_COLORS } from '@/lib/constants';
+import { TOKENS } from '@/lib/constants';
 
 interface BoxPlotData {
   name: string;
@@ -40,8 +40,8 @@ export function BoxPlotChart({ data, height = 400 }: BoxPlotChartProps) {
         <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-45} textAnchor="end" height={80} />
         <YAxis tick={{ fontSize: 12 }} />
         <Tooltip />
-        <Bar dataKey="mean" fill={NAVY_COLORS.primary} radius={[4, 4, 0, 0]}>
-          <ErrorBar dataKey="error" width={4} strokeWidth={2} stroke={STATUS_COLORS.down} />
+        <Bar dataKey="mean" fill={TOKENS.blue700} radius={[4, 4, 0, 0]}>
+          <ErrorBar dataKey="error" width={4} strokeWidth={2} stroke={TOKENS.error} />
         </Bar>
       </BarChart>
     </ResponsiveContainer>

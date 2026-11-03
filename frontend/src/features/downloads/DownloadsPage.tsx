@@ -13,8 +13,8 @@ export default function DownloadsPage() {
       />
 
       <div className="rounded-md border border-neutral-200 bg-white p-6 shadow-card">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-navy-900">
-          <FileDown size={20} className="text-navy-700" />
+        <h2 className="flex items-center gap-2 text-base font-semibold text-blue-900">
+          <FileDown size={20} className="text-blue-700" />
           CSV Downloads
         </h2>
         <p className="mt-2 text-sm text-neutral-500">
@@ -27,8 +27,8 @@ export default function DownloadsPage() {
       </div>
 
       <div className="rounded-md border border-neutral-200 bg-white p-6 shadow-card">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-navy-900">
-          <Code2 size={20} className="text-navy-700" />
+        <h2 className="flex items-center gap-2 text-base font-semibold text-blue-900">
+          <Code2 size={20} className="text-blue-700" />
           API Access
         </h2>
         <p className="mt-2 text-sm text-neutral-500">
@@ -37,11 +37,11 @@ export default function DownloadsPage() {
         <div className="mt-4 space-y-6">
           {/* Endpoint API */}
           <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4">
-            <h3 className="text-sm font-bold text-navy-900">Endpoint Download API</h3>
+            <h3 className="text-sm font-bold text-blue-900">Endpoint Download API</h3>
             <p className="mt-1 text-sm text-neutral-600">Downloads daily FHIR endpoint data.</p>
             <div className="mt-3">
               <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Endpoint</span>
-              <p className="mt-1 font-mono text-sm text-navy-700">[GET] /api/v1/downloads/endpoints.csv</p>
+              <p className="mt-1 font-mono text-sm text-blue-700">[GET] /api/v1/downloads/endpoints.csv</p>
             </div>
             <div className="mt-3">
               <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Query Parameters</span>
@@ -55,11 +55,11 @@ export default function DownloadsPage() {
 
           {/* Org API */}
           <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4">
-            <h3 className="text-sm font-bold text-navy-900">Organization Download API</h3>
+            <h3 className="text-sm font-bold text-blue-900">Organization Download API</h3>
             <p className="mt-1 text-sm text-neutral-600">Downloads daily organization data associated with endpoints.</p>
             <div className="mt-3">
               <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Endpoint</span>
-              <p className="mt-1 font-mono text-sm text-navy-700">[GET] /api/v1/downloads/organizations.csv</p>
+              <p className="mt-1 font-mono text-sm text-blue-700">[GET] /api/v1/downloads/organizations.csv</p>
             </div>
             <div className="mt-3">
               <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Query Parameters</span>
@@ -83,8 +83,8 @@ export default function DownloadsPage() {
       </div>
 
       <div className="rounded-md border border-neutral-200 bg-white p-6 shadow-card">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-navy-900">
-          <ExternalLink size={20} className="text-navy-700" />
+        <h2 className="flex items-center gap-2 text-base font-semibold text-blue-900">
+          <ExternalLink size={20} className="text-blue-700" />
           External Resources
         </h2>
         <p className="mt-2 text-sm text-neutral-500">
@@ -95,7 +95,7 @@ export default function DownloadsPage() {
             href="https://github.com/onc-healthit/lantern-back-end"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-md border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-navy-700 shadow-sm transition-all hover:bg-neutral-50 hover:shadow-card"
+            className="inline-flex items-center gap-2 rounded-md border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm transition-all hover:bg-neutral-50 hover:shadow-card"
           >
             <ExternalLink size={14} />
             GitHub Repository

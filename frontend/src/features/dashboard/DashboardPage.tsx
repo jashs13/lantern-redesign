@@ -1,25 +1,32 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useFilters } from '@/hooks/useFilters';
 import { fetchDashboardSummary } from '@/api/dashboard';
+import { fetchFHIRVersions, fetchVendors } from '@/api/filters';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { KpiCard } from '@/components/ui/KpiCard';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Pagination } from '@/components/ui/Pagination';
+import { Select } from '@/components/ui/Select';
+import { FilterTag } from '@/components/ui/FilterTag';
+import { MultiSelectDropdown } from '@/components/ui/MultiSelectDropdown';
+import { AboutDataNote } from '@/components/ui/AboutDataNote';
+import { SectionDivider } from '@/components/ui/SectionDivider';
 import { TimeSeriesChart } from '@/components/charts/TimeSeriesChart';
-import { HTTP_STATUS_COLORS, STATUS_COLORS, NAVY_COLORS } from '@/lib/constants';
-import { formatNumber } from '@/lib/formatters';
+import { HTTP_STATUS_TOKENS, STATUS_TOKENS, TOKENS, getToken } from '@/lib/constants';
+import { formatNumber, formatDate } from '@/lib/formatters';
 import {
   CheckCircle,
   AlertTriangle,
   XCircle,
-  Clock,
   Download,
   Search,
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
+  X,
 } from 'lucide-react';
 import {
   BarChart as RechartsBarChart,
@@ -39,15 +46,6 @@ import { BarChart } from '@/components/charts/BarChart';
 /* Inline helper components                                                    */
 /* ========================================================================== */
 
-function SectionDivider({ title }: { title: string }) {
-  return (
-    <div className="flex items-center gap-4 mt-4">
-      <h2 className="shrink-0 font-serif text-lg font-bold text-navy-900">{title}</h2>
-      <div className="h-px flex-1 bg-neutral-200" />
-    </div>
-  );
-}
-
 function ChartCard({
   title,
   subtitle,
@@ -63,7 +61,7 @@ function ChartCard({
     <div className="rounded-lg bg-white p-5 flex flex-col">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="font-serif text-base font-bold text-navy-900">{title}</h3>
+          <h3 className="text-base font-bold text-blue-900">{title}</h3>
           {subtitle && <p className="text-sm text-neutral-500">{subtitle}</p>}
         </div>
         {headerRight && (
@@ -82,19 +80,21 @@ function ChartCard({
 /* ========================================================================== */
 
 function httpCodeColor(code: number): string {
-  if (code >= 200 && code < 300) return HTTP_STATUS_COLORS['2xx'].color;
-  if (code >= 300 && code < 400) return HTTP_STATUS_COLORS['3xx'].color;
-  if (code >= 400 && code < 500) return HTTP_STATUS_COLORS['4xx'].color;
-  if (code >= 500 && code < 600) return HTTP_STATUS_COLORS['5xx'].color;
-  return HTTP_STATUS_COLORS['5xx'].color;
+  if (code >= 200 && code < 300) return HTTP_STATUS_TOKENS['2xx'].color;
+  if (code >= 300 && code < 400) return HTTP_STATUS_TOKENS['3xx'].color;
+  if (code >= 400 && code < 500) return HTTP_STATUS_TOKENS['4xx'].color;
+  if (code >= 500 && code < 600) return HTTP_STATUS_TOKENS['5xx'].color;
+  return HTTP_STATUS_TOKENS['5xx'].color;
 }
 
 /* ========================================================================== */
 /* Dashboard Page                                                              */
 /* ========================================================================== */
 
+const ALL = '__all__';
+
 export default function DashboardPage() {
-  const { filters } = useFilters();
+  const { filters, setFhirVersions, setVendor, resetFilters } = useFilters();
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['dashboard', filters.fhirVersions, filters.vendor],
@@ -103,6 +103,18 @@ export default function DashboardPage() {
         fhir_versions: filters.fhirVersions,
         vendor: filters.vendor ?? undefined,
       }),
+  });
+
+  const { data: fhirVersionOptions = [] } = useQuery({
+    queryKey: ['filters', 'fhir-versions'],
+    queryFn: fetchFHIRVersions,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const { data: vendorOptions = [] } = useQuery({
+    queryKey: ['filters', 'vendors'],
+    queryFn: fetchVendors,
+    staleTime: 10 * 60 * 1000,
   });
 
   // Availability chart time range toggle
@@ -275,6 +287,12 @@ export default function DashboardPage() {
       <PageHeader
         title="FHIR Endpoint Dashboard"
         breadcrumbs={[{ label: 'Dashboard' }]}
+        titleExtra={
+          <span className="flex items-center text-[13px] text-neutral-500">
+            <span className="mr-[5px] inline-block h-[7px] w-[7px] rounded-full bg-status-green" />
+            Data updated {data.totals.last_updated ? formatDate(data.totals.last_updated) : 'today'} · refreshes daily
+          </span>
+        }
       >
         <p className="text-sm text-neutral-600 max-w-4xl">
           <strong>Lantern</strong> monitors nationwide FHIR API endpoints for ONC, tracking the availability and
@@ -284,12 +302,60 @@ export default function DashboardPage() {
         </p>
       </PageHeader>
 
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-2.5 rounded-md border border-neutral-200 bg-white p-3 shadow-card">
+        <span className="mr-0.5 text-xs font-bold uppercase tracking-wider text-neutral-500">Filters</span>
+        <div className="w-48">
+          <MultiSelectDropdown
+            options={fhirVersionOptions.map((o) => o.value)}
+            selected={filters.fhirVersions}
+            onChange={setFhirVersions}
+            placeholder="FHIR Version"
+          />
+        </div>
+        <div className="w-52">
+          <Select
+            value={filters.vendor ?? ALL}
+            onValueChange={(v) => setVendor(v === ALL ? null : v)}
+            options={[
+              { value: ALL, label: 'All Developers' },
+              ...vendorOptions.map((o) => ({ value: o.value, label: o.value })),
+            ]}
+            placeholder="Developer"
+          />
+        </div>
+        {filters.fhirVersions.map((v) => (
+          <FilterTag
+            key={v}
+            label="FHIR Version"
+            value={v}
+            onRemove={() => setFhirVersions(filters.fhirVersions.filter((x) => x !== v))}
+          />
+        ))}
+        {filters.vendor && (
+          <FilterTag label="Developer" value={filters.vendor} onRemove={() => setVendor(null)} />
+        )}
+        {(filters.fhirVersions.length > 0 || filters.vendor) && (
+          <button
+            onClick={resetFilters}
+            className="ml-auto flex items-center gap-1.5 rounded border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-500 transition-colors hover:border-blue-700 hover:text-blue-700"
+          >
+            <X size={12} /> Clear all
+          </button>
+        )}
+      </div>
+
+      <SectionDivider
+        title="Endpoint status at a glance"
+        subtitle="Totals from the latest daily query of all indexed endpoints"
+      />
+
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="kpi-strip">
         <KpiCard
           label="Queried Endpoints"
           value={indexedEndpoints}
-          borderColor="#0f2f8a"
+          borderColor="var(--blue-700)"
           icon={<Search size={20} />}
         />
         <KpiCard
@@ -301,7 +367,7 @@ export default function DashboardPage() {
         <KpiCard
           label="Degraded"
           value={degradedCount}
-          borderColor="#fdb81e"
+          borderColor="var(--gold)"
           icon={<AlertTriangle size={20} />}
         />
         <KpiCard
@@ -310,16 +376,12 @@ export default function DashboardPage() {
           borderColor="#e31c3d"
           icon={<XCircle size={20} />}
         />
-        <KpiCard
-          label="Last Updated"
-          value={data.totals.last_updated ? data.totals.last_updated.slice(0, 10) : 'Today'}
-          borderColor="#0f2f8a"
-          icon={<Clock size={20} />}
-          smallValue
-        />
       </div>
 
-      <SectionDivider title="Endpoint Trends" />
+      <SectionDivider
+        title="Endpoint trends over time"
+        subtitle="How the monitored endpoint population and its health are changing"
+      />
 
       {/* Total FHIR Endpoints Over the Past Year */}
       <ChartCard
@@ -336,7 +398,7 @@ export default function DashboardPage() {
               {monthlyEndpointData.map((_, i) => (
                 <Cell
                   key={i}
-                  fill={i === monthlyEndpointData.length - 1 ? NAVY_COLORS.primary : '#93afd4'}
+                  fill={i === monthlyEndpointData.length - 1 ? TOKENS.blue700 : '#93afd4'}
                 />
               ))}
               <LabelList dataKey="total_endpoints" position="top" formatter={(v: number) => formatNumber(v)} style={{ fontSize: 10 }} />
@@ -371,7 +433,7 @@ export default function DashboardPage() {
             data={availabilityData}
             xKey="date"
             yKey="available_pct"
-            color={STATUS_COLORS.available}
+            color={STATUS_TOKENS.available}
             height={280}
           />
         </ChartCard>
@@ -384,7 +446,7 @@ export default function DashboardPage() {
             data={trendData}
             xKey="date"
             yKey="avg_response_time_ms"
-            color={NAVY_COLORS.primary}
+            color={TOKENS.blue700}
             height={280}
           />
         </ChartCard>
@@ -424,7 +486,7 @@ export default function DashboardPage() {
             data={fhirVersionData}
             xKey="version"
             yKey="count"
-            color={NAVY_COLORS.primary}
+            color={TOKENS.blue700}
             height={260}
           />
         </ChartCard>
@@ -450,7 +512,7 @@ export default function DashboardPage() {
                     className="h-full rounded-full transition-all"
                     style={{
                       width: `${r.adoption_pct}%`,
-                      backgroundColor: r.adoption_pct >= 90 ? '#0f2f8a' : r.adoption_pct >= 80 ? '#1a45a8' : '#5a82cc',
+                      backgroundColor: r.adoption_pct >= 90 ? '#1c32be' : r.adoption_pct >= 80 ? '#3a4fc9' : '#7588de',
                     }}
                   />
                 </div>
@@ -470,17 +532,17 @@ export default function DashboardPage() {
           {(() => {
             const SECURITY_COLORS: Record<string, string> = {
               'TLS 1.2+':       '#2e8540',
-              'OAuth 2.0':      '#0f2f8a',
+              'OAuth 2.0':      '#1c32be',
               'SMART on FHIR':  '#0095c8',
-              'CORS Enabled':   '#051359',
-              'OpenID Connect': '#5a82cc',
+              'CORS Enabled':   '#0e1f75',
+              'OpenID Connect': '#7588de',
             };
             const CIRCUMFERENCE = 106.8;
             return (
               <div className="space-y-4">
                 {(data.security_adoption || []).map((s) => {
                   const offset = (1 - s.adoption_pct / 100) * CIRCUMFERENCE;
-                  const color = SECURITY_COLORS[s.capability_name] ?? '#0f2f8a';
+                  const color = SECURITY_COLORS[s.capability_name] ?? '#1c32be';
                   return (
                     <div key={s.capability_name} className="flex items-center gap-4">
                       <div className="relative shrink-0 w-12 h-12">
@@ -524,7 +586,7 @@ export default function DashboardPage() {
               value={devSearch}
               onChange={(e) => { setDevSearch(e.target.value); setDevPage(1); }}
               placeholder="Search developers..."
-              className="w-full rounded border-2 border-neutral-200 bg-white py-2 pl-9 pr-3 text-sm text-neutral-600 placeholder:text-neutral-400 focus:border-navy-700 focus:outline-none"
+              className="w-full rounded border-2 border-neutral-200 bg-white py-2 pl-9 pr-3 text-sm text-neutral-600 placeholder:text-neutral-400 focus:border-blue-700 focus:outline-none"
             />
           </div>
         </div>
@@ -549,7 +611,7 @@ export default function DashboardPage() {
           </div>
           <button
             onClick={exportDevCsv}
-            className="flex items-center gap-1.5 rounded border-2 border-navy-700 bg-white px-4 py-2 text-sm font-semibold text-navy-700 hover:bg-navy-50 transition-colors"
+            className="flex items-center gap-1.5 rounded bg-gold px-4 py-2 text-sm font-bold text-gold-text transition-all hover:brightness-[1.04]"
           >
             <Download size={14} />
             Export CSV
@@ -561,7 +623,7 @@ export default function DashboardPage() {
       <div className="overflow-hidden rounded-lg bg-white">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="bg-navy-900 text-white">
+            <thead className="bg-blue-900 text-white">
               <tr>
                 {([
                   { key: 'vendor_name', label: 'Developer Name', cls: 'text-left' },
@@ -590,7 +652,7 @@ export default function DashboardPage() {
             <tbody className="divide-y divide-neutral-100">
               {pagedDevs.map((dev, idx) => (
                 <tr key={dev.vendor_name} className={idx % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
-                  <td className="px-4 py-3 font-bold text-navy-700">{dev.vendor_name}</td>
+                  <td className="px-4 py-3 font-bold text-blue-700">{dev.vendor_name}</td>
                   <td className="px-4 py-3 text-right font-mono font-semibold text-neutral-700">
                     {formatNumber(dev.endpoint_count)}
                   </td>
@@ -602,15 +664,15 @@ export default function DashboardPage() {
                       <div className="flex h-2.5 w-24 overflow-hidden rounded-full">
                         <div
                           className="h-full"
-                          style={{ width: `${dev.available_pct}%`, backgroundColor: STATUS_COLORS.available }}
+                          style={{ width: `${dev.available_pct}%`, backgroundColor: getToken('color-status-available') }}
                         />
                         <div
                           className="h-full"
-                          style={{ width: `${dev.degraded_pct}%`, backgroundColor: STATUS_COLORS.degraded }}
+                          style={{ width: `${dev.degraded_pct}%`, backgroundColor: getToken('color-status-degraded') }}
                         />
                         <div
                           className="h-full"
-                          style={{ width: `${dev.down_pct}%`, backgroundColor: STATUS_COLORS.down }}
+                          style={{ width: `${dev.down_pct}%`, backgroundColor: getToken('color-status-down') }}
                         />
                       </div>
                       <span className="text-xs text-neutral-500">{dev.available_pct}%</span>
@@ -645,6 +707,16 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      <SectionDivider title="About this data" />
+      <AboutDataNote>
+        Lantern collects FHIR Capability Statements and availability data from every published service base URL
+        daily. Endpoints that do not respond are shown with a "No response" status — non-response is itself a
+        monitored finding, not missing data.{' '}
+        <Link to="/about" className="font-semibold text-blue-700 underline hover:text-blue-800">
+          Read the full methodology →
+        </Link>
+      </AboutDataNote>
     </div>
   );
 }

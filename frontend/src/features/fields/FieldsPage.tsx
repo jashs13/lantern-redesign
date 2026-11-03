@@ -162,7 +162,7 @@ export default function FieldsPage() {
                             className={`cursor-pointer transition-colors hover:bg-gray-50 group-row border-b last:border-b-0 ${isSelected ? 'bg-primary/5 border-l-2 border-l-primary' : 'border-l-2 border-l-transparent'
                               }`}
                           >
-                            <td className="px-4 py-3 font-medium text-navy-700 break-all">{group.field_name}</td>
+                            <td className="px-4 py-3 font-medium text-blue-700 break-all">{group.field_name}</td>
                             <td className="px-4 py-3 whitespace-nowrap">
                               {isMultiple ? (
                                 <Badge variant="fhir">Multiple</Badge>
@@ -246,7 +246,7 @@ export default function FieldsPage() {
                           key={`ext-${ext.field_name}-${ext.fhir_version}-${idx}`}
                           className="border-b last:border-b-0 border-l-2 border-l-transparent"
                         >
-                          <td className="px-4 py-3 font-medium text-navy-700 break-all">{ext.field_name}</td>
+                          <td className="px-4 py-3 font-medium text-blue-700 break-all">{ext.field_name}</td>
                           <td className="px-4 py-3 whitespace-nowrap">
                             <Badge variant={ext.fhir_version?.startsWith('4.0') ? 'fhir-r4' : 'fhir'}>
                               {ext.fhir_version || '—'}

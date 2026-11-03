@@ -92,7 +92,7 @@ export default function SearchPage() {
         </div>
         <button
           type="submit"
-          className="rounded-md bg-navy-700 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-900"
+          className="rounded-md bg-blue-700 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-900"
         >
           Search
         </button>
@@ -234,8 +234,8 @@ function ResultSection({
   return (
     <section>
       <div className="mb-3 flex items-center gap-2">
-        <span className="text-navy-700">{icon}</span>
-        <h2 className="text-lg font-bold text-navy-900">{title}</h2>
+        <span className="text-blue-700">{icon}</span>
+        <h2 className="text-lg font-bold text-blue-900">{title}</h2>
         <Badge variant="navy">{count}</Badge>
       </div>
       <div className="space-y-1.5">{results.map((item, index) => renderItem(item, index))}</div>
@@ -251,12 +251,12 @@ function EndpointResultCard({ item }: { item: SearchResult }) {
     <div className="rounded-lg border border-neutral-200 bg-white p-2.5 transition-all hover:shadow-card">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 flex-1 flex items-baseline gap-3">
-          <h3 className="font-semibold text-sm text-navy-900">{item.name}</h3>
+          <h3 className="font-semibold text-sm text-blue-900">{item.name}</h3>
         </div>
         {/* TODO: Fix these links to point to actual working pages once implemented */}
         <Link
           to={`/endpoints?search=${encodeURIComponent(item.name)}`}
-          className="shrink-0 text-navy-700 hover:text-sky-600"
+          className="shrink-0 text-blue-700 hover:text-sky-600"
           title="View in endpoints"
         >
           <ExternalLink size={16} />
@@ -276,7 +276,7 @@ function OrganizationResultCard({ item }: { item: SearchResult }) {
     <div className="rounded-lg border border-neutral-200 bg-white p-2.5 transition-all hover:shadow-card">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 flex-1 flex items-center gap-3">
-          <h3 className="font-semibold text-sm text-navy-900">{item.name}</h3>
+          <h3 className="font-semibold text-sm text-blue-900">{item.name}</h3>
           {firstAddress && (
             <p className="flex items-center gap-1 text-xs text-neutral-500">
               <MapPin size={12} className="shrink-0 text-neutral-400" />
@@ -287,7 +287,7 @@ function OrganizationResultCard({ item }: { item: SearchResult }) {
         {/* TODO: Fix these links to point to actual working pages once implemented */}
         <Link
           to={`/organizations?search=${encodeURIComponent(item.name)}`}
-          className="shrink-0 text-navy-700 hover:text-sky-600"
+          className="shrink-0 text-blue-700 hover:text-sky-600"
           title="View in organizations"
         >
           <ExternalLink size={16} />
@@ -304,7 +304,7 @@ function VendorResultCard({ item }: { item: SearchResult }) {
     <div className="rounded-lg border border-neutral-200 bg-white p-2.5 transition-all hover:shadow-card">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0 flex-1 flex items-center gap-3">
-          <h3 className="font-semibold text-sm text-navy-900">{item.name}</h3>
+          <h3 className="font-semibold text-sm text-blue-900">{item.name}</h3>
           {item.description && (
             <p className="line-clamp-1 text-xs text-neutral-500">{item.description}</p>
           )}
@@ -312,7 +312,7 @@ function VendorResultCard({ item }: { item: SearchResult }) {
         {/* TODO: Fix these links to point to actual working pages once implemented */}
         <Link
           to={`/endpoints?vendor=${encodeURIComponent(item.name)}`}
-          className="shrink-0 text-navy-700 hover:text-sky-600"
+          className="shrink-0 text-blue-700 hover:text-sky-600"
           title="View endpoints by this vendor"
         >
           <ExternalLink size={16} />

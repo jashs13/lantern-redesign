@@ -23,8 +23,8 @@ export default function SecuritySmartPage() {
           onClick={() => setActiveTab('auth')}
           className={`px-5 py-2.5 rounded font-semibold text-sm transition-all whitespace-nowrap ${
             activeTab === 'auth'
-              ? 'bg-navy-700 text-white shadow'
-              : 'text-gray-500 hover:text-navy-700 hover:bg-gray-50'
+              ? 'bg-blue-700 text-white shadow'
+              : 'text-gray-500 hover:text-blue-700 hover:bg-gray-50'
           }`}
         >
           Authorization Types
@@ -33,8 +33,8 @@ export default function SecuritySmartPage() {
           onClick={() => setActiveTab('smart')}
           className={`px-5 py-2.5 rounded font-semibold text-sm transition-all whitespace-nowrap ${
             activeTab === 'smart'
-              ? 'bg-navy-700 text-white shadow'
-              : 'text-gray-500 hover:text-navy-700 hover:bg-gray-50'
+              ? 'bg-blue-700 text-white shadow'
+              : 'text-gray-500 hover:text-blue-700 hover:bg-gray-50'
           }`}
         >
           SMART-on-FHIR Capabilities

@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   LabelList,
 } from 'recharts';
-import { NAVY_COLORS } from '@/lib/constants';
+import { TOKENS } from '@/lib/constants';
 
 interface BarChartProps {
   data: Record<string, unknown>[];
@@ -22,7 +22,7 @@ export function BarChart({
   data,
   xKey,
   yKey,
-  color = NAVY_COLORS.primary,
+  color = TOKENS.blue700,
   height = 300,
 }: BarChartProps) {
   return (

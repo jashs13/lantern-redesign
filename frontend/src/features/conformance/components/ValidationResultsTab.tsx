@@ -59,7 +59,7 @@ function buildFailuresColumns(
         <div className="min-w-0 max-w-[200px]">
           <button
             type="button"
-            className="truncate block w-full text-left font-mono text-xs text-neutral-800 hover:text-navy-700 hover:underline"
+            className="truncate block w-full text-left font-mono text-xs text-neutral-800 hover:text-blue-700 hover:underline"
             onClick={() => onOpenDetail(url)}
           >
             {url}
@@ -205,7 +205,7 @@ export function ValidationResultsTab() {
     <div className="space-y-6">
       <div className="flex gap-4 p-5 bg-status-gold-bg border-l-4 border-l-status-gold rounded-md shadow-sm mb-6">
         <InfoIcon className="text-yellow-800 mt-0.5 shrink-0" />
-        <div className="text-sm text-navy-900">
+        <div className="text-sm text-blue-900">
           <strong>About validations:</strong> Lantern evaluates endpoint capability statements against a set of validation rules derived from the FHIR specification and ONC requirements. The ONC Final Rule requires endpoints to support FHIR version 4.0.1, but all endpoints are included here for reference.
         </div>
       </div>
@@ -213,7 +213,7 @@ export function ValidationResultsTab() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-success">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Passing All Rules</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">
+          <div className="text-3xl font-bold text-blue-900 leading-tight">
              {isMetricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (metricsData?.passing_all !== null && metricsData?.passing_all !== undefined ? formatNumber(metricsData.passing_all) : 'N/A')}
           </div>
           <p className="text-sm text-gray-500 mt-1">
@@ -222,7 +222,7 @@ export function ValidationResultsTab() {
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-destructive">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">With Failures</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">
+          <div className="text-3xl font-bold text-blue-900 leading-tight">
              {isMetricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (metricsData?.with_failures !== null && metricsData?.with_failures !== undefined ? formatNumber(metricsData.with_failures) : 'N/A')}
           </div>
           <p className="text-sm text-gray-500 mt-1">
@@ -231,14 +231,14 @@ export function ValidationResultsTab() {
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-primary">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Validation Rules</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">
+          <div className="text-3xl font-bold text-blue-900 leading-tight">
              {isMetricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (metricsData?.total_rules !== null && metricsData?.total_rules !== undefined ? formatNumber(metricsData.total_rules) : 'N/A')}
           </div>
           <p className="text-sm text-gray-500 mt-1">Rules evaluated per endpoint</p>
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-warning">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Most Failed Rule</div>
-          <div className="text-xl font-bold text-navy-900 font-mono mt-1 mb-2">
+          <div className="text-xl font-bold text-blue-900 font-mono mt-1 mb-2">
              {isMetricsLoading ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" /> : (metricsData?.most_failed_rule ?? 'N/A')}
           </div>
           <p className="text-sm text-gray-500 mt-1">
@@ -292,7 +292,7 @@ export function ValidationResultsTab() {
       <section className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
         <header className="p-5 border-b bg-white flex flex-wrap gap-4 justify-between items-center">
           <div>
-            <h2 className="text-xl font-bold text-navy-900 font-sans">Validation Results Summary</h2>
+            <h2 className="text-xl font-bold text-blue-900 font-sans">Validation Results Summary</h2>
             <p className="text-gray-500 text-sm mt-1">Pass/fail rates across all validation rules</p>
           </div>
         </header>
@@ -314,7 +314,7 @@ export function ValidationResultsTab() {
         </div>
         <div className="px-6 pb-6">
             <div className="text-[0.875rem] text-gray-600 bg-blue-50/50 border border-blue-100/60 rounded-md p-4 shadow-sm">
-                <span className="font-bold text-navy-900 pr-1">Note:</span>
+                <span className="font-bold text-blue-900 pr-1">Note:</span>
                 The <code className="bg-white/80 border border-blue-200 px-1 py-0.5 rounded text-xs">messagingEndptRule</code> is not broken, there is an issue with the Capability Statement invariant (cpb-3). The invariant states that the Messaging endpoint has to be present when the kind is 'instance', and Messaging endpoint cannot be present when kind is NOT 'instance', but the FHIRPath expression is <code>messaging.endpoint.empty() or kind = 'instance'</code>, which is not consistent with the expectation for the invariant and will not properly evaluate the conditions required.
             </div>
         </div>
@@ -322,7 +322,7 @@ export function ValidationResultsTab() {
 
       <section className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
         <header className="p-5 border-b bg-white">
-            <h2 className="text-xl font-bold text-navy-900 font-sans">Validation Rules</h2>
+            <h2 className="text-xl font-bold text-blue-900 font-sans">Validation Rules</h2>
             <p className="text-gray-500 text-sm mt-1">Click a rule to see detailed failure information in the table below</p>
         </header>
         
@@ -350,7 +350,7 @@ export function ValidationResultsTab() {
                                 ${isSelected ? 'border-primary ring-1 ring-primary shadow-md bg-sky-50/20' : 'border-neutral-200 hover:border-primary-light hover:shadow-md'}`}
                         >
                             <div className="flex justify-between items-start mb-3">
-                                <span className={`font-mono font-bold text-[0.9375rem] ${isSelected ? 'text-primary' : 'text-navy-900 group-hover:text-primary-dark'}`}>
+                                <span className={`font-mono font-bold text-[0.9375rem] ${isSelected ? 'text-primary' : 'text-blue-900 group-hover:text-primary-dark'}`}>
                                     {rule.rule_name}
                                 </span>
                                 <Badge variant={Number(rulePassRate) > 90 ? 'success' : Number(rulePassRate) > 50 ? 'warning' : 'error'}>
@@ -384,9 +384,9 @@ export function ValidationResultsTab() {
         {selectedRule && (
             <div className="border-t border-gray-200 p-5 bg-neutral-50 animate-in fade-in slide-in-from-top-4 duration-300">
                 <div className="mb-4">
-                    <h3 className="text-lg font-bold text-navy-900">Validation Failure Details</h3>
+                    <h3 className="text-lg font-bold text-blue-900">Validation Failure Details</h3>
                     <p className="mt-1 text-sm text-neutral-600">
-                    Rule: <span className="font-semibold text-navy-700 font-mono">{selectedRule}</span>
+                    Rule: <span className="font-semibold text-blue-700 font-mono">{selectedRule}</span>
                     </p>
                 </div>
 

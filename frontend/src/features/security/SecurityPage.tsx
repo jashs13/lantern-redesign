@@ -57,7 +57,7 @@ function buildColumns(
         return (
           <button
             type="button"
-            className="truncate block w-full text-left font-semibold text-navy-700 text-xs hover:underline"
+            className="truncate block w-full text-left font-semibold text-blue-700 text-xs hover:underline"
             onClick={() => onOpenDetail(url)}
           >
             {url || '—'}
@@ -78,7 +78,7 @@ function buildColumns(
             <p className="truncate text-xs text-neutral-600">{visible.join('; ')}</p>
             {row.original.has_more_orgs && (
               <button
-                className="mt-0.5 text-xs font-semibold text-navy-700 hover:underline"
+                className="mt-0.5 text-xs font-semibold text-blue-700 hover:underline"
                 onClick={() => onShowOrgs(row.original.url)}
               >
                 Show all
@@ -251,7 +251,7 @@ export default function SecurityPage() {
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="kpi-strip">
         <KpiCard
           label="Secured Endpoints"
           value={totalSecured}
@@ -267,7 +267,7 @@ export default function SecurityPage() {
         <KpiCard
           label="Security Coverage"
           value={`${coveragePct}%`}
-          borderColor="#0f2f8a"
+          borderColor="var(--blue-700)"
           icon={<Shield size={18} />}
         />
         <KpiCard
@@ -299,7 +299,7 @@ export default function SecurityPage() {
                 <span className="text-sm font-semibold text-neutral-700">{code}</span>
                 <span
                   className="rounded-full px-1.5 py-0.5 text-xs font-bold"
-                  style={{ background: '#0f2f8a', color: '#fff' }}
+                  style={{ background: 'var(--blue-700)', color: '#fff' }}
                 >
                   {(authTypeTotals[code] ?? 0).toLocaleString()}
                 </span>
@@ -388,7 +388,7 @@ export default function SecurityPage() {
           >
             <button
               onClick={clearAllFilters}
-              className="text-sm font-semibold text-neutral-500 hover:text-navy-700 hover:underline"
+              className="text-sm font-semibold text-neutral-500 hover:text-blue-700 hover:underline"
             >
               Clear All Filters
             </button>

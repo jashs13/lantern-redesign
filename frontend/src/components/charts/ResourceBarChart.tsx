@@ -7,7 +7,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { NAVY_COLORS } from '@/lib/constants';
+import { TOKENS } from '@/lib/constants';
 
 interface ResourceBarChartProps {
   data: { resource_type: string; endpoint_count: number }[];
@@ -37,7 +37,7 @@ export function ResourceBarChart({ data, height }: ResourceBarChartProps) {
           width={110}
         />
         <Tooltip />
-        <Bar dataKey="endpoint_count" fill={NAVY_COLORS.primary} radius={[0, 4, 4, 0]} />
+        <Bar dataKey="endpoint_count" fill={TOKENS.blue700} radius={[0, 4, 4, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

@@ -13,7 +13,7 @@ export function CapStatStatsCards() {
   if (!data) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="kpi-strip">
       <KpiCard
         label="Avg Size"
         value={formatNumber(data.avg_size)}
@@ -30,13 +30,13 @@ export function CapStatStatsCards() {
         label="Largest Size"
         value={formatNumber(data.largest_size)}
         subtitle="Maximum capability statement size (bytes)"
-        borderColor="var(--color-primary, #0f2f8a)"
+        borderColor="var(--color-primary)"
       />
       <KpiCard
         label="Smallest Size"
         value={formatNumber(data.smallest_size)}
         subtitle="Minimum capability statement size (bytes)"
-        borderColor="var(--color-warning, #fdb81e)"
+        borderColor="var(--color-warning, #f7c951)"
       />
     </div>
   );

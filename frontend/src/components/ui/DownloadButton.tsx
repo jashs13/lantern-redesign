@@ -16,20 +16,18 @@ export function DownloadButton({ url, label = 'Download CSV' }: DownloadButtonPr
       style={{
         padding: '0.75rem 1.5rem',
         fontSize: '1rem',
-        background: 'var(--color-accent-green)',
-        color: 'var(--color-white)',
-        border: '2px solid var(--color-accent-green)',
+        background: 'var(--gold)',
+        color: 'var(--gold-text)',
+        border: '2px solid var(--gold)',
         borderRadius: 'var(--border-radius)',
         cursor: 'pointer',
         whiteSpace: 'nowrap',
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.background = '#236b34';
-        (e.currentTarget as HTMLButtonElement).style.borderColor = '#236b34';
+        (e.currentTarget as HTMLButtonElement).style.filter = 'brightness(1.04)';
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-accent-green)';
-        (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-accent-green)';
+        (e.currentTarget as HTMLButtonElement).style.filter = 'none';
       }}
     >
       <Download size={16} aria-hidden="true" />

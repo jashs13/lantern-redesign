@@ -21,7 +21,7 @@ const columns: ColumnDef<ImplementationGuide, unknown>[] = [
     accessorKey: 'name',
     header: 'Implementation Guide',
     cell: ({ getValue }) => (
-      <span className="font-semibold text-navy-700">{(getValue() as string) || '—'}</span>
+      <span className="font-semibold text-blue-700">{(getValue() as string) || '—'}</span>
     ),
   },
   {

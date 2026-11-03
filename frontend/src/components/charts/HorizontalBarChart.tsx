@@ -7,7 +7,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { NAVY_COLORS } from '@/lib/constants';
+import { TOKENS } from '@/lib/constants';
 
 interface HorizontalBarChartProps {
   data: { name: string; value: number }[];
@@ -79,7 +79,7 @@ export function HorizontalBarChart({
               : undefined
           }
         />
-        <Bar dataKey="value" fill={NAVY_COLORS.primary} radius={[0, 4, 4, 0]} />
+        <Bar dataKey="value" fill={TOKENS.blue700} radius={[0, 4, 4, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

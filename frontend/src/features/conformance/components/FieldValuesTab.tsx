@@ -70,7 +70,7 @@ export function FieldValuesTab() {
         accessorKey: 'field_value',
         header: 'Value',
         cell: ({ getValue }: any) => (
-          <span className="font-bold font-mono text-navy-900 break-all">{getValue() as string}</span>
+          <span className="font-bold font-mono text-blue-900 break-all">{getValue() as string}</span>
         ),
       },
       {
@@ -92,7 +92,7 @@ export function FieldValuesTab() {
                       <div className="h-2 flex-1 bg-gray-100 rounded-full overflow-hidden">
                           <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
                       </div>
-                      <span className="font-semibold text-navy-900 min-w-[45px] text-right">{pct.toFixed(1)}%</span>
+                      <span className="font-semibold text-blue-900 min-w-[45px] text-right">{pct.toFixed(1)}%</span>
                   </div>
               );
           }
@@ -132,21 +132,21 @@ export function FieldValuesTab() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-primary">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Fields with Values</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">
+          <div className="text-3xl font-bold text-blue-900 leading-tight">
             {metricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (metricsData?.fields_with_values !== null && metricsData?.fields_with_values !== undefined ? formatNumber(metricsData.fields_with_values) : 'N/A')}
           </div>
           <p className="text-sm text-gray-500 mt-1">Distinct fields with observable values</p>
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-success">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Unique Values</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">
+          <div className="text-3xl font-bold text-blue-900 leading-tight">
             {metricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (metricsData?.total_unique_values !== null && metricsData?.total_unique_values !== undefined ? formatNumber(metricsData.total_unique_values) : 'N/A')}
           </div>
           <p className="text-sm text-gray-500 mt-1">Distinct values across all fields</p>
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border border-neutral-200">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Most Uniform</div>
-          <div className="text-xl font-bold text-navy-900 font-mono mt-1 mb-2">
+          <div className="text-xl font-bold text-blue-900 font-mono mt-1 mb-2">
             {metricsLoading ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" /> : (metricsData?.most_uniform_field ?? 'N/A')}
           </div>
           <p className="text-sm text-gray-500 mt-1">
@@ -155,7 +155,7 @@ export function FieldValuesTab() {
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-warning">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Most Varied</div>
-          <div className="text-xl font-bold text-navy-900 font-mono mt-1 mb-2">
+          <div className="text-xl font-bold text-blue-900 font-mono mt-1 mb-2">
             {metricsLoading ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" /> : (metricsData?.most_varied_field ?? 'N/A')}
           </div>
           <p className="text-sm text-gray-500 mt-1">
@@ -166,7 +166,7 @@ export function FieldValuesTab() {
 
       <section className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
         <header className="p-5 border-b bg-white">
-          <h2 className="text-xl font-bold text-navy-900 font-sans">Field Value Explorer</h2>
+          <h2 className="text-xl font-bold text-blue-900 font-sans">Field Value Explorer</h2>
           <p className="text-gray-500 text-sm mt-1">Select a field to see the values reported by endpoints</p>
         </header>
 
@@ -211,7 +211,7 @@ export function FieldValuesTab() {
         </section>
 
         <div className="p-5 border-b border-gray-100">
-            <h3 className="font-sans text-lg font-bold text-navy-900 border-b-2 border-primary inline-block pb-1 mb-2">
+            <h3 className="font-sans text-lg font-bold text-blue-900 border-b-2 border-primary inline-block pb-1 mb-2">
                 Values for: CapabilityStatement.{selectedField}
             </h3>
             <p className="text-sm text-gray-500">
@@ -235,7 +235,7 @@ export function FieldValuesTab() {
 
       <section className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
           <header className="p-5 border-b bg-white">
-            <h2 className="text-xl font-bold text-navy-900 font-sans">Value Distribution</h2>
+            <h2 className="text-xl font-bold text-blue-900 font-sans">Value Distribution</h2>
             <p className="text-gray-500 text-sm mt-1">Visual breakdown of endpoints including the field vs missing it</p>
           </header>
           

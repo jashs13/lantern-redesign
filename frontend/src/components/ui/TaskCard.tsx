@@ -20,9 +20,9 @@ export function TaskCard({ icon, title, description, href }: TaskCardProps) {
       <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-md bg-sky-500/10 text-sky-600">
         {icon}
       </div>
-      <h3 className="text-base font-bold text-navy-900">{title}</h3>
+      <h3 className="text-base font-bold text-blue-900">{title}</h3>
       <p className="mt-2 flex-1 text-sm leading-relaxed text-neutral-500">{description}</p>
-      <span className="mt-4 flex items-center gap-1 text-sm font-semibold text-navy-700 transition-colors group-hover:text-sky-600">
+      <span className="mt-4 flex items-center gap-1 text-sm font-semibold text-blue-700 transition-colors group-hover:text-sky-600">
         Learn More
         <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
       </span>

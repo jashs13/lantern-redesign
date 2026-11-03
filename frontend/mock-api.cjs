@@ -172,6 +172,30 @@ function paginate(data, query) {
   };
 }
 
+function filterEndpoints(query) {
+  let data = [...ALL_ENDPOINTS];
+  data = searchFilter(data, query, ['url', 'endpoint_names', 'vendor_name']);
+  if (query.vendor) data = data.filter(e => e.vendor_name === query.vendor);
+  if (query.fhir_versions) {
+    const versions = query.fhir_versions.split(',');
+    data = data.filter(e => versions.some(v => e.fhir_version && e.fhir_version.startsWith(v)));
+  }
+  if (query.availability === '99-100') data = data.filter(e => e.availability != null && e.availability >= 99);
+  if (query.source) data = data.filter(e => e.list_source === query.source);
+  return data;
+}
+
+function filterOrganizations(query) {
+  let data = [...ALL_ORGANIZATIONS];
+  data = searchFilter(data, query, ['organization_name', 'identifier_value', 'address']);
+  if (query.vendor) data = data.filter(o => o.vendor_name === query.vendor);
+  if (query.fhir_versions) {
+    const versions = query.fhir_versions.split(',');
+    data = data.filter(o => versions.some(v => o.fhir_version && o.fhir_version.startsWith(v)));
+  }
+  return data;
+}
+
 function searchFilter(data, query, fields) {
   const search = (query.search || query.q || '').toLowerCase();
   if (!search) return data;
@@ -189,6 +213,7 @@ const handlers = {
         all_endpoints: totalEndpoints,
         indexed_endpoints: 65000,
         non_indexed_endpoints: 5234,
+        organizations: ALL_ORGANIZATIONS.length,
         last_updated: new Date().toISOString().split('T')[0],
       },
       response_tally: {
@@ -216,17 +241,57 @@ const handlers = {
         { http_code: 502, code_label: 'Bad Gateway', count_endpoints: 45 },
         { http_code: 503, code_label: 'Service Unavailable', count_endpoints: 167 },
       ],
+      dev_summary: VENDORS.map((vendor, i) => {
+        const availablePct = randomFloat(90, 99.9, 1);
+        const degradedPct = randomFloat(0.1, 5, 1);
+        const downPct = Math.max(0, Math.round((100 - availablePct - degradedPct) * 10) / 10);
+        return {
+          vendor_name: vendor,
+          endpoint_count: randomInt(500, 18000),
+          org_count: randomInt(10, 400),
+          available_count: randomInt(500, 17000),
+          degraded_count: randomInt(5, 500),
+          down_count: randomInt(0, 100),
+          available_pct: availablePct,
+          degraded_pct: degradedPct,
+          down_pct: downPct,
+          avg_response_time_ms: randomInt(150, 900),
+          sort_order: i,
+        };
+      }),
+      daily_stats: Array.from({ length: 395 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (394 - i));
+        const total = totalEndpoints + randomInt(-2000, 2000);
+        const http2xx = Math.round(total * randomFloat(0.94, 0.99, 3));
+        const http3xx = randomInt(50, 300);
+        const http4xx = randomInt(100, 900);
+        const http5xx = total - http2xx - http3xx - http4xx;
+        return {
+          stat_date: date.toISOString().split('T')[0],
+          total_endpoints: total,
+          http_2xx: http2xx,
+          http_3xx: http3xx,
+          http_4xx: http4xx,
+          http_5xx: Math.max(0, http5xx),
+          http_timeout: randomInt(20, 150),
+          available_pct: randomFloat(96, 99.9, 2),
+          avg_response_time_ms: randomInt(200, 700),
+        };
+      }),
+      resource_adoption: RESOURCE_TYPES.slice(0, 10).map(rt => ({
+        resource_type: rt,
+        adoption_pct: randomFloat(55, 99, 1),
+      })),
+      security_adoption: ['TLS 1.2+', 'OAuth 2.0', 'SMART on FHIR', 'CORS Enabled', 'OpenID Connect'].map(name => ({
+        capability_name: name,
+        adoption_pct: randomFloat(40, 98, 1),
+      })),
     };
   },
 
   '/api/v1/endpoints': (query) => {
-    let data = [...ALL_ENDPOINTS];
-    data = searchFilter(data, query, ['url', 'endpoint_names', 'vendor_name']);
-    if (query.vendor) data = data.filter(e => e.vendor_name === query.vendor);
-    if (query.fhir_versions) {
-      const versions = query.fhir_versions.split(',');
-      data = data.filter(e => versions.some(v => e.fhir_version && e.fhir_version.startsWith(v)));
-    }
+    let data = filterEndpoints(query);
     if (query.sort_by) {
       const dir = query.sort_dir === 'desc' ? -1 : 1;
       data.sort((a, b) => {
@@ -236,33 +301,72 @@ const handlers = {
         return av < bv ? -dir : av > bv ? dir : 0;
       });
     }
-    return paginate(data, query);
+    return paginate(data, query).data;
+  },
+
+  '/api/v1/endpoints/count': (query) => ({ total_count: filterEndpoints(query).length }),
+
+  '/api/v1/endpoints/response-time': (_query) => {
+    return Array.from({ length: 7 }, (_, i) => ({ time: i, response: randomFloat(0.1, 2, 2) }));
+  },
+
+  '/api/v1/endpoints/http-history': (_query) => {
+    return Array.from({ length: 7 }, (_, i) => ({ time: i, http_response: Math.random() > 0.1 ? 200 : randomItem([404, 500, 503]) }));
   },
 
   '/api/v1/organizations': (query) => {
-    let data = [...ALL_ORGANIZATIONS];
-    data = searchFilter(data, query, ['organization_name', 'identifier_value', 'address']);
-    if (query.vendor) data = data.filter(o => o.vendor_name === query.vendor);
-    return paginate(data, query);
+    let data = filterOrganizations(query);
+    return paginate(data, query).data;
   },
 
+  '/api/v1/organizations/count': (query) => ({ total_count: filterOrganizations(query).length }),
+
   '/api/v1/resources': (query) => {
-    const data = RESOURCE_TYPES.flatMap(rt =>
-      FHIR_VERSIONS.slice(0, 3).map(fv => ({
+    const data = RESOURCE_TYPES.map(rt => {
+      const endpointCount = randomInt(5000, 60000);
+      return {
         resource_type: rt,
-        fhir_version: fv,
-        endpoint_count: randomInt(5000, 60000),
-      }))
-    );
+        fhir_versions: FHIR_VERSIONS.slice(0, randomInt(2, 5)),
+        endpoint_count: endpointCount,
+        read_search_count: Math.round(endpointCount * randomFloat(0.7, 0.98, 2)),
+        support_percent: randomFloat(20, 99.9, 1),
+        read_search_percent: randomFloat(15, 95, 1),
+        category: randomItem(['Clinical', 'Financial', 'Administrative', 'Foundation']),
+      };
+    });
     return paginate(data, query);
   },
 
   '/api/v1/resources/chart': (_query) => {
     return RESOURCE_TYPES.slice(0, 10).map(rt => ({
       resource_type: rt,
-      fhir_version: '4.0.1',
+      fhir_versions: ['4.0.1'],
       endpoint_count: randomInt(20000, 65000),
+      read_search_count: randomInt(15000, 60000),
+      support_percent: randomFloat(60, 99, 1),
+      read_search_percent: randomFloat(50, 95, 1),
+      category: randomItem(['Clinical', 'Financial', 'Administrative', 'Foundation']),
     }));
+  },
+
+  '/api/v1/resources/stats': (_query) => ({
+    distinct_resources: RESOURCE_TYPES.length,
+    avg_per_endpoint: randomFloat(8, 16, 1),
+    most_supported_resource: 'Patient',
+    most_supported_percent: randomFloat(95, 99.9, 1),
+    uscdi_coverage_percent: randomFloat(70, 95, 1),
+  }),
+
+  '/api/v1/resources/matrix': (_query) => {
+    const operations = ['read', 'search-type', 'create', 'update', 'delete'];
+    return RESOURCE_TYPES.flatMap(rt =>
+      operations.map(op => ({
+        resource_type: rt,
+        operation: op,
+        endpoint_count: randomInt(1000, 60000),
+        support_percent: randomFloat(20, 99, 1),
+      }))
+    );
   },
 
   '/api/v1/security': (query) => {
@@ -275,6 +379,22 @@ const handlers = {
     }));
     const filtered = searchFilter(data, query, ['url', 'vendor_name', 'security_code']);
     return paginate(filtered, query);
+  },
+
+  '/api/v1/security/summary': (_query) => ({
+    security_counts: [
+      { status: 'Secured', endpoints: randomInt(45000, 60000) },
+      { status: 'Unsecured', endpoints: randomInt(2000, 8000) },
+    ],
+    auth_type_counts: SECURITY_CODES.map(code => ({
+      code,
+      fhir_version: '4.0.1',
+      count: randomInt(2000, 20000),
+    })),
+  }),
+
+  '/api/v1/security/orgs': (_query) => {
+    return ORG_NAMES.slice(0, randomInt(1, 5));
   },
 
   '/api/v1/smart-response': (query) => {
@@ -307,6 +427,36 @@ const handlers = {
     ],
   }),
 
+  '/api/v1/smart-response/kpi': (_query) => ({
+    well_known_supported: randomInt(30000, 50000),
+    not_supported: randomInt(5000, 20000),
+    most_common_capability: 'launch-ehr',
+    most_common_count: randomInt(35000, 50000),
+    avg_capabilities: randomFloat(4, 8, 1),
+  }),
+
+  '/api/v1/smart-response/sankey': (_query) => {
+    const totalIndexed = 65000;
+    const http200 = randomInt(55000, 62000);
+    const wellKnown = randomInt(40000, http200);
+    const validJson = randomInt(35000, wellKnown);
+    return {
+      total_indexed: totalIndexed,
+      http200,
+      no_http200: totalIndexed - http200,
+      well_known: wellKnown,
+      non_well_known: http200 - wellKnown,
+      valid_json: validJson,
+      no_valid_json: wellKnown - validJson,
+      http200_pct: randomFloat(85, 95, 1),
+      no_http200_pct: randomFloat(5, 15, 1),
+      well_known_pct: randomFloat(60, 80, 1),
+      non_well_known_pct: randomFloat(20, 40, 1),
+      valid_json_pct: randomFloat(85, 98, 1),
+      no_valid_json_pct: randomFloat(2, 15, 1),
+    };
+  },
+
   '/api/v1/contacts': (query) => {
     const data = ALL_ENDPOINTS.slice(0, 60).map(e => ({
       url: e.url,
@@ -332,8 +482,31 @@ const handlers = {
         is_required: Math.random() > 0.5,
       }))
     );
-    const filtered = searchFilter(data, query, ['field_name']);
-    return paginate(filtered, query);
+    return searchFilter(data, query, ['field_name']);
+  },
+
+  '/api/v1/fields/metrics': (_query) => ({
+    required_count: randomInt(20, 40),
+    optional_count: randomInt(30, 60),
+    average_per_cap_stat: randomFloat(30, 70, 1),
+    extension_count: randomInt(2, 10),
+  }),
+
+  '/api/v1/field-values/metrics': (_query) => ({
+    fields_with_values: randomInt(15, 30),
+    total_unique_values: randomInt(80, 200),
+    most_uniform_field: randomItem(FIELD_NAMES),
+    most_uniform_score: randomFloat(90, 99.9, 1),
+    most_varied_field: randomItem(FIELD_NAMES),
+    most_varied_score: randomFloat(20, 60, 1),
+  }),
+
+  '/api/v1/field-value-summary': (_query) => {
+    const used = randomInt(30000, 60000);
+    return [
+      { is_used: 'Yes', count: used },
+      { is_used: 'No', count: 65000 - used },
+    ];
   },
 
   '/api/v1/field-values': (query) => {
@@ -366,6 +539,31 @@ const handlers = {
     return paginate(filtered, query);
   },
 
+  '/api/v1/profiles/chart': (_query) => {
+    return PROFILE_NAMES.slice(0, 8).map(pn => ({
+      name: pn,
+      profile_url: `http://hl7.org/fhir/us/core/StructureDefinition/${pn.replace(/\s+/g, '-').toLowerCase()}`,
+      endpoint_count: randomInt(5000, 60000),
+    }));
+  },
+
+  '/api/v1/profiles/stats': (_query) => ({
+    distinct_profiles: PROFILE_NAMES.length,
+    us_core_profiles: PROFILE_NAMES.length,
+    endpoints_with_profiles: randomInt(50000, 64000),
+    avg_profiles_per_endpoint: randomFloat(4, 9, 1),
+  }),
+
+  '/api/v1/profiles/adoption': (query) => {
+    const data = PROFILE_NAMES.map(pn => ({
+      profile_url: `http://hl7.org/fhir/us/core/StructureDefinition/${pn.replace(/\s+/g, '-').toLowerCase()}`,
+      profile_name: pn,
+      endpoint_count: randomInt(5000, 60000),
+      adoption_pct: randomFloat(20, 99, 1),
+    }));
+    return paginate(data, query);
+  },
+
   '/api/v1/implementation-guides': (query) => {
     const data = IG_NAMES.flatMap(name =>
       FHIR_VERSIONS.slice(0, 2).map(fv => ({
@@ -377,8 +575,18 @@ const handlers = {
     return paginate(data, query);
   },
 
-  '/api/v1/capstat-sizes': (_query) => {
-    return VENDORS.slice(0, 8).flatMap(vendor =>
+  '/api/v1/implementation-guides/stats': (_query) => ({
+    distinct_igs: IG_NAMES.length,
+    endpoints_with_igs: randomInt(30000, 55000),
+    endpoints_with_igs_pct: randomFloat(45, 85, 1),
+    avg_igs_per_endpoint: randomFloat(1.5, 4, 1),
+    most_adopted_name: IG_NAMES[0],
+    most_adopted_count: randomInt(30000, 45000),
+    most_adopted_pct: randomFloat(50, 75, 1),
+  }),
+
+  '/api/v1/capstat-sizes': (query) => {
+    const data = VENDORS.slice(0, 8).flatMap(vendor =>
       FHIR_VERSIONS.slice(0, 2).map(fv => ({
         vendor_name: vendor,
         fhir_version: fv,
@@ -389,7 +597,15 @@ const handlers = {
         count: randomInt(100, 5000),
       }))
     );
+    return paginate(data, query);
   },
+
+  '/api/v1/capstat-sizes/stats': (_query) => ({
+    avg_size: randomInt(80000, 150000),
+    median_size: randomInt(60000, 120000),
+    largest_size: randomInt(1500000, 2000000),
+    smallest_size: randomInt(5000, 15000),
+  }),
 
   '/api/v1/validations/summary': (_query) => {
     return VALIDATION_RULES.map(r => ({
@@ -411,6 +627,28 @@ const handlers = {
         fhir_version: fv,
       }))
     );
+  },
+
+  '/api/v1/validations/metrics': (_query) => ({
+    passing_all: randomInt(45000, 60000),
+    with_failures: randomInt(3000, 15000),
+    pass_rate: randomFloat(80, 96, 1),
+    total_rules: VALIDATION_RULES.length,
+    most_failed_rule: VALIDATION_RULES[0].rule_name,
+    max_failures: randomInt(2000, 8000),
+  }),
+
+  '/api/v1/validations/failures': (query) => {
+    const ruleName = query.rule_name || VALIDATION_RULES[0].rule_name;
+    const data = ALL_ENDPOINTS.slice(0, 60).map(e => ({
+      url: e.url,
+      vendor_name: e.vendor_name,
+      expected: '4.0.1',
+      actual: e.fhir_version,
+      comment: `Failed rule: ${ruleName}`,
+      fhir_version: e.fhir_version,
+    }));
+    return paginate(data, query);
   },
 
   '/api/v1/filters/vendors': (_query) => {
@@ -435,6 +673,18 @@ const handlers = {
 
   '/api/v1/filters/validation-groups': (_query) => {
     return VALIDATION_RULES.map(r => ({ value: r.rule_name, label: r.rule_name }));
+  },
+
+  '/api/v1/filters/fhir-version-groups': (_query) => {
+    return ['R4', 'STU3', 'DSTU2', 'No Cap Stat'];
+  },
+
+  '/api/v1/filters/operations': (_query) => {
+    return ['read', 'search-type', 'create', 'update', 'delete'].map(o => ({ value: o, label: o, count: randomInt(5000, 50000) }));
+  },
+
+  '/api/v1/filters/states': (_query) => {
+    return STATES.map(s => ({ value: s, label: s, count: randomInt(500, 8000) }));
   },
 
   '/api/v1/search': (query) => {

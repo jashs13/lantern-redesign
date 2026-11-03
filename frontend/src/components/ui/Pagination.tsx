@@ -72,7 +72,7 @@ export function Pagination({
               className={clsx(
                 'min-w-[32px] rounded px-2 py-1.5 text-sm font-medium',
                 p === page
-                  ? 'bg-navy-700 text-white'
+                  ? 'bg-blue-700 text-white'
                   : 'text-neutral-600 hover:bg-neutral-100',
               )}
             >

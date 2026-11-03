@@ -11,6 +11,31 @@ import { Select } from '@/components/ui/Select';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Loader2, InfoIcon } from 'lucide-react';
 import { Pagination } from '@/components/ui/Pagination';
+import type { Field } from '@/api/types';
+
+interface GroupedField {
+  field_name: string;
+  count: number;
+  versions: Field[];
+  type?: 'Optional' | 'Extension';
+}
+
+type GroupedFieldSortKey = 'field_name' | 'count' | 'type';
+
+function compareGroupedFields(
+  a: GroupedField,
+  b: GroupedField,
+  key: GroupedFieldSortKey,
+  dir: 'asc' | 'desc',
+) {
+  let comparison: number;
+  if (key === 'count') {
+    comparison = a.count - b.count;
+  } else {
+    comparison = (a[key] ?? '').localeCompare(b[key] ?? '');
+  }
+  return dir === 'asc' ? comparison : -comparison;
+}
 
 export function CapStatFieldsTab() {
   const { filters, setFhirVersions, setVendor } = useFilters();
@@ -21,8 +46,8 @@ export function CapStatFieldsTab() {
   const [optionalPage, setOptionalPage] = useState(1);
   const optionalPageSize = 10;
   
-  const [reqSort, setReqSort] = useState<{key: string, dir: 'asc'|'desc'}>({key: 'count', dir: 'desc'});
-  const [optSort, setOptSort] = useState<{key: string, dir: 'asc'|'desc'}>({key: 'count', dir: 'desc'});
+  const [reqSort, setReqSort] = useState<{key: GroupedFieldSortKey, dir: 'asc'|'desc'}>({key: 'count', dir: 'desc'});
+  const [optSort, setOptSort] = useState<{key: GroupedFieldSortKey, dir: 'asc'|'desc'}>({key: 'count', dir: 'desc'});
 
   const { data: fhirVersionOptions = [] } = useQuery({
     queryKey: ['filters', 'fhir-versions'],
@@ -64,8 +89,6 @@ export function CapStatFieldsTab() {
       }),
   });
 
-  if (error || extensionsError) return <ErrorState message={(error || extensionsError)?.message || 'An error occurred'} onRetry={() => refetch()} />;
-
   const groupedRequired = useMemo(() => {
     if (!fields) return [];
     const grp = fields.filter(f => f.is_required).reduce((acc, field) => {
@@ -73,26 +96,19 @@ export function CapStatFieldsTab() {
       acc[field.field_name].count += field.count;
       acc[field.field_name].versions.push(field);
       return acc;
-    }, {} as Record<string, any>);
-    return Object.values(grp).sort((a: any, b: any) => {
-      const aVal = a[reqSort.key];
-      const bVal = b[reqSort.key];
-      if (typeof aVal === 'string') {
-          return reqSort.dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-      }
-      return reqSort.dir === 'asc' ? aVal - bVal : bVal - aVal;
-    });
+    }, {} as Record<string, GroupedField>);
+    return Object.values(grp).sort((a, b) => compareGroupedFields(a, b, reqSort.key, reqSort.dir));
   }, [fields, reqSort]);
 
   const groupedOptionalAndExt = useMemo(() => {
-    const list: any[] = [];
+    const list: GroupedField[] = [];
     if (fields) {
       const optGrps = fields.filter(f => !f.is_required).reduce((acc, field) => {
         if (!acc[field.field_name]) acc[field.field_name] = { field_name: field.field_name, count: 0, versions: [], type: 'Optional' };
         acc[field.field_name].count += field.count;
         acc[field.field_name].versions.push(field);
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, GroupedField>);
       list.push(...Object.values(optGrps));
     }
     if (extensions) {
@@ -101,17 +117,10 @@ export function CapStatFieldsTab() {
         acc[field.field_name].count += field.count;
         acc[field.field_name].versions.push(field);
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, GroupedField>);
       list.push(...Object.values(extGrps));
     }
-    return list.sort((a: any, b: any) => {
-        const aVal = a[optSort.key];
-        const bVal = b[optSort.key];
-        if (typeof aVal === 'string') {
-            return optSort.dir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-        }
-        return optSort.dir === 'asc' ? aVal - bVal : bVal - aVal;
-    });
+    return list.sort((a, b) => compareGroupedFields(a, b, optSort.key, optSort.dir));
   }, [fields, extensions, optSort]);
 
   // Paginate optional
@@ -119,6 +128,8 @@ export function CapStatFieldsTab() {
 
   // Mock total endpoint count since it's not directly in this specific API fetch - estimating max inclusion
   const maxEndpoints = groupedRequired.length > 0 ? Math.max(...groupedRequired.map(g => g.count)) : 70000;
+
+  if (error || extensionsError) return <ErrorState message={(error || extensionsError)?.message || 'An error occurred'} onRetry={() => refetch()} />;
 
   return (
     <div className="space-y-6">
@@ -132,28 +143,28 @@ export function CapStatFieldsTab() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-success">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Required Fields</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">
+          <div className="text-3xl font-bold text-blue-900 leading-tight">
             {metricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (fieldMetrics?.required_count ?? 'N/A')}
           </div>
           <p className="text-sm text-gray-500 mt-1">Fields required by FHIR spec</p>
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-primary">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Optional Fields</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">
+          <div className="text-3xl font-bold text-blue-900 leading-tight">
              {metricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (fieldMetrics?.optional_count ?? 'N/A')}
           </div>
           <p className="text-sm text-gray-500 mt-1">Additional fields observed</p>
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border border-neutral-200">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Avg Fields per CapStat</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">
+          <div className="text-3xl font-bold text-blue-900 leading-tight">
              {metricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (fieldMetrics?.average_per_cap_stat ?? 'N/A')}
           </div>
           <p className="text-sm text-gray-500 mt-1">Mean across all endpoints</p>
         </article>
         <article className="bg-white rounded-lg p-5 shadow-sm border-l-4 border-l-warning">
           <div className="text-[0.8125rem] text-gray-500 uppercase tracking-widest font-semibold mb-2">Extensions Observed</div>
-          <div className="text-3xl font-bold text-navy-900 leading-tight">
+          <div className="text-3xl font-bold text-blue-900 leading-tight">
              {metricsLoading ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : (fieldMetrics?.extension_count ?? 'N/A')}
           </div>
           <p className="text-sm text-gray-500 mt-1">Distinct extension URLs</p>
@@ -164,7 +175,7 @@ export function CapStatFieldsTab() {
       <section className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
         <header className="p-5 border-b flex justify-between items-center flex-wrap gap-4 bg-white">
           <div>
-            <h2 className="text-xl font-bold text-navy-900 font-sans">Required Fields</h2>
+            <h2 className="text-xl font-bold text-blue-900 font-sans">Required Fields</h2>
             <p className="text-gray-500 text-sm mt-1">Fields that the FHIR specification requires in every Capability Statement</p>
           </div>
         </header>
@@ -204,7 +215,7 @@ export function CapStatFieldsTab() {
         <div className="m-5 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm text-left">
-              <thead className="bg-navy-900 text-white uppercase text-xs tracking-wider">
+              <thead className="bg-blue-900 text-white uppercase text-xs tracking-wider">
                 <tr>
                   <th className="px-4 py-3 font-semibold cursor-pointer select-none" onClick={() => setReqSort({key: 'field_name', dir: reqSort.key === 'field_name' && reqSort.dir === 'asc' ? 'desc' : 'asc'})}>
                       Field Name {reqSort.key === 'field_name' ? (reqSort.dir === 'asc' ? '↑' : '↓') : ''}
@@ -224,14 +235,14 @@ export function CapStatFieldsTab() {
                   const pct = maxEndpoints > 0 ? (item.count / maxEndpoints) * 100 : 0;
                   return (
                     <tr key={idx} className="hover:bg-neutral-50 transition-colors even:bg-neutral-50/50">
-                      <td className="px-4 py-3 font-bold text-navy-900">{item.field_name}</td>
+                      <td className="px-4 py-3 font-bold text-blue-900">{item.field_name}</td>
                       <td className="px-4 py-3 font-bold">{formatNumber(item.count)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="h-2 flex-1 bg-neutral-100 rounded-full overflow-hidden">
                             <div className={`h-full rounded-full ${pct >= 90 ? 'bg-status-green' : pct >= 70 ? 'bg-sky-500' : pct >= 10 ? 'bg-status-gold' : 'bg-status-red'}`} style={{ width: `${pct}%` }} />
                           </div>
-                          <span className="font-bold text-navy-900 min-w-[45px] text-right">{pct.toFixed(1)}%</span>
+                          <span className="font-bold text-blue-900 min-w-[45px] text-right">{pct.toFixed(1)}%</span>
                         </div>
                       </td>
                     </tr>
@@ -246,14 +257,14 @@ export function CapStatFieldsTab() {
       {/* Optional Fields Section */}
       <section className="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden">
         <header className="p-5 border-b bg-white">
-          <h2 className="text-xl font-bold text-navy-900 font-sans">Optional Fields & Extensions</h2>
+          <h2 className="text-xl font-bold text-blue-900 font-sans">Optional Fields & Extensions</h2>
           <p className="text-gray-500 text-sm mt-1">Additional fields and extensions endpoints choose to include</p>
         </header>
 
         <div className="m-5 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm text-left">
-              <thead className="bg-navy-900 text-white uppercase text-xs tracking-wider">
+              <thead className="bg-blue-900 text-white uppercase text-xs tracking-wider">
                 <tr>
                   <th className="px-4 py-3 font-semibold cursor-pointer select-none" onClick={() => setOptSort({key: 'field_name', dir: optSort.key === 'field_name' && optSort.dir === 'asc' ? 'desc' : 'asc'})}>
                       Field / Extension {optSort.key === 'field_name' ? (optSort.dir === 'asc' ? '↑' : '↓') : ''}
@@ -278,7 +289,7 @@ export function CapStatFieldsTab() {
                     const barColor = pct >= 90 ? 'bg-status-green' : pct >= 70 ? 'bg-sky-500' : pct >= 10 ? 'bg-status-gold' : 'bg-status-red';
                     return (
                       <tr key={idx} className="hover:bg-neutral-50 transition-colors even:bg-neutral-50/50">
-                        <td className="px-4 py-3 font-bold text-navy-900">{item.field_name}</td>
+                        <td className="px-4 py-3 font-bold text-blue-900">{item.field_name}</td>
                         <td className="px-4 py-3">
                           <Badge variant={item.type === 'Extension' ? 'purple' : 'info'}>{item.type}</Badge>
                         </td>
@@ -288,7 +299,7 @@ export function CapStatFieldsTab() {
                             <div className="h-2 flex-1 bg-neutral-100 rounded-full overflow-hidden">
                               <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
                             </div>
-                            <span className="font-bold text-navy-900 min-w-[45px] text-right">{pct.toFixed(1)}%</span>
+                            <span className="font-bold text-blue-900 min-w-[45px] text-right">{pct.toFixed(1)}%</span>
                           </div>
                         </td>
                       </tr>

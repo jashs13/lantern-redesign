@@ -4,17 +4,44 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* Primary — Deep Navy (#051359 base) */
-        navy: {
-          950: '#030b38',
-          900: '#051359',
-          800: '#0a1f6b',
-          700: '#0f2f8a',
-          600: '#1a45a8',
-          500: '#2e5cb8',
-          400: '#5a82cc',
-          300: '#9bb4e0',
+        /* Primary — brand blue ramp, sampled from healthit.gov (ONC/USWDS). Single
+         * source of truth is the --blue-* custom properties in src/index.css. */
+        blue: {
+          50: 'var(--blue-50)',
+          100: 'var(--blue-100)',
+          200: 'var(--blue-200)',
+          300: 'var(--blue-300)',
+          400: 'var(--blue-400)',
+          500: 'var(--blue-500)',
+          600: 'var(--blue-600)',
+          700: 'var(--blue-700)',
+          800: 'var(--blue-800)',
+          900: 'var(--blue-900)',
+          950: 'var(--blue-950)',
         },
+        /* Alias so any remaining bg-navy-900 etc. keep working */
+        navy: {
+          50: 'var(--blue-50)',
+          100: 'var(--blue-100)',
+          200: 'var(--blue-200)',
+          300: 'var(--blue-300)',
+          400: 'var(--blue-400)',
+          500: 'var(--blue-500)',
+          600: 'var(--blue-600)',
+          700: 'var(--blue-700)',
+          800: 'var(--blue-800)',
+          900: 'var(--blue-900)',
+          950: 'var(--blue-950)',
+        },
+        /* Gold accents */
+        gold: {
+          DEFAULT: 'var(--gold)',
+          line: 'var(--gold-line)',
+          star: 'var(--gold-star)',
+          text: 'var(--gold-text)',
+        },
+        body: 'var(--body)',
+        surface: 'var(--surface)',
         /* Secondary — Lantern Sky */
         sky: {
           500: '#02bfe7',
@@ -24,21 +51,22 @@ export default {
         },
         /* Status indicators */
         status: {
-          green: '#2e8540',
+          green: 'var(--color-success)',
           'green-light': '#4aa564',
           'green-bg': '#e7f4e9',
-          gold: '#fdb81e',
+          gold: 'var(--gold)',
+          'gold-text': 'var(--gold-text-muted)',
           'gold-bg': '#fff3e0',
-          red: '#e31c3d',
+          red: 'var(--color-error)',
           'red-bg': '#fbe9ec',
-          info: '#02bfe7',
+          info: 'var(--color-secondary)',
         },
         /* HTTP response code colours */
         http: {
-          '2xx': '#2e8540',
+          '2xx': 'var(--color-success)',
           '2xx-bg': '#e7f4e9',
-          '3xx': '#205493',
-          '3xx-bg': '#e8f0f8',
+          '3xx': 'var(--blue-700)',
+          '3xx-bg': 'var(--blue-100)',
           '4xx': '#b56a00',
           '4xx-bg': '#fff3e0',
           '5xx': '#b51b35',
@@ -70,7 +98,6 @@ export default {
           'Roboto',
           'sans-serif',
         ],
-        serif: ["'Merriweather'", 'Georgia', 'serif'],
         mono: ["'Source Code Pro'", "'Courier New'", 'monospace'],
       },
       fontSize: {

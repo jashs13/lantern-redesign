@@ -12,7 +12,7 @@ export function LandingLayout() {
     <div className="flex min-h-screen flex-col">
       <HeaderBar />
       <Sidebar />
-      <main className="flex-1 pt-14">
+      <main className="flex-1 pt-14 lg:pt-[84px]">
         <Outlet />
       </main>
       <Footer />

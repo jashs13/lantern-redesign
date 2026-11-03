@@ -8,22 +8,43 @@
 /* CSS Custom Properties (Design Tokens)                                       */
 /* ========================================================================== */
 :root {
-  /* Primary Colors — Deep Navy (#051359 base) */
-  --color-primary-darkest: #030b38;
-  --color-primary-dark: #051359;
-  --color-primary: #0f2f8a;
-  --color-primary-light: #5a82cc;
-  --color-primary-lighter: #9bb4e0;
+  /* ------------------------------------------------------------------------ */
+  /* Brand blue ramp — sampled from healthit.gov (ONC/USWDS palette)          */
+  /* This is the single source of truth; tailwind.config.js `blue`/`navy`     */
+  /* read these vars instead of hardcoding hex.                               */
+  /* ------------------------------------------------------------------------ */
+  --blue-50: #f7f8fc;
+  --blue-100: #e9edfb;
+  --blue-200: #cdd7f5;
+  --blue-300: #93a5e8;
+  --blue-400: #7588de;
+  --blue-500: #586cd3;
+  --blue-600: #3a4fc9;
+  --blue-700: #1c32be; /* vivid heading/primary blue */
+  --blue-800: #06179f; /* link hover/dark */
+  --blue-900: #0e1f75; /* ONC header-band navy */
+  --blue-950: #0b195e;
 
-  /* Secondary Colors */
+  /* Secondary — Lantern Sky */
   --color-secondary: #02bfe7;
   --color-secondary-dark: #0095c8;
 
-  /* Accent Colors */
-  --color-accent-green: #2e8540;
-  --color-accent-green-light: #4aa564;
-  --color-accent-gold: #fdb81e;
-  --color-accent-red: #e31c3d;
+  /* Gold accents */
+  --gold: #f7c951;
+  --gold-line: #f7ce46;
+  --gold-star: #f3c957;
+  --gold-text: #3d2f04; /* dark text on a gold surface */
+  --gold-text-muted: #b8860b; /* degraded status text on a light gold bg */
+
+  /* Status */
+  --color-success: #2e8540;
+  --color-warning: var(--gold);
+  --color-error: #e31c3d;
+  --color-info: var(--color-secondary);
+
+  /* Body text / page surface */
+  --body: #4d5056;
+  --surface: #f6f7f8;
 
   /* Neutral Colors */
   --color-white: #ffffff;
@@ -34,27 +55,37 @@
   --color-gray-dark: #323a45;
   --color-black: #212121;
 
-  /* Status Colors */
-  --color-status-available: #2e8540;
-  --color-status-degraded: #fdb81e;
-  --color-status-down: #e31c3d;
-  --color-status-info: #02bfe7;
+  /* Status Colors (dots/fills) */
+  --color-status-available: var(--color-success);
+  --color-status-degraded: var(--gold);
+  --color-status-down: var(--color-error);
+  --color-status-info: var(--color-secondary);
 
   /* HTTP Status Colors */
-  --color-http-2xx: #2e8540;
+  --color-http-2xx: var(--color-success);
   --color-http-2xx-bg: #e7f4e9;
-  --color-http-3xx: #0f2f8a;
-  --color-http-3xx-bg: #e8f0f8;
+  --color-http-3xx: var(--blue-700);
+  --color-http-3xx-bg: var(--blue-100);
   --color-http-4xx: #b56a00;
   --color-http-4xx-bg: #fff3e0;
   --color-http-5xx: #b51b35;
   --color-http-5xx-bg: #fbe9ec;
-  --color-http-timeout: #5b616b;
-  --color-http-timeout-bg: #f1f1f1;
+  --color-http-timeout: var(--color-gray);
+  --color-http-timeout-bg: var(--color-gray-lightest);
 
-  /* Typography */
-  --font-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-serif: 'Merriweather', Georgia, serif;
+  /* Legacy semantic aliases — kept so existing var(--color-primary...) consumers keep working */
+  --color-primary-darkest: var(--blue-950);
+  --color-primary-dark: var(--blue-900);
+  --color-primary: var(--blue-700);
+  --color-primary-light: var(--blue-400);
+  --color-primary-lighter: var(--blue-300);
+  --color-accent-green: var(--color-success);
+  --color-accent-green-light: #4aa564;
+  --color-accent-gold: var(--gold);
+  --color-accent-red: var(--color-error);
+
+  /* Typography — Source Sans everywhere, no serif */
+  --font-sans: 'Source Sans 3', 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'Source Code Pro', 'Courier New', monospace;
 
   /* Spacing Scale */
@@ -181,26 +212,61 @@
     box-shadow: var(--shadow-md);
   }
 
-  /* Page section heading — serif */
+  /* Page section heading — bold sans, brand blue */
   .section-heading {
-    font-family: var(--font-serif);
     font-weight: 700;
-    color: var(--color-primary-dark);
+    color: var(--blue-700);
   }
 
-  /* KPI card with coloured left border */
-  .kpi-card {
+  /* KPI strip — one grouped card of segments (dashboard/endpoints/etc key metrics),
+     not floating individual cards. Mirrors the .kpistrip/.kseg pattern in the mockup. */
+  .kpi-strip {
     @apply rounded-md bg-white;
+    display: grid;
+    grid-template-columns: repeat(var(--kpi-cols, 4), minmax(0, 1fr));
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--color-gray-lighter);
-    border-left-width: 4px;
-    padding: 1.25rem 1.5rem;
-    transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+    overflow: hidden;
   }
 
-  .kpi-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-4px);
+  .kpi-strip--5 {
+    --kpi-cols: 5;
+  }
+
+  @media (max-width: 900px) {
+    .kpi-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .kpi-seg {
+      border-left: 0 !important;
+    }
+    .kpi-seg:nth-child(n + 3) {
+      border-top: 1px solid var(--color-gray-lighter);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .kpi-strip {
+      grid-template-columns: 1fr;
+    }
+    .kpi-seg:nth-child(n + 2) {
+      border-top: 1px solid var(--color-gray-lighter);
+    }
+  }
+
+  .kpi-seg {
+    min-width: 0;
+    padding: 14px 18px;
+    border-left: 1px solid var(--color-gray-lighter);
+    transition: background var(--transition-fast);
+  }
+
+  .kpi-seg:first-child {
+    border-left: 0;
+  }
+
+  .kpi-seg:hover {
+    background: var(--blue-50);
   }
 
   /* Status dot */

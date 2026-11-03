@@ -13,7 +13,7 @@ export function IGStatsCards() {
   if (!data) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="kpi-strip">
       <KpiCard
         label="Total IGs Reported"
         value={data.distinct_igs}
@@ -31,13 +31,13 @@ export function IGStatsCards() {
         label="Endpoints w/ IGs"
         value={data.endpoints_with_igs}
         subtitle={`${data.endpoints_with_igs_pct}% declare at least one IG`}
-        borderColor="var(--color-primary, #0f2f8a)"
+        borderColor="var(--color-primary)"
       />
       <KpiCard
         label="Avg IGs / Endpoint"
         value={data.avg_igs_per_endpoint}
         subtitle="Mean implementation guides referenced"
-        borderColor="var(--color-warning, #fdb81e)"
+        borderColor="var(--color-warning, #f7c951)"
       />
     </div>
   );

@@ -2,6 +2,7 @@ export interface NavItem {
   label: string;
   path: string;
   icon?: string;
+  children?: NavItem[];
 }
 
 export interface NavSection {
@@ -11,44 +12,47 @@ export interface NavSection {
 
 /**
  * Sidebar navigation sections — grouped links for the left sidebar.
+ * Structure and icon ids mirror lanterndashboardmockupv2.html exactly.
  */
 export const SIDEBAR_NAV_SECTIONS: NavSection[] = [
   {
     items: [
-      { label: 'Dashboard', path: '/dashboard' },
-      { label: 'Endpoints', path: '/endpoints' },
-      { label: 'Organizations', path: '/organizations' },
+      { label: 'Dashboard', path: '/dashboard', icon: 'dashboard' },
+      { label: 'Endpoints', path: '/endpoints', icon: 'endpoints' },
+      { label: 'Organizations', path: '/organizations', icon: 'organizations' },
     ],
   },
   {
     label: 'Capabilities',
     items: [
-      { label: 'Resources', path: '/resources' },
-      { label: 'Implementation Guides', path: '/implementation-guides' },
-      { label: 'Profiles', path: '/profiles' },
-      { label: 'CapStat Size', path: '/capstat-size' },
-    ],
-  },
-  {
-    label: 'Conformance',
-    items: [
-      { label: 'CapStat Fields', path: '/capstat-fields' },
-      { label: 'CapStat Values', path: '/capstat-values' },
-      { label: 'Validations', path: '/validations' },
+      { label: 'Resources', path: '/resources', icon: 'resources' },
+      { label: 'Implementation Guides', path: '/implementation-guides', icon: 'ig' },
+      { label: 'Profiles', path: '/profiles', icon: 'profiles' },
+      {
+        label: 'Capability Statements',
+        path: '/capstat-fields',
+        icon: 'capstat',
+        children: [
+          { label: 'Fields', path: '/capstat-fields' },
+          { label: 'Field Values', path: '/capstat-values' },
+          { label: 'Statement Sizes', path: '/capstat-size' },
+          { label: 'Validations', path: '/validations' },
+        ],
+      },
     ],
   },
   {
     label: 'Security',
     items: [
-      { label: 'Security', path: '/security' },
-      { label: 'SMART Response', path: '/smart-response' },
+      { label: 'Authorization Types', path: '/security', icon: 'authTypes' },
+      { label: 'SMART on FHIR', path: '/smart-response', icon: 'smart' },
     ],
   },
   {
     items: [
-      { label: 'Contacts', path: '/contacts' },
-      { label: 'Downloads/API', path: '/downloads' },
-      { label: 'About', path: '/about' },
+      { label: 'Contacts', path: '/contacts', icon: 'contacts' },
+      { label: 'Downloads & API', path: '/downloads', icon: 'downloads' },
+      { label: 'About', path: '/about', icon: 'about' },
     ],
   },
 ];
@@ -58,7 +62,7 @@ export const SIDEBAR_NAV_SECTIONS: NavSection[] = [
  */
 export const ALL_NAV_ITEMS: NavItem[] = [
   { label: 'Home', path: '/' },
-  ...SIDEBAR_NAV_SECTIONS.flatMap((section) => section.items),
+  ...SIDEBAR_NAV_SECTIONS.flatMap((section) => section.items.flatMap((item) => item.children ?? item)),
   { label: 'Capabilities', path: '/capabilities' },
   { label: 'Conformance & Validation', path: '/conformance-validation' },
   { label: 'Search', path: '/search' },
@@ -84,51 +88,71 @@ export const FHIR_VERSION_GROUPS: Record<string, string[]> = {
 export const FHIR_VERSION_GROUP_NAMES = ['DSTU2', 'STU3', 'R4', 'R4B', 'R5'] as const;
 
 /* ========================================================================== */
-/* Colors                                                                      */
+/* Design tokens                                                               */
 /* ========================================================================== */
+/*
+ * Single source of truth is the CSS custom properties in src/index.css.
+ * getToken() reads a token's live value for plain DOM contexts (style props),
+ * TOKENS is a concrete-hex mirror for contexts that can't resolve var() at
+ * render time (Recharts fill/stroke SVG attributes). Keep TOKENS in sync with
+ * the :root block in index.css.
+ */
 
-/** Deep Navy brand colors (#051359 base). */
-export const NAVY_COLORS = {
-  primaryDarkest: '#030b38',
-  primaryDark: '#051359',
-  primary: '#0f2f8a',
-  primaryLight: '#5a82cc',
-  primaryLighter: '#9bb4e0',
+/** Reads a CSS custom property's current value off :root, e.g. getToken('color-primary'). */
+export function getToken(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
+}
+
+/** Concrete hex mirror of the :root tokens in index.css — for chart (Recharts) usage. */
+export const TOKENS = {
+  blue50: '#f7f8fc',
+  blue100: '#e9edfb',
+  blue200: '#cdd7f5',
+  blue300: '#93a5e8',
+  blue400: '#7588de',
+  blue500: '#586cd3',
+  blue600: '#3a4fc9',
+  blue700: '#1c32be',
+  blue800: '#06179f',
+  blue900: '#0e1f75',
+  blue950: '#0b195e',
   secondary: '#02bfe7',
   secondaryDark: '#0095c8',
+  success: '#2e8540',
+  gold: '#f7c951',
+  goldTextMuted: '#b8860b',
+  error: '#e31c3d',
+  timeout: '#5b616b',
 } as const;
 
-/** Status indicator colors (availability). */
-export const STATUS_COLORS = {
-  available: '#2e8540',
-  degraded: '#fdb81e',
-  down: '#e31c3d',
-  unknown: '#5b616b',
+/** Status indicator colors (availability) — concrete hex for chart fills. */
+export const STATUS_TOKENS = {
+  available: TOKENS.success,
+  degraded: TOKENS.gold,
+  down: TOKENS.error,
+  unknown: TOKENS.timeout,
 } as const;
 
-/** HTTP response code group colors. */
-export const HTTP_STATUS_COLORS = {
-  '2xx': { color: '#2e8540', bg: '#e7f4e9', label: 'Success' },
-  '3xx': { color: '#0f2f8a', bg: '#e0e8f6', label: 'Redirect' },
+/** HTTP response code group colors — concrete hex for chart fills. */
+export const HTTP_STATUS_TOKENS = {
+  '2xx': { color: TOKENS.success, bg: '#e7f4e9', label: 'Success' },
+  '3xx': { color: TOKENS.blue700, bg: TOKENS.blue100, label: 'Redirect' },
   '4xx': { color: '#b56a00', bg: '#fff3e0', label: 'Client Error' },
   '5xx': { color: '#b51b35', bg: '#fbe9ec', label: 'Server Error' },
-  timeout: { color: '#5b616b', bg: '#f1f1f1', label: 'Timeout' },
+  timeout: { color: TOKENS.timeout, bg: '#f1f1f1', label: 'Timeout' },
 } as const;
 
-/** Chart color palette for vendor/FHIR stacked bars. */
-export const CHART_COLORS = [
-  '#0f2f8a',
-  '#02bfe7',
-  '#2e8540',
-  '#fdb81e',
-  '#b56a00',
-  '#e31c3d',
-  '#051359',
-  '#5a82cc',
-  '#4aa564',
-  '#0095c8',
-  '#b51b35',
-  '#5b616b',
+/** Chart color palette for vendor/FHIR stacked bars — CVD-validated order. */
+export const CHART_COLORS = ['#2e6fbe', '#1B5A7F', '#4aa564', '#b56a00'] as const;
+
+/** Sequential single-hue ramp (blue-200 → blue-700) for charts needing more than 4 series. */
+export const CHART_SEQUENTIAL_BLUE = [
+  TOKENS.blue200,
+  TOKENS.blue300,
+  TOKENS.blue400,
+  TOKENS.blue500,
+  TOKENS.blue600,
+  TOKENS.blue700,
 ] as const;
 
 /* ========================================================================== */

@@ -37,7 +37,7 @@ function buildEndpointColumns(
         return (
           <button
             type="button"
-            className="font-mono text-xs text-navy-700 block truncate max-w-[250px] text-left hover:underline"
+            className="font-mono text-xs text-blue-700 block truncate max-w-[250px] text-left hover:underline"
             title={url}
             onClick={() => onOpenDetail(url)}
           >
@@ -59,7 +59,7 @@ function buildEndpointColumns(
             <p className="truncate text-xs text-neutral-600">{visible.join('; ')}</p>
             {names.length > 3 && (
               <button
-                className="mt-0.5 text-xs font-semibold text-navy-700 hover:underline"
+                className="mt-0.5 text-xs font-semibold text-blue-700 hover:underline"
                 onClick={() => onShowOrgs(row.original.url)}
               >
                 Show all
@@ -99,7 +99,7 @@ const capabilityColumns: ColumnDef<SmartCapability, unknown>[] = [
   {
     accessorKey: 'capability',
     header: 'Core Capability',
-    cell: ({ getValue }) => <span className="font-semibold text-navy-700">{getValue() as string}</span>,
+    cell: ({ getValue }) => <span className="font-semibold text-blue-700">{getValue() as string}</span>,
   },
   {
     accessorKey: 'count',
@@ -176,12 +176,12 @@ export function SmartCapabilitiesTab() {
       <div className="flex gap-4 p-5 bg-blue-50 border-l-4 border-cyan-500 rounded mb-6">
         <div className="text-xl flex-shrink-0">&#x1F6C8;</div>
         <div className="text-sm text-neutral-700">
-          <strong className="text-navy-900">About SMART-on-FHIR:</strong> FHIR endpoints requiring authorization shall provide a JSON document at <code className="text-xs bg-white/60 px-1 py-0.5 rounded">/.well-known/smart-configuration</code>. This tab shows which endpoints return a valid SMART Core Capabilities document and what capabilities they advertise.
+          <strong className="text-blue-900">About SMART-on-FHIR:</strong> FHIR endpoints requiring authorization shall provide a JSON document at <code className="text-xs bg-white/60 px-1 py-0.5 rounded">/.well-known/smart-configuration</code>. This tab shows which endpoints return a valid SMART Core Capabilities document and what capabilities they advertise.
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-6">
+      <div className="kpi-strip mb-6">
         <KpiCard
           label="Well-Known Supported"
           value={kpi?.well_known_supported ?? '...'}
@@ -203,7 +203,7 @@ export function SmartCapabilitiesTab() {
         <KpiCard
           label="Avg Capabilities"
           value={kpi?.avg_capabilities ?? '...'}
-          borderColor="#fdb81e"
+          borderColor="var(--gold)"
           icon={<BarChart3 size={18} />}
         />
       </div>
@@ -253,7 +253,7 @@ export function SmartCapabilitiesTab() {
           <div className="flex justify-end pt-4 mt-4 border-t border-neutral-200">
             <button
               onClick={() => { resetFilters(); setSearch(''); setPage(1); }}
-              className="text-sm font-semibold text-neutral-500 hover:text-navy-700 hover:underline"
+              className="text-sm font-semibold text-neutral-500 hover:text-blue-700 hover:underline"
             >
               Clear All Filters
             </button>
@@ -265,7 +265,7 @@ export function SmartCapabilitiesTab() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-4 self-start">
           <div className="flex justify-between items-center h-[28px]">
-            <h3 className="font-semibold text-lg text-navy-900">
+            <h3 className="font-semibold text-lg text-blue-900">
               SMART Core Capabilities
             </h3>
           </div>
@@ -282,7 +282,7 @@ export function SmartCapabilitiesTab() {
 
         <div className="lg:col-span-2 space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="font-semibold text-lg text-navy-900">
+            <h3 className="font-semibold text-lg text-blue-900">
               Endpoints by Well Known URI support
             </h3>
           </div>

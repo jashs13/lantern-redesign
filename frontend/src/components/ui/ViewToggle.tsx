@@ -19,7 +19,7 @@ export function ViewToggle({ mode, onChange }: ViewToggleProps) {
         className={clsx(
           'flex items-center gap-1.5 rounded-l-md px-3 py-1.5 text-xs font-medium transition-colors',
           mode === 'table'
-            ? 'bg-navy-700 text-white'
+            ? 'bg-blue-700 text-white'
             : 'text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700',
         )}
         aria-label="Table view"
@@ -32,7 +32,7 @@ export function ViewToggle({ mode, onChange }: ViewToggleProps) {
         className={clsx(
           'flex items-center gap-1.5 rounded-r-md border-l border-neutral-200 px-3 py-1.5 text-xs font-medium transition-colors',
           mode === 'grid'
-            ? 'bg-navy-700 text-white'
+            ? 'bg-blue-700 text-white'
             : 'text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700',
         )}
         aria-label="Grid view"

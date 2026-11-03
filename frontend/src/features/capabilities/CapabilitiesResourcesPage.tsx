@@ -22,8 +22,8 @@ export default function CapabilitiesResourcesPage() {
           onClick={() => setActiveTab('resources')}
           className={`px-5 py-2.5 rounded font-semibold text-sm transition-all whitespace-nowrap ${
             activeTab === 'resources'
-              ? 'bg-navy-700 text-white shadow'
-              : 'text-gray-500 hover:text-navy-700 hover:bg-gray-50'
+              ? 'bg-blue-700 text-white shadow'
+              : 'text-gray-500 hover:text-blue-700 hover:bg-gray-50'
           }`}
         >
           Resources
@@ -32,8 +32,8 @@ export default function CapabilitiesResourcesPage() {
           onClick={() => setActiveTab('implementation-guides')}
           className={`px-5 py-2.5 rounded font-semibold text-sm transition-all whitespace-nowrap ${
             activeTab === 'implementation-guides'
-              ? 'bg-navy-700 text-white shadow'
-              : 'text-gray-500 hover:text-navy-700 hover:bg-gray-50'
+              ? 'bg-blue-700 text-white shadow'
+              : 'text-gray-500 hover:text-blue-700 hover:bg-gray-50'
           }`}
         >
           Implementation Guides
@@ -42,8 +42,8 @@ export default function CapabilitiesResourcesPage() {
           onClick={() => setActiveTab('profiles')}
           className={`px-5 py-2.5 rounded font-semibold text-sm transition-all whitespace-nowrap ${
             activeTab === 'profiles'
-              ? 'bg-navy-700 text-white shadow'
-              : 'text-gray-500 hover:text-navy-700 hover:bg-gray-50'
+              ? 'bg-blue-700 text-white shadow'
+              : 'text-gray-500 hover:text-blue-700 hover:bg-gray-50'
           }`}
         >
           Profiles
@@ -52,8 +52,8 @@ export default function CapabilitiesResourcesPage() {
           onClick={() => setActiveTab('capstat-size')}
           className={`px-5 py-2.5 rounded font-semibold text-sm transition-all whitespace-nowrap ${
             activeTab === 'capstat-size'
-              ? 'bg-navy-700 text-white shadow'
-              : 'text-gray-500 hover:text-navy-700 hover:bg-gray-50'
+              ? 'bg-blue-700 text-white shadow'
+              : 'text-gray-500 hover:text-blue-700 hover:bg-gray-50'
           }`}
         >
           Capability Statement Size

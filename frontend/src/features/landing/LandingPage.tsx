@@ -29,7 +29,7 @@ export default function LandingPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center p-8">
-        <p className="text-navy-900 animate-pulse text-lg">Loading dashboard...</p>
+        <p className="text-blue-900 animate-pulse text-lg">Loading dashboard...</p>
       </div>
     );
   }
@@ -98,7 +98,7 @@ function HeroSection({ totalEndpoints }: { totalEndpoints: number }) {
 
       <div className="relative z-10 mx-auto" style={{ maxWidth: '800px' }}>
         <h1
-          className="font-serif font-bold"
+          className="font-bold"
           style={{
             fontSize: 'clamp(1.5rem, 3.5vw, 2rem)',
             lineHeight: 1.2,
@@ -316,7 +316,6 @@ function TaskCardsSection() {
       <div className="text-center" style={{ marginBottom: '2rem' }}>
         <h2
           id="tasks-heading"
-          className="font-serif"
           style={{
             fontSize: '1.75rem',
             color: 'var(--color-primary-dark)',
@@ -475,7 +474,6 @@ function NetworkStatsSection({
         <div className="text-center" style={{ marginBottom: '1.5rem' }}>
           <h2
             id="stats-heading"
-            className="font-serif"
             style={{
               fontSize: '1.5rem',
               color: 'var(--color-primary-dark)',
@@ -685,7 +683,6 @@ function PopularSearchesSection({
       <div className="text-center" style={{ marginBottom: '2rem' }}>
         <h2
           id="popular-heading"
-          className="font-serif"
           style={{
             fontSize: '1.75rem',
             color: 'var(--color-primary-dark)',
@@ -807,7 +804,6 @@ function AboutSection() {
         <div className="text-center" style={{ marginBottom: '2rem' }}>
           <h2
             id="about-heading"
-            className="font-serif"
             style={{ fontSize: '1.75rem', marginBottom: '0.75rem' }}
           >
             About Lantern

@@ -152,7 +152,7 @@ export default function CapStatSizePage() {
         <div className="space-y-4">
           <div className="overflow-x-auto rounded-md border border-neutral-200">
             <table className="min-w-full text-sm">
-              <thead className="bg-navy-900 text-white">
+              <thead className="bg-blue-900 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">
                     Vendor

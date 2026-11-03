@@ -29,7 +29,7 @@ export function MultiSelect({ label, options, selected, onChange }: MultiSelectP
             <Checkbox.Root
               checked={selected.includes(option)}
               onCheckedChange={() => toggle(option)}
-              className="flex h-4 w-4 items-center justify-center rounded border border-gray-300 bg-white data-[state=checked]:border-navy-700 data-[state=checked]:bg-navy-700"
+              className="flex h-4 w-4 items-center justify-center rounded border border-gray-300 bg-white data-[state=checked]:border-blue-700 data-[state=checked]:bg-blue-700"
             >
               <Checkbox.Indicator>
                 <Check size={12} className="text-white" />

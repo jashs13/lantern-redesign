@@ -230,7 +230,7 @@ export function SmartSankeyChart({ metrics }: Props) {
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-1">
-        <h3 className="font-semibold text-lg text-navy-900">SMART-on-FHIR Endpoint Flow</h3>
+        <h3 className="font-semibold text-lg text-blue-900">SMART-on-FHIR Endpoint Flow</h3>
       </div>
       <p className="text-sm text-neutral-500 mb-4">
         How total indexed endpoints flow through HTTP response success, well-known URI support, and valid JSON.

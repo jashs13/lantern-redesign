@@ -57,7 +57,7 @@ export function DataTable<T>({
       <div className="overflow-hidden rounded-md border border-neutral-200 bg-white">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="bg-navy-900 text-white">
+            <thead className="border-b-2 border-blue-200 bg-blue-100 text-blue-900">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (

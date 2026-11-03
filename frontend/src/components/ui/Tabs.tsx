@@ -20,7 +20,7 @@ export function Tabs({ tabs, defaultValue }: TabsProps) {
           <RadixTabs.Trigger
             key={tab.value}
             value={tab.value}
-            className="px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 data-[state=active]:border-b-2 data-[state=active]:border-navy-700 data-[state=active]:text-navy-700"
+            className="px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-700 data-[state=active]:text-blue-700"
           >
             {tab.label}
           </RadixTabs.Trigger>

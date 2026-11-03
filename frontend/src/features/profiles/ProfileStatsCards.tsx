@@ -12,7 +12,7 @@ export function ProfileStatsCards() {
   if (!data) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="kpi-strip">
       <KpiCard
         label="Distinct Profiles"
         value={data.distinct_profiles}
@@ -29,13 +29,13 @@ export function ProfileStatsCards() {
         label="Endpoints w/ Profiles"
         value={data.endpoints_with_profiles}
         subtitle="Declare at least one profile"
-        borderColor="var(--color-primary, #0f2f8a)"
+        borderColor="var(--color-primary)"
       />
       <KpiCard
         label="Avg Profiles / Endpoint"
         value={data.avg_profiles_per_endpoint}
         subtitle="Mean profile count per endpoint"
-        borderColor="var(--color-warning, #fdb81e)"
+        borderColor="var(--color-warning, #f7c951)"
       />
     </div>
   );

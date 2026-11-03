@@ -6,6 +6,7 @@ interface ModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
+  description?: string;
   children: ReactNode;
   maxWidth?: string;
 }
@@ -14,6 +15,7 @@ export function Modal({
   open,
   onOpenChange,
   title,
+  description,
   children,
   maxWidth = 'max-w-3xl',
 }: ModalProps) {
@@ -28,7 +30,13 @@ export function Modal({
             <Dialog.Title className="text-lg font-semibold text-gray-800">
               {title}
             </Dialog.Title>
-            <Dialog.Close className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+            <Dialog.Description className="sr-only">
+              {description ?? `${title} details`}
+            </Dialog.Description>
+            <Dialog.Close
+              aria-label="Close dialog"
+              className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            >
               <X size={20} />
             </Dialog.Close>
           </div>

@@ -7,7 +7,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { NAVY_COLORS } from '@/lib/constants';
+import { TOKENS } from '@/lib/constants';
 
 interface TimeSeriesChartProps {
   data: Record<string, unknown>[];
@@ -21,7 +21,7 @@ export function TimeSeriesChart({
   data,
   xKey,
   yKey,
-  color = NAVY_COLORS.primary,
+  color = TOKENS.blue700,
   height = 300,
 }: TimeSeriesChartProps) {
   return (

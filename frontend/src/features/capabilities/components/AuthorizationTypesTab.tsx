@@ -32,7 +32,7 @@ const AUTH_TYPE_CARDS: {
     label: 'HTTP Basic',
     description: 'Username/password authentication sent with each request. Simple but less secure for patient-facing apps.',
     icon: '\uD83D\uDD11',
-    barColor: '#fdb81e',
+    barColor: '#f7c951',
     iconBg: '#fff3e0',
   },
   {
@@ -40,7 +40,7 @@ const AUTH_TYPE_CARDS: {
     label: 'Certificates',
     description: 'Mutual TLS or certificate-based authentication. Used in server-to-server communication scenarios.',
     icon: '\uD83D\uDCDC',
-    barColor: '#051359',
+    barColor: '#0e1f75',
     iconBg: '#e8eef6',
   },
   {
@@ -106,7 +106,7 @@ function buildColumns(
         return (
           <button
             type="button"
-            className="truncate block w-full text-left font-semibold text-navy-700 text-xs hover:underline"
+            className="truncate block w-full text-left font-semibold text-blue-700 text-xs hover:underline"
             onClick={() => onOpenDetail(url)}
           >
             {url || '\u2014'}
@@ -127,7 +127,7 @@ function buildColumns(
             <p className="truncate text-xs text-neutral-600">{visible.join('; ')}</p>
             {row.original.has_more_orgs && (
               <button
-                className="mt-0.5 text-xs font-semibold text-navy-700 hover:underline"
+                className="mt-0.5 text-xs font-semibold text-blue-700 hover:underline"
                 onClick={() => onShowOrgs(row.original.url)}
               >
                 Show all
@@ -272,12 +272,12 @@ export function AuthorizationTypesTab() {
       <div className="flex gap-4 p-5 bg-blue-50 border-l-4 border-cyan-500 rounded mb-6">
         <div className="text-xl flex-shrink-0">&#x1F6C8;</div>
         <div className="text-sm text-neutral-700">
-          <strong className="text-navy-900">About this data:</strong> Authorization types are extracted from the <code className="text-xs bg-white/60 px-1 py-0.5 rounded">rest.security</code> section of each endpoint's FHIR Capability Statement. An endpoint may declare multiple authorization types.
+          <strong className="text-blue-900">About this data:</strong> Authorization types are extracted from the <code className="text-xs bg-white/60 px-1 py-0.5 rounded">rest.security</code> section of each endpoint's FHIR Capability Statement. An endpoint may declare multiple authorization types.
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-6">
+      <div className="kpi-strip mb-6">
         <KpiCard
           label="Secured Endpoints"
           value={totalSecured}
@@ -293,7 +293,7 @@ export function AuthorizationTypesTab() {
         <KpiCard
           label="Security Coverage"
           value={`${coveragePct}%`}
-          borderColor="#0f2f8a"
+          borderColor="var(--blue-700)"
           icon={<Shield size={18} />}
         />
         <KpiCard
@@ -313,7 +313,7 @@ export function AuthorizationTypesTab() {
         <div className="px-6 pt-5 pb-4 border-b border-neutral-200">
           <h2
             id="auth-overview-heading"
-            className="font-serif text-lg font-bold text-navy-900"
+            className="text-lg font-bold text-blue-900"
           >
             Authorization Type Distribution
           </h2>
@@ -336,7 +336,7 @@ export function AuthorizationTypesTab() {
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div className="min-w-0">
-                      <div className="font-bold text-base text-navy-900">{card.label}</div>
+                      <div className="font-bold text-base text-blue-900">{card.label}</div>
                     </div>
                     <div
                       className="w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0"
@@ -349,7 +349,7 @@ export function AuthorizationTypesTab() {
                   <p className="text-xs text-neutral-500 leading-relaxed flex-1">{card.description}</p>
                   {/* Bottom-aligned stats + bar */}
                   <div className="mt-4">
-                    <div className="text-2xl font-bold text-navy-900 leading-tight">
+                    <div className="text-2xl font-bold text-blue-900 leading-tight">
                       {count.toLocaleString()}
                     </div>
                     <div className="text-xs text-neutral-500 mt-0.5">{pct}% of endpoints</div>
@@ -458,7 +458,7 @@ export function AuthorizationTypesTab() {
           >
             <button
               onClick={clearAllFilters}
-              className="text-sm font-semibold text-neutral-500 hover:text-navy-700 hover:underline"
+              className="text-sm font-semibold text-neutral-500 hover:text-blue-700 hover:underline"
             >
               Clear All Filters
             </button>

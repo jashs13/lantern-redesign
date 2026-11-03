@@ -5,12 +5,12 @@ type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info' | 'fhir
 const VARIANT_CLASSES: Record<BadgeVariant, string> = {
   default: 'bg-neutral-100 text-neutral-700',
   success: 'bg-status-green-bg text-status-green',
-  warning: 'bg-status-gold-bg text-yellow-800',
+  warning: 'bg-status-gold-bg text-status-gold-text',
   error: 'bg-status-red-bg text-status-red',
   info: 'bg-sky-500/10 text-sky-600',
   'fhir-r4': 'bg-sky-500/15 text-sky-600 font-semibold',
   fhir: 'bg-neutral-100 text-neutral-600',
-  navy: 'bg-navy-700/10 text-navy-700',
+  navy: 'bg-blue-700/10 text-blue-700',
   purple: 'bg-purple-100 text-purple-800',
 };
 

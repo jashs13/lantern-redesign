@@ -29,7 +29,7 @@ function buildColumns(
         <div className="min-w-0 max-w-[300px]">
           <button
             type="button"
-            className="truncate block w-full font-mono text-xs text-navy-700 hover:underline text-left"
+            className="truncate block w-full font-mono text-xs text-blue-700 hover:underline text-left"
             onClick={() => onOpenDetail(url)}
           >
             {url || '—'}

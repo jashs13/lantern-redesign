@@ -42,7 +42,9 @@ export function formatPercent(
  * Format seconds into a human-readable duration.
  */
 export function formatDuration(seconds: number | null | undefined): string {
-  if (seconds === null || seconds === undefined) return '—';
+  // The database uses negative response times for endpoints that did not
+  // return a measurable response. Do not expose that sentinel as a duration.
+  if (seconds === null || seconds === undefined || seconds < 0) return '—';
   if (seconds < 1) return `${Math.round(seconds * 1000)}ms`;
   if (seconds < 60) return `${seconds.toFixed(1)}s`;
   const mins = Math.floor(seconds / 60);
