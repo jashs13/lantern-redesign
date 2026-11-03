@@ -73,6 +73,16 @@ export function HorizontalBarChart({
           interval={0}
         />
         <Tooltip
+          contentStyle={{
+            maxWidth: 520,
+            whiteSpace: 'normal',
+            overflowWrap: 'anywhere',
+          }}
+          labelStyle={{
+            color: 'var(--color-gray-dark)',
+            fontWeight: 600,
+            marginBottom: 4,
+          }}
           formatter={
             tooltipFormatter
               ? (v) => [tooltipFormatter(v as number), '']

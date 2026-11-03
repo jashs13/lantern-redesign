@@ -96,9 +96,11 @@ export default function ImplementationGuidesTabContent({ asTab = false }: { asTa
 
   const chartData = useMemo(() => {
     if (!chartRaw) return [];
-    const TRUNCATE = 45;
     return chartRaw.data.map((ig: ImplementationGuide) => ({
-      name: ig.name.length > TRUNCATE ? ig.name.slice(0, TRUNCATE) + '…' : ig.name,
+      // Keep the full canonical IG identifier for the tooltip. The shared
+      // horizontal chart renders only its readable suffix on the Y axis,
+      // matching the Profiles chart without discarding information.
+      name: ig.name,
       value: ig.count,
     }));
   }, [chartRaw]);
